@@ -35,7 +35,7 @@ Pick the mode before anything else:
    - stop conditions and budgets
    - approval rules for sensitive actions
    - events/traces/logs
-4. Implement the smallest architecture that satisfies the goal. Do not introduce graph runtimes, MCP, vector memory, or subagents unless the requirement needs them.
+4. Implement the smallest architecture that satisfies the goal. Do not introduce graph runtimes, MCP, vector memory, or subagents unless the requirement needs them, and do not build an autonomous agent when a fixed workflow or single model call suffices.
 5. Add focused tests for tool handlers, orchestration logic, failure paths, permissions, and resume/approval behavior when applicable.
 6. Verify with the project's normal test/build commands and record any unverified risk.
 
@@ -49,9 +49,10 @@ Pick the mode before anything else:
 
 ## Architecture Rules
 
+- Prefer the simplest shape that works and escalate only when the requirement forces it: deterministic code < single model call < structured workflow < autonomous tool loop < durable graph < multi-agent. Build an autonomous agent only when steps are unpredictable, the path cannot be hard-coded, and the tool environment is trustworthy.
 - Use plain deterministic code when no model judgment is required.
 - Use a single model call when the task is pure generation, classification, extraction, or summarization without external actions.
-- Use a structured workflow when steps are known in advance: chain, router, parallel workers, evaluator-optimizer, or orchestrator-worker.
+- Use a structured workflow when steps are known in advance: prompt chaining, routing, parallelization (sectioning or voting), orchestrator-workers, or evaluator-optimizer.
 - Use a tool loop when the model must choose tools dynamically and can finish within an in-memory request lifecycle.
 - Use a durable graph/workflow when the agent needs checkpointing, replay, resume, long-running execution, or human approval across process boundaries.
 - Use subagents when isolation of context, tools, or specialist behavior is worth the latency and complexity.

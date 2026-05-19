@@ -109,6 +109,8 @@ Weak descriptions:
 - hide side effects
 - overlap heavily with another tool
 
+Treat the agent-computer interface (ACI) like a public API: invest in tool names, descriptions, schemas, examples, and error messages with the same rigor as developer-facing API docs, and exercise tool specs against realistic cases before shipping. Tool ergonomics often move agent success more than prompt wording (see `analysis/06-anthropic-building-effective-agents.md`).
+
 ## Tool Schema Rubric
 
 - Use enums for closed choices.

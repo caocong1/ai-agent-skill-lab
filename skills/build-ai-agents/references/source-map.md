@@ -2,7 +2,7 @@
 
 Local source root: `/Users/dongli/work/ai-agent-skill-lab/raw/repos`
 
-When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18; verify APIs against the host project's installed framework version before applying version-specific code.
+When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 and the Building Effective Agents article was captured 2026-05-19 (snapshot `raw/docs/anthropic-building-effective-agents.md`); verify APIs against the host project's installed framework version before applying version-specific code.
 
 ## Local Repositories
 
