@@ -1,6 +1,6 @@
 ---
 name: build-ai-agents
-description: Design, implement, review, and test AI agent features across TypeScript, Java, MCP, and general LLM application stacks. Use for tool-calling agents, agent loops, workflows, subagents, memory, approvals, MCP tools, or agent skill integration.
+description: Design, implement, review, and test AI agent features across TypeScript, Java, MCP, and general LLM application stacks. Use for tool-calling agents, agent loops, workflows, subagents, memory, approvals, MCP tools, prompt/context assembly, long-document handling, context compaction, retrieval, or agent skill integration.
 ---
 
 # Build AI Agents
@@ -85,7 +85,7 @@ Pick the mode before anything else:
 - Read `references/review-playbook.md` when auditing or optimizing an existing agent codebase.
 - Read `references/anti-patterns.md` to map symptoms to detection, impact, remediation, and validation.
 - Read `references/security-and-safety.md` for prompt injection, excessive agency, data exfiltration, multi-tenant isolation, SSRF, and audit review.
-- Read `references/context-and-tools.md` for prompt/context compaction, retrieval, token budgets, and tool-description quality.
+- Read `references/context-and-tools.md` for prompt/context compaction, long-document handling, retrieval, token budgets, and tool-description quality.
 - Read `references/testing-observability.md` when adding tests, approvals, traces, evals, replay, or production monitoring.
 - Read `references/source-map.md` when source evidence, local repo paths, or upstream links are needed.
 - If the host project uses a raw provider SDK or an unlisted language, rely on `references/agent-architecture.md` and map the same loop/state/tool/memory/approval concepts manually.

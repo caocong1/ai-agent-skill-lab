@@ -26,6 +26,14 @@ Use this catalog during reviews. For each smell, collect `file:line` evidence an
 - Remediate: pass secrets through scoped runtime/tool context; redact logs.
 - Validate: prompt snapshot contains no secrets.
 
+## Full Long Document Dump
+
+- Symptom: entire PDFs, docs, logs, transcripts, or large source files are pasted into model messages without chunking, retrieval, or source anchors.
+- Detect: inspect file/document readers, prompt builders, and tool-result handling for unbounded full-content insertion.
+- Impact: context overflow, higher cost, weaker factual grounding, lost citations, and brittle answers when the model misses details.
+- Remediate: add inventory, bounded reads, chunk ids, source anchors, retrieval, per-chunk summaries, and synthesis over selected evidence.
+- Validate: test with an oversized fixture and assert the model context contains bounded chunks plus source references, not the full document.
+
 ## God Agent With All Tools
 
 - Symptom: one agent gets broad filesystem, database, network, admin, and user-data tools.
@@ -97,4 +105,3 @@ Use this catalog during reviews. For each smell, collect `file:line` evidence an
 - Impact: model receives tool results mismatched to calls.
 - Remediate: execute in parallel if safe, but return results in original tool-call order.
 - Validate: test delayed tools still produce stable ordering.
-

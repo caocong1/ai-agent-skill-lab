@@ -27,7 +27,7 @@ Raw SDK or other languages:
 
 1. Goal and agent shape: is an agent needed, or would deterministic code or a structured workflow be better?
 2. Tool boundary: schema, description, permissions, error classification, idempotency.
-3. Context boundary: prompt assembly, retrieval, compaction, message separation, secret handling.
+3. Context boundary: prompt assembly, long-document slicing, retrieval, source anchors, compaction, message separation, secret handling.
 4. State and memory: persistence, tenant isolation, replay/resume, stale or poisoned memory risk.
 5. Loop control: stop condition, timeout, cost budget, retry policy.
 6. Safety: approval, prompt injection, data exfiltration, SSRF, audit and redaction.
@@ -83,4 +83,3 @@ Effort categories:
 - No tests to fake-model harness before behavior refactor.
 - Prompt bloat to context compaction/retrieval with source attribution.
 - Vague tool errors to structured model-correctable errors.
-
