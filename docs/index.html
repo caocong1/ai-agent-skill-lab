@@ -144,12 +144,13 @@
         align-items: center;
         justify-content: center;
         padding: 0;
+        color: #24292f;
       }
 
       .repo-link svg {
-        width: 18px;
-        height: 18px;
-        stroke: currentColor;
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
       }
 
       main {
@@ -516,19 +517,10 @@
             title="GitHub 仓库"
           >
             <svg
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke-width="2"
-              stroke-linecap="round"
-              stroke-linejoin="round"
+              viewBox="0 0 16 16"
               aria-hidden="true"
             >
-              <circle cx="6" cy="6" r="2.5"></circle>
-              <circle cx="18" cy="6" r="2.5"></circle>
-              <circle cx="12" cy="18" r="2.5"></circle>
-              <path d="M8.5 6h7"></path>
-              <path d="M6 8.5v2.2c0 2.2 1.8 4 4 4h2"></path>
-              <path d="M18 8.5v2.2c0 2.2-1.8 4-4 4h-2"></path>
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.01 8.01 0 0 0 16 8c0-4.42-3.58-8-8-8Z"></path>
             </svg>
           </a>
         </div>
@@ -670,36 +662,44 @@
           <thead>
             <tr>
               <th>项目</th>
+              <th>项目简介</th>
               <th>主要学习点</th>
             </tr>
           </thead>
           <tbody>
             <tr>
               <td>Pi</td>
+              <td>面向终端和本地开发环境的编码 agent 项目，强调可扩展工具、会话管理和 skill 机制。</td>
               <td>编码 agent 的循环、会话、skill 加载、扩展机制和 subagent。</td>
             </tr>
             <tr>
               <td>OpenAI Agents JS</td>
+              <td>OpenAI 官方 TypeScript agent SDK，用于构建带工具、交接和安全边界的 agent 应用。</td>
               <td>标准 TypeScript agent SDK 里的 agent、tool、交接、防护规则和运行状态。</td>
             </tr>
             <tr>
               <td>LangGraphJS</td>
+              <td>LangChain 生态的 JavaScript/TypeScript graph 编排框架，适合表达有状态、多步骤 agent 流程。</td>
               <td>可持久化 graph、checkpoint、人工介入和多 agent 交接。</td>
             </tr>
             <tr>
               <td>MCP TypeScript SDK</td>
+              <td>Model Context Protocol 的 TypeScript SDK，用统一协议把工具、资源和提示模板暴露给模型客户端。</td>
               <td>MCP 客户端/服务端、工具、资源、提示模板和传输边界。</td>
             </tr>
             <tr>
               <td>Vercel AI SDK</td>
+              <td>面向 TypeScript 和前端应用的 AI 应用 SDK，覆盖流式生成、工具调用、UI 集成和 provider 适配。</td>
               <td>应用层 ToolLoopAgent、WorkflowAgent、流式 UI、审批和 MCP 客户端。</td>
             </tr>
             <tr>
               <td>Spring AI Examples</td>
+              <td>Spring AI 官方示例集合，展示 Java/Spring 应用中接入模型、工具、RAG 和 agentic workflow 的方式。</td>
               <td>Java/Spring 里的 agentic workflow、函数回调和 MCP 注解。</td>
             </tr>
             <tr>
               <td>LangChain4j</td>
+              <td>Java 原生的 LLM 应用框架，提供 AI Service、工具调用、记忆、RAG 和 agent 能力。</td>
               <td>Java AI service、工具执行器/提供器、agentic service 和 skills 集成。</td>
             </tr>
           </tbody>

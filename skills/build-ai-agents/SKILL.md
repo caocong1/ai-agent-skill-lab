@@ -43,7 +43,7 @@ Pick the mode before anything else:
 1. Locate the agent constructs in the host project: model adapter, tool registry, orchestration loop/graph, prompt/context assembly, state and memory, approval/permission boundary, stop conditions and budgets, events/traces, and tests.
 2. Assess each construct against the Dual-Use Rubric below. Record evidence as `file:line`.
 3. Classify findings by severity (`critical`, `high`, `medium`, `low`), impact (`correctness`, `safety`, `cost`, `reliability`, `maintainability`), effort (`S`, `M`, `L`), and regression risk.
-4. Produce a Review Report and Prioritized Remediation Plan with concrete, executable changes.
+4. Produce a developer-facing Chinese `审查报告` and prioritized `处理计划` with concrete, executable changes.
 5. Validate per Definition of Done before finishing.
 
 ## Architecture Rules
@@ -66,15 +66,27 @@ Pick the mode before anything else:
 - Message contracts: build separate domain, runtime, model, and UI message contracts; review for UI artifacts or internal state leaking into model context.
 - Tests and evals: build fake-model orchestration tests plus small eval coverage; review for zero agent tests before recommending risky refactors.
 
+## 中文报告
+
+- `review` 模式的用户可见最终报告默认使用中文，除非用户明确要求其他语言。
+- 语气保持事实化、工程化、便于开发人员接受：描述当前实现、具体风险和下一步建议，避免 `违规`, `低级错误`, `设计失败` 这类归责感强的词。
+- 内部分类标签在报告中转成开发人员更容易扫描的中文：
+  - severity -> `风险级别`，使用 `P0 严重`, `P1 高`, `P2 中`, `P3 低`
+  - impact -> `影响面`，使用 `正确性`, `安全/权限`, `成本`, `可靠性`, `可维护性`
+  - effort -> `改动量`，使用 `S`, `M`, `L`
+  - regression risk -> `回归风险`
+- 每条发现都要说明证据、为什么值得处理、一个可执行的建议调整，以及验证方式。
+- 区分代码事实和风险推断。直接证据使用 `当前代码显示...`，推断风险使用 `这可能导致...`。
+
 ## Deliverables
 
 - `build` / `extend`: working code, focused tests, verification commands, and any unverified risks.
-- `review`: a Review Report table with `[id | construct | severity | impact | evidence file:line | recommended change | effort | regression risk]`, plus a Remediation Plan ordered into `safe now`, `needs eval snapshot`, and `needs design change`.
+- `review`: a Chinese `审查报告` table with `[id | 关注点 | 风险级别 | 影响面 | 证据 file:line | 建议调整 | 改动量 | 回归风险 | 验证方式]`, plus a `处理计划` ordered into `可立即处理`, `先补验证快照`, and `需要设计调整`.
 
 ## Definition of Done
 
 - `build`: every Dual-Use Rubric item is satisfied or its risk is explicitly recorded; project tests/builds requested for the change have been run or the blocker is stated.
-- `review`: every finding has `file:line`, concrete change, severity, effort, and validation; prompt/tool changes include a before/after eval or regression snapshot requirement; non-goals and residual risks are listed.
+- `review`: every finding has `file:line`, concrete change, risk level, effort, and validation; prompt/tool changes include a before/after eval or regression snapshot requirement; non-goals and residual risks are listed in Chinese.
 
 ## Load References
 

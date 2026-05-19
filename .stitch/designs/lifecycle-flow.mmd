@@ -1,0 +1,46 @@
+flowchart TD
+  U["用户请求\n目标 / 约束 / 输入"] --> I["入口边界\n鉴权 / 租户 / 请求 ID / 速率限制"]
+  I --> N["任务标准化\n意图识别 / 风险初筛 / 可恢复点"]
+  N --> S["会话状态读取\nthread / checkpoint / memory"]
+  S --> C["Context Builder\n系统指令 / 用户消息 / 检索摘要 / 工具清单"]
+  C --> P{"Policy Gate\n是否允许调用模型?"}
+  P -- "no" --> X1["拒绝或要求补充\n返回用户可理解原因"]
+  P -- "yes" --> M{"模型决策\nfinal / tool call / subtask"}
+
+  M -- "final answer" --> F["最终响应\n结论 / 证据 / 未验证风险"]
+  M -- "tool call" --> V["工具调用边界\nschema 校验 / 权限 / 预算 / 幂等键"]
+  M -- "subtask" --> A["子任务执行\n隔离上下文 / 限定文件 / 合并结果"]
+
+  A --> R["结果回填\n结构化观察 / 子任务摘要"]
+  V --> D{"敏感动作?\n写文件 / 网络 / 删除 / 花费"}
+  D -- "yes" --> H["人工或策略审批\n理由 / 参数 / 影响范围"]
+  H -- "denied" --> R
+  H -- "approved" --> E["执行工具\n本地 CLI / MCP / API / DB / File"]
+  D -- "no" --> E
+
+  E --> O{"结果分类\nsuccess / retryable / fatal"}
+  O -- "success" --> R
+  O -- "retryable error" --> Q["重试 / 退避 / 降级\n受预算和次数限制"]
+  Q --> R
+  O -- "fatal error" --> Z["停止并记录\n错误分类 / trace / 安全摘要"]
+
+  R --> K["状态持久化\ncheckpoint / trace / cost / log"]
+  K --> G{"退出门\nfinal? max steps? timeout? budget? denied? fatal?"}
+  G -- "continue" --> C
+  G -- "stop" --> F
+  X1 --> F
+  Z --> F
+
+  classDef process fill:#ffffff,stroke:#d9e1ec,color:#101c2e,stroke-width:1px;
+  classDef boundary fill:#fff8ea,stroke:#b45309,color:#101c2e,stroke-width:1.5px;
+  classDef model fill:#eef4ff,stroke:#2563eb,color:#101c2e,stroke-width:1.5px;
+  classDef external fill:#effaf5,stroke:#0f766e,color:#101c2e,stroke-width:1.5px;
+  classDef skill fill:#f4f0ff,stroke:#6d5bd0,color:#101c2e,stroke-width:1.5px;
+  classDef stop fill:#fff3f5,stroke:#b42318,color:#101c2e,stroke-width:1.5px;
+
+  class U,N,S,C,R,K,Q process;
+  class I,P,V,D,H boundary;
+  class M model;
+  class E,O external;
+  class A skill;
+  class X1,F,G,Z stop;

@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+
+<html class="light" lang="zh-CN"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AI Agent 工程结构</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "on-surface": "#101c2e",
+                        "inverse-primary": "#80d5cb",
+                        "surface-variant": "#d8e3fd",
+                        "on-secondary-fixed": "#00174b",
+                        "surface-tint": "#006a63",
+                        "on-tertiary-fixed": "#1a0063",
+                        "on-secondary-container": "#fefcff",
+                        "primary-fixed-dim": "#80d5cb",
+                        "secondary-container": "#316bf3",
+                        "background": "#f9f9ff",
+                        "on-primary-container": "#a3faef",
+                        "secondary-fixed-dim": "#b4c5ff",
+                        "surface-container-low": "#f0f3ff",
+                        "surface-container-high": "#dfe8ff",
+                        "on-tertiary-container": "#ede7ff",
+                        "primary-container": "#0f766e",
+                        "secondary": "#0051d5",
+                        "on-surface-variant": "#3e4947",
+                        "surface-container-lowest": "#ffffff",
+                        "on-primary-fixed": "#00201d",
+                        "tertiary": "#513db2",
+                        "error-container": "#ffdad6",
+                        "on-background": "#101c2e",
+                        "tertiary-fixed-dim": "#c9bfff",
+                        "inverse-on-surface": "#ecf0ff",
+                        "on-tertiary": "#ffffff",
+                        "surface-container-highest": "#d8e3fd",
+                        "primary-fixed": "#9cf2e8",
+                        "on-secondary": "#ffffff",
+                        "error": "#ba1a1a",
+                        "surface-dim": "#cfdaf4",
+                        "on-secondary-fixed-variant": "#003ea8",
+                        "on-error-container": "#93000a",
+                        "surface-container": "#e8eeff",
+                        "outline-variant": "#bdc9c6",
+                        "surface-bright": "#f9f9ff",
+                        "on-primary": "#ffffff",
+                        "primary": "#005c55",
+                        "inverse-surface": "#263144",
+                        "on-tertiary-fixed-variant": "#4631a7",
+                        "surface": "#f9f9ff",
+                        "on-error": "#ffffff",
+                        "on-primary-fixed-variant": "#00504a",
+                        "secondary-fixed": "#dbe1ff",
+                        "tertiary-fixed": "#e5deff",
+                        "tertiary-container": "#6957cc",
+                        "outline": "#6e7977"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.125rem",
+                        "lg": "0.25rem",
+                        "xl": "0.5rem",
+                        "full": "0.75rem"
+                    },
+                    "spacing": {
+                        "lg": "32px",
+                        "sm": "16px",
+                        "gutter": "24px",
+                        "md": "24px",
+                        "xl": "48px",
+                        "container-max": "1280px",
+                        "xs": "8px",
+                        "sidebar-width": "280px",
+                        "base": "4px"
+                    },
+                    "fontFamily": {},
+                    "fontSize": {
+                        "display-lg": ["36px", { "lineHeight": "44px", "letterSpacing": "-0.02em", "fontWeight": "700" }],
+                        "body-lg": ["16px", { "lineHeight": "26px", "fontWeight": "400" }],
+                        "headline-sm": ["18px", { "lineHeight": "26px", "fontWeight": "600" }],
+                        "label-md": ["12px", { "lineHeight": "16px", "letterSpacing": "0.02em", "fontWeight": "500" }],
+                        "headline-lg": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.01em", "fontWeight": "600" }],
+                        "headline-md": ["22px", { "lineHeight": "30px", "fontWeight": "600" }],
+                        "code-block": ["14px", { "lineHeight": "20px", "fontWeight": "400" }],
+                        "body-md": ["14px", { "lineHeight": "22px", "fontWeight": "400" }]
+                    }
+                }
+            }
+        }
+    </script>
+<style>
+        body { background-color: #f8fafc; color: #101c2e; }
+        .table-cell-border { border-bottom: 1px solid #d9e1ec; }
+    </style>
+</head>
+<body class="font-sans antialiased selection:bg-primary-container selection:text-on-primary-container">
+<!-- TopNavBar -->
+<header class="bg-surface dark:bg-on-surface text-primary dark:text-inverse-primary docked full-width top-0 sticky border-b border-outline-variant dark:border-on-surface-variant flat no shadows transition-all duration-200 ease-in-out z-50">
+<div class="flex justify-between items-center w-full px-gutter max-w-container-max mx-auto h-16">
+<div class="font-headline-sm text-headline-sm font-bold text-on-surface dark:text-inverse-on-surface flex items-center gap-xs">
+<span class="material-symbols-outlined" data-icon="architecture" data-weight="fill" style="font-variation-settings: 'FILL' 1;">architecture</span>
+                AI Agent 工程结构
+            </div>
+<nav class="hidden md:flex items-center gap-md">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors hover:bg-surface-container-low dark:hover:bg-on-surface-variant px-sm py-xs rounded font-label-md text-label-md" href="#lifecycle">生命周期</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors hover:bg-surface-container-low dark:hover:bg-on-surface-variant px-sm py-xs rounded font-label-md text-label-md" href="#loop">循环</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors hover:bg-surface-container-low dark:hover:bg-on-surface-variant px-sm py-xs rounded font-label-md text-label-md" href="#boundaries">边界</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary transition-colors hover:bg-surface-container-low dark:hover:bg-on-surface-variant px-sm py-xs rounded font-label-md text-label-md" href="#skills">技能 / 协议 / 工具</a>
+<a class="text-primary dark:text-inverse-primary border-b-2 border-primary dark:border-inverse-primary pb-1 font-bold px-sm py-xs hover:bg-surface-container-low dark:hover:bg-on-surface-variant font-label-md text-label-md" href="#install">Skill 安装</a>
+</nav>
+<div class="hidden md:flex">
+<span class="material-symbols-outlined text-on-surface-variant cursor-pointer hover:text-primary" data-icon="search">search</span>
+</div>
+<button class="md:hidden text-on-surface">
+<span class="material-symbols-outlined" data-icon="menu">menu</span>
+</button>
+</div>
+</header>
+<div class="flex max-w-container-max mx-auto w-full">
+<!-- Main Canvas -->
+<main class="flex-1 w-full px-sm md:px-gutter py-lg min-w-0">
+<!-- Section: Intro -->
+<section class="mb-xl">
+<h1 class="font-display-lg text-display-lg text-on-surface mb-sm">AI Agent 工程结构</h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-lg max-w-3xl">
+                    理解 AI Agent 的工程架构，核心在于理清提示词在系统中的流转生命周期、模型运行时的边界控制，以及内部循环与外部系统交互的确定性机制。
+                </p>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-md">
+<div class="bg-surface-container-lowest border border-outline-variant p-sm rounded-lg hover:shadow-sm transition-shadow">
+<div class="flex items-start gap-xs mb-xs">
+<span class="material-symbols-outlined text-primary" data-icon="memory" data-weight="fill" style="font-variation-settings: 'FILL' 1;">memory</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Agent 是运行时</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Agent 并非单纯的模型调用，而是一个包含状态管理、执行循环和边界校验的完整软件运行时环境。
+                        </p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-sm rounded-lg hover:shadow-sm transition-shadow">
+<div class="flex items-start gap-xs mb-xs">
+<span class="material-symbols-outlined text-secondary" data-icon="psychology" data-weight="fill" style="font-variation-settings: 'FILL' 1;">psychology</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">模型只做决策</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            LLM 作为推理引擎，仅负责意图识别和动作规划，不直接执行任何可能改变系统状态的外部操作。
+                        </p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-sm rounded-lg hover:shadow-sm transition-shadow">
+<div class="flex items-start gap-xs mb-xs">
+<span class="material-symbols-outlined text-error" data-icon="sync_problem" data-weight="fill" style="font-variation-settings: 'FILL' 1;">sync_problem</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">循环必须有退出条件</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            为了防止无限死循环，Agent loop 必须在设计阶段硬编码超时、最大步数或明确的终止指令。
+                        </p>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-sm rounded-lg hover:shadow-sm transition-shadow">
+<div class="flex items-start gap-xs mb-xs">
+<span class="material-symbols-outlined text-tertiary" data-icon="hub" data-weight="fill" style="font-variation-settings: 'FILL' 1;">hub</span>
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Skill 和 MCP 不是一回事</h3>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant">
+                            Skill 是 Agent 拥有的具体能力实现，而 MCP (Model Context Protocol) 是标准化外部系统接入的协议标准。
+                        </p>
+</div>
+</div>
+</section>
+<!-- Section: Lifecycle -->
+<section class="mb-xl pt-lg border-t border-outline-variant" id="lifecycle">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">1. 提示词进入 agent 后的生命周期</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-lg mb-md flex justify-center overflow-x-auto">
+<!-- Pseudo Node Diagram -->
+<div class="flex items-center gap-xs font-label-md text-label-md whitespace-nowrap">
+<div class="px-sm py-xs bg-surface-container border border-outline-variant rounded">用户提示词</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-primary-container text-on-primary-container rounded font-bold">入口边界</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-surface-container border border-outline-variant rounded">上下文构建</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-secondary-container text-on-secondary-container rounded">模型决策</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-error-container text-on-error-container rounded font-bold">工具边界</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-surface-container border border-outline-variant border-dashed rounded">外部能力</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-surface-container border border-outline-variant rounded">工具结果</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-surface-container border border-outline-variant rounded">状态更新</div>
+<span class="material-symbols-outlined text-outline">arrow_forward</span>
+<div class="px-sm py-xs bg-tertiary-container text-on-tertiary-container rounded">循环门</div>
+</div>
+</div>
+</section>
+<!-- Section: Agent Loop -->
+<section class="mb-xl pt-lg border-t border-outline-variant" id="loop">
+<h2 class="font-headline-lg text-headline-lg text-on-surface mb-md">2. Agent loop 的内部结构</h2>
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg overflow-hidden">
+<table class="w-full text-left font-body-md text-body-md">
+<thead class="bg-surface-container-low font-label-md text-label-md text-on-surface-variant uppercase tracking-wider">
+<tr>
+<th class="p-sm table-cell-border">退出条件</th>
+<th class="p-sm table-cell-border">触发场景</th>
+<th class="p-sm table-cell-border">工程处理</th>
+</tr>
+</thead>
+<tbody class="text-on-surface">
+<tr>
+<td class="p-sm table-cell-border font-bold">Final Answer</td>
+<td class="p-sm table-cell-border text-on-surface-variant">模型认为任务已完成，输出最终结果</td>
+<td class="p-sm table-cell-border">解析输出，结束循环，返回给用户</td>
+</tr>
+<tr>
+<td class="p-sm table-cell-border font-bold text-error">Max Steps</td>
+<td class="p-sm table-cell-border text-on-surface-variant">循环次数达到预设硬上限</td>
+<td class="p-sm table-cell-border">强制熔断，返回部分结果或超时警告</td>
+</tr>
+<tr>
+<td class="p-sm table-cell-border font-bold text-error">Timeout/Budget</td>
+<td class="p-sm table-cell-border text-on-surface-variant">执行时间或 Token 消耗超出预算</td>
+<td class="p-sm table-cell-border">阻断网络请求，抛出 ResourceExhausted 异常</td>
+</tr>
+<tr>
+<td class="p-sm table-cell-border font-bold text-tertiary">Approval Denied</td>
+<td class="p-sm table-cell-border text-on-surface-variant">高风险操作（如删库）被人工拒绝</td>
+<td class="p-sm table-cell-border">将拒绝信息注入上下文，交还给模型重新决策</td>
+</tr>
+<tr>
+<td class="p-sm table-cell-border font-bold text-error">Fatal Error</td>
+<td class="p-sm table-cell-border text-on-surface-variant">工具执行崩溃或外部 API 严重异常</td>
+<td class="p-sm table-cell-border">捕获异常，记录错误日志，进入降级策略</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</main>
+</div>
+<!-- Footer -->
+<footer class="bg-surface-container-lowest dark:bg-on-surface full-width py-lg border-t border-outline-variant dark:border-on-surface-variant flat no shadows mt-xl">
+<div class="flex flex-col md:flex-row justify-between items-center px-gutter max-w-container-max mx-auto">
+<div class="font-label-md text-label-md text-on-surface-variant dark:text-surface-variant mb-sm md:mb-0">
+                AI Agent Skill Lab / docs/index.html
+            </div>
+<div class="flex gap-md font-body-md text-body-md">
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary underline transition-opacity" href="#">GitHub</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary underline transition-opacity" href="#">Documentation</a>
+<a class="text-on-surface-variant dark:text-surface-variant hover:text-primary dark:hover:text-inverse-primary underline transition-opacity" href="#">Status</a>
+</div>
+</div>
+</footer>
+</body></html>
