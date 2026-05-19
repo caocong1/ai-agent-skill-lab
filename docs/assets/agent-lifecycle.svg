@@ -1,0 +1,165 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1080" height="1520" viewBox="0 0 1080 1520" role="img" aria-labelledby="title desc">
+  <title id="title">AI Agent 请求生命周期</title>
+  <desc id="desc">按中文开发语境整理的 AI Agent 请求生命周期分阶段架构图，说明请求准备、上下文组装、模型调用、执行分支、状态保存与最终响应。</desc>
+  <defs>
+    <style>
+      .bg { fill: #f8fafc; }
+      .panel { fill: #ffffff; stroke: #d9e1ec; stroke-width: 1.2; }
+      .section { fill: #fbfcfe; stroke: #d9e1ec; stroke-width: 1.2; }
+      .node { fill: #ffffff; stroke: #d9e1ec; stroke-width: 1.5; }
+      .boundary { fill: #fff8ea; stroke: #b45309; stroke-width: 1.8; }
+      .model { fill: #eef4ff; stroke: #2563eb; stroke-width: 1.8; }
+      .tool { fill: #effaf5; stroke: #0f766e; stroke-width: 1.8; }
+      .skill { fill: #f4f0ff; stroke: #6d5bd0; stroke-width: 1.8; }
+      .stop { fill: #fff3f5; stroke: #b42318; stroke-width: 1.8; }
+      .line { fill: none; stroke: #9aa7b8; stroke-width: 2; }
+      .line-model { fill: none; stroke: #2563eb; stroke-width: 2; }
+      .line-tool { fill: none; stroke: #0f766e; stroke-width: 2; }
+      .line-skill { fill: none; stroke: #6d5bd0; stroke-width: 2; }
+      .title { fill: #101c2e; font: 700 32px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .subtitle { fill: #627084; font: 400 15px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .section-title { fill: #101c2e; font: 700 17px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .label { fill: #101c2e; font: 700 16px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .body { fill: #44546a; font: 400 13px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .small { fill: #627084; font: 600 12px Inter, "Noto Sans SC", "Microsoft YaHei", sans-serif; }
+      .chip { fill: #ffffff; stroke: #d9e1ec; stroke-width: 1; }
+    </style>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#9aa7b8" />
+    </marker>
+    <marker id="arrow-model" markerWidth="10" markerHeight="10" refX="8" refY="5" orient="auto">
+      <path d="M0 0 L10 5 L0 10 Z" fill="#2563eb" />
+    </marker>
+  </defs>
+
+  <rect class="bg" width="1080" height="1520" />
+  <rect class="panel" x="24" y="24" width="1032" height="1472" rx="0" />
+
+  <text class="title" x="540" y="70" text-anchor="middle">AI Agent 请求生命周期</text>
+  <text class="subtitle" x="540" y="98" text-anchor="middle">从用户意图到模型调用、工具执行、状态保存与最终响应</text>
+
+  <!-- Section 1 -->
+  <rect class="section" x="72" y="132" width="936" height="174" rx="0" />
+  <text class="section-title" x="96" y="164">一、入口与任务准备</text>
+  <rect class="node" x="96" y="190" width="184" height="82" rx="0" />
+  <text class="label" x="188" y="222" text-anchor="middle">用户请求</text>
+  <text class="body" x="188" y="246" text-anchor="middle">目标 / 约束 / 输入</text>
+  <rect class="boundary" x="316" y="190" width="184" height="82" rx="0" />
+  <text class="label" x="408" y="222" text-anchor="middle">请求接入</text>
+  <text class="body" x="408" y="246" text-anchor="middle">鉴权 / 租户 / 限流</text>
+  <rect class="node" x="536" y="190" width="184" height="82" rx="0" />
+  <text class="label" x="628" y="222" text-anchor="middle">任务解析</text>
+  <text class="body" x="628" y="246" text-anchor="middle">意图 / 风险 / 恢复点</text>
+  <rect class="skill" x="756" y="190" width="184" height="82" rx="0" />
+  <text class="label" x="848" y="222" text-anchor="middle">技能加载</text>
+  <text class="body" x="848" y="244" text-anchor="middle">匹配任务类型</text>
+  <text class="body" x="848" y="266" text-anchor="middle">读取规则 / 参考 / 模板</text>
+  <path class="line" d="M280 231 L316 231" marker-end="url(#arrow)" />
+  <path class="line" d="M500 231 L536 231" marker-end="url(#arrow)" />
+  <path class="line" d="M720 231 L756 231" marker-end="url(#arrow)" />
+
+  <!-- Section 2 -->
+  <rect class="section" x="72" y="346" width="936" height="244" rx="0" />
+  <text class="section-title" x="96" y="378">二、上下文组装</text>
+  <text class="small" x="238" y="378">把模型这一轮真正需要看的内容压缩成消息与工具定义</text>
+  <rect class="node" x="96" y="408" width="160" height="118" rx="0" />
+  <text class="label" x="176" y="438" text-anchor="middle">系统指令</text>
+  <text class="body" x="176" y="464" text-anchor="middle">平台规则</text>
+  <text class="body" x="176" y="488" text-anchor="middle">项目约束</text>
+  <rect class="node" x="274" y="408" width="160" height="118" rx="0" />
+  <text class="label" x="354" y="438" text-anchor="middle">用户上下文</text>
+  <text class="body" x="354" y="464" text-anchor="middle">当前目标</text>
+  <text class="body" x="354" y="488" text-anchor="middle">附件 / 摘要</text>
+  <rect class="node" x="452" y="408" width="160" height="118" rx="0" />
+  <text class="label" x="532" y="438" text-anchor="middle">状态上下文</text>
+  <text class="body" x="532" y="464" text-anchor="middle">检查点 / 记忆</text>
+  <text class="body" x="532" y="488" text-anchor="middle">已做动作</text>
+  <rect class="skill" x="630" y="408" width="160" height="118" rx="0" />
+  <text class="label" x="710" y="438" text-anchor="middle">技能上下文</text>
+  <text class="body" x="710" y="464" text-anchor="middle">工作流程</text>
+  <text class="body" x="710" y="488" text-anchor="middle">参考 / 模板</text>
+  <rect class="tool" x="808" y="408" width="160" height="118" rx="0" />
+  <text class="label" x="888" y="438" text-anchor="middle">工具定义</text>
+  <text class="body" x="888" y="462" text-anchor="middle">宿主工具 / MCP 工具</text>
+  <text class="body" x="888" y="486" text-anchor="middle">应用接口工具</text>
+  <text class="small" x="96" y="556">继续执行会先回到本阶段重新组装上下文；工具定义要区分宿主工具、MCP 工具和应用接口工具。</text>
+
+  <!-- Section 3 -->
+  <rect class="section" x="72" y="630" width="936" height="190" rx="0" />
+  <text class="section-title" x="96" y="662">三、模型调用</text>
+  <rect class="model" x="250" y="686" width="580" height="86" rx="0" />
+  <text class="label" x="540" y="720" text-anchor="middle">调用模型</text>
+  <text class="body" x="540" y="746" text-anchor="middle">输入：系统指令 + 用户上下文 + 状态上下文 + 技能上下文 + 工具定义</text>
+  <rect class="model" x="344" y="774" width="392" height="34" rx="0" />
+  <text class="small" x="540" y="797" text-anchor="middle">输出：最终回答 / 工具调用 / 子任务请求</text>
+
+  <!-- Section 4 -->
+  <rect class="section" x="72" y="860" width="936" height="312" rx="0" />
+  <text class="section-title" x="96" y="892">四、模型输出后的执行分支</text>
+  <rect class="stop" x="96" y="932" width="250" height="172" rx="0" />
+  <text class="label" x="221" y="966" text-anchor="middle">最终回答</text>
+  <text class="body" x="221" y="994" text-anchor="middle">模型已能直接回答</text>
+  <text class="body" x="221" y="1018" text-anchor="middle">进入最终响应</text>
+  <text class="body" x="221" y="1042" text-anchor="middle">保留证据与风险说明</text>
+
+  <rect class="tool" x="386" y="932" width="308" height="216" rx="0" />
+  <text class="label" x="540" y="966" text-anchor="middle">工具调用</text>
+  <text class="body" x="540" y="994" text-anchor="middle">1. 统一校验：参数 / 权限 / 预算 / 幂等</text>
+  <text class="body" x="540" y="1020" text-anchor="middle">2. 宿主工具：命令行 / 读写文件 / 浏览器</text>
+  <text class="body" x="540" y="1046" text-anchor="middle">3. MCP 工具：客户端调用 MCP 服务端</text>
+  <text class="body" x="540" y="1072" text-anchor="middle">4. 应用接口：HTTP / 数据库 / 业务函数</text>
+  <text class="body" x="540" y="1098" text-anchor="middle">5. 工具结果分类并结构化返回</text>
+  <rect class="chip" x="430" y="1116" width="220" height="24" rx="0" />
+  <text class="small" x="540" y="1133" text-anchor="middle">成功 / 可重试 / 致命错误</text>
+
+  <rect class="skill" x="734" y="932" width="250" height="172" rx="0" />
+  <text class="label" x="859" y="966" text-anchor="middle">子任务执行</text>
+  <text class="body" x="859" y="994" text-anchor="middle">隔离上下文</text>
+  <text class="body" x="859" y="1018" text-anchor="middle">限定文件或资源范围</text>
+  <text class="body" x="859" y="1042" text-anchor="middle">输出子任务摘要</text>
+  <text class="body" x="859" y="1066" text-anchor="middle">回填主任务</text>
+
+  <!-- Section 5 -->
+  <rect class="section" x="72" y="1212" width="936" height="164" rx="0" />
+  <text class="section-title" x="96" y="1244">五、结果回填与状态保存</text>
+  <rect class="node" x="96" y="1274" width="250" height="72" rx="0" />
+  <text class="label" x="221" y="1304" text-anchor="middle">结果回填</text>
+  <text class="body" x="221" y="1328" text-anchor="middle">观察 / 摘要 / 拒绝原因</text>
+  <rect class="node" x="416" y="1274" width="250" height="72" rx="0" />
+  <text class="label" x="541" y="1304" text-anchor="middle">状态保存</text>
+  <text class="body" x="541" y="1328" text-anchor="middle">检查点 / 追踪 / 成本</text>
+  <rect class="boundary" x="736" y="1274" width="250" height="72" rx="0" />
+  <text class="label" x="861" y="1304" text-anchor="middle">退出判断</text>
+  <text class="body" x="861" y="1328" text-anchor="middle">完成 / 继续 / 超限 / 失败</text>
+  <path class="line" d="M346 1310 L416 1310" marker-end="url(#arrow)" />
+  <path class="line" d="M666 1310 L736 1310" marker-end="url(#arrow)" />
+
+  <rect class="stop" x="360" y="1400" width="360" height="72" rx="0" />
+  <text class="label" x="540" y="1430" text-anchor="middle">最终响应</text>
+  <text class="body" x="540" y="1454" text-anchor="middle">结论 / 证据 / 已验证项 / 未验证风险</text>
+
+  <!-- Light connectors between sections -->
+  <path class="line" d="M540 306 L540 346" marker-end="url(#arrow)" />
+  <path class="line" d="M540 590 L540 630" marker-end="url(#arrow)" />
+  <path class="line-model" d="M540 820 L540 860" marker-end="url(#arrow-model)" />
+  <path class="line" d="M540 1172 L540 1212" marker-end="url(#arrow)" />
+  <path class="line" d="M861 1346 C861 1380 720 1400 540 1400" marker-end="url(#arrow)" />
+  <path class="line-model" d="M986 1310 C1030 1140 1030 560 968 468" opacity="0.28" marker-end="url(#arrow-model)" />
+  <text class="small" x="748" y="1198" text-anchor="start">继续：回到上下文组装</text>
+
+  <!-- Legend -->
+  <g transform="translate(94 116)">
+    <rect class="node" x="0" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="24" y="13">流程</text>
+    <rect class="boundary" x="80" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="104" y="13">边界</text>
+    <rect class="model" x="160" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="184" y="13">模型</text>
+    <rect class="tool" x="240" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="264" y="13">工具源</text>
+    <rect class="skill" x="362" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="386" y="13">技能</text>
+    <rect class="stop" x="442" y="0" width="16" height="16" rx="0" />
+    <text class="small" x="466" y="13">终止</text>
+  </g>
+</svg>

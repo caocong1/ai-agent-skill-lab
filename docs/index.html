@@ -1,0 +1,912 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta
+      name="description"
+      content="面向开发人员的 AI agent 运行逻辑说明：请求生命周期、工具来源、MCP 边界、分析来源和 skill 安装。"
+    />
+    <title>AI Agent 工程结构</title>
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='4' fill='%23ffffff'/%3E%3Cpath d='M8 8h16v16H8z' fill='none' stroke='%230f766e' stroke-width='2'/%3E%3Cpath d='M12 16h8M16 12v8' stroke='%230f766e' stroke-width='2'/%3E%3C/svg%3E"
+    />
+    <style>
+      :root {
+        --text: #101c2e;
+        --muted: #627084;
+        --line: #d9e1ec;
+        --bg: #f8fafc;
+        --surface: #ffffff;
+        --soft: #f0f3ff;
+        --soft-2: #eef7f6;
+        --code: #152033;
+        --green: #0f766e;
+        --blue: #2563eb;
+        --amber: #b45309;
+        --red: #b42318;
+        --violet: #6d5bd0;
+        --shadow: 0 4px 12px rgba(21, 32, 51, 0.06);
+        --radius: 8px;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+          "Segoe UI", "Noto Sans SC", "Microsoft YaHei", sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        margin: 0;
+        color: var(--text);
+        background: var(--bg);
+        line-height: 1.65;
+      }
+
+      a {
+        color: inherit;
+        text-decoration: none;
+      }
+
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid rgba(15, 118, 110, 0.28);
+        outline-offset: 3px;
+      }
+
+      code {
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
+      }
+
+      p code,
+      li code,
+      td code {
+        padding: 2px 5px;
+        border: 1px solid var(--line);
+        border-radius: 4px;
+        background: #f7fafc;
+        color: #263445;
+        font-size: 0.92em;
+      }
+
+      .topbar {
+        position: sticky;
+        top: 0;
+        z-index: 30;
+        border-bottom: 1px solid var(--line);
+        background: rgba(255, 255, 255, 0.94);
+        backdrop-filter: blur(12px);
+        box-shadow: 0 1px 0 rgba(21, 32, 51, 0.02);
+      }
+
+      .nav {
+        width: min(1280px, calc(100% - 48px));
+        min-height: 64px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+      }
+
+      .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        font-weight: 780;
+        white-space: nowrap;
+      }
+
+      .brand::before {
+        content: "A";
+        display: grid;
+        width: 26px;
+        height: 26px;
+        place-items: center;
+        border: 1px solid rgba(15, 118, 110, 0.38);
+        border-radius: 6px;
+        background: var(--soft-2);
+        color: var(--green);
+        font-size: 13px;
+        font-weight: 800;
+      }
+
+      .nav-links {
+        display: flex;
+        gap: 4px;
+        color: var(--muted);
+        font-size: 13px;
+        white-space: nowrap;
+      }
+
+      .nav-links a {
+        padding: 8px 10px;
+        border-radius: 6px;
+        border: 1px solid transparent;
+      }
+
+      .nav-links a:hover {
+        color: var(--text);
+        border-color: rgba(15, 118, 110, 0.18);
+        background: var(--soft-2);
+      }
+
+      .repo-link {
+        display: inline-flex;
+        width: 34px;
+        height: 34px;
+        align-items: center;
+        justify-content: center;
+        padding: 0;
+      }
+
+      .repo-link svg {
+        width: 18px;
+        height: 18px;
+        stroke: currentColor;
+      }
+
+      main {
+        width: min(1280px, calc(100% - 48px));
+        margin: 0 auto;
+      }
+
+      .intro {
+        padding: 48px 0 44px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      h1,
+      h2,
+      h3,
+      p {
+        margin-top: 0;
+      }
+
+      h1 {
+        margin-bottom: 16px;
+        font-size: 42px;
+        line-height: 1.14;
+        letter-spacing: 0;
+      }
+
+      h2 {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-bottom: 12px;
+        font-size: 28px;
+        line-height: 1.22;
+        letter-spacing: 0;
+      }
+
+      h2::before {
+        content: "";
+        display: block;
+        width: 5px;
+        height: 28px;
+        border-radius: 3px;
+        background: var(--green);
+      }
+
+      h3 {
+        margin-bottom: 8px;
+        font-size: 18px;
+        line-height: 1.32;
+      }
+
+      .lead {
+        max-width: 760px;
+        margin-bottom: 20px;
+        color: #344255;
+        font-size: 18px;
+      }
+
+      .eyebrow {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 16px;
+        padding: 5px 9px;
+        border: 1px solid rgba(15, 118, 110, 0.22);
+        border-radius: 6px;
+        background: var(--soft-2);
+        color: var(--green);
+        font-size: 12px;
+        font-weight: 760;
+      }
+
+      .intro-grid {
+        max-width: 960px;
+      }
+
+      .summary {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 28px;
+      }
+
+      .summary-item {
+        position: relative;
+        min-height: 124px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .summary-item::before {
+        content: "";
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 4px;
+        background: var(--green);
+      }
+
+      .summary-item:nth-child(2)::before {
+        background: var(--blue);
+      }
+
+      .summary-item:nth-child(3)::before {
+        background: var(--amber);
+      }
+
+      .summary-item:nth-child(4)::before {
+        background: var(--violet);
+      }
+
+      .summary-item strong {
+        display: block;
+        margin-bottom: 6px;
+        font-size: 16px;
+      }
+
+      .summary-item span {
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      section {
+        scroll-margin-top: 130px;
+        padding: 56px 0;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .section-note {
+        max-width: 900px;
+        color: var(--muted);
+      }
+
+      .diagram {
+        margin-top: 26px;
+        padding: 18px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow-x: auto;
+      }
+
+      .diagram-title {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 16px;
+        margin-bottom: 14px;
+        color: var(--muted);
+        font-size: 14px;
+        font-weight: 720;
+      }
+
+      .chart-legend {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+        margin: -2px 0 14px;
+      }
+
+      .legend-item {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        color: var(--muted);
+        font-size: 12px;
+      }
+
+      .legend-item::before {
+        content: "";
+        width: 10px;
+        height: 10px;
+        border-radius: 0;
+        background: var(--line);
+      }
+
+      .legend-item.boundary::before {
+        background: var(--amber);
+      }
+
+      .legend-item.model::before {
+        background: var(--blue);
+      }
+
+      .legend-item.external::before {
+        background: var(--green);
+      }
+
+      .legend-item.skill::before {
+        background: var(--violet);
+      }
+
+      .legend-item.stop::before {
+        background: var(--red);
+      }
+
+      .chart {
+        width: 100%;
+        min-width: 1080px;
+        height: 520px;
+        border: 1px solid #edf1f6;
+        border-radius: 0;
+        background: #fbfcfe;
+      }
+
+      .chart.compact {
+        height: 360px;
+      }
+
+      .diagram-image {
+        display: block;
+        width: min(100%, 1080px);
+        min-width: 760px;
+        height: auto;
+        margin: 0 auto;
+        border: 1px solid #edf1f6;
+        border-radius: 0;
+        background: #fbfcfe;
+      }
+
+      .chart-error {
+        padding: 16px;
+        border: 1px solid #e0a4ad;
+        border-radius: var(--radius);
+        background: #fff3f5;
+        color: var(--red);
+      }
+
+      table {
+        width: 100%;
+        margin-top: 22px;
+        border-collapse: separate;
+        border-spacing: 0;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        background: var(--surface);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      th,
+      td {
+        padding: 12px 14px;
+        border-bottom: 1px solid var(--line);
+        text-align: left;
+        vertical-align: top;
+      }
+
+      th {
+        background: #f3f6fa;
+        font-size: 14px;
+        color: #344255;
+      }
+
+      tbody tr:hover td {
+        background: #fbfcfe;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      pre {
+        margin: 0;
+        padding: 14px;
+        overflow-x: auto;
+        background: var(--code);
+        color: #e5e7eb;
+        font-size: 13px;
+        line-height: 1.65;
+      }
+
+      .install {
+        margin-top: 22px;
+        border: 1px solid var(--line);
+        border-radius: var(--radius);
+        box-shadow: var(--shadow);
+        overflow: hidden;
+      }
+
+      .install-note {
+        margin: 0;
+        padding: 14px;
+        color: var(--muted);
+        background: var(--surface);
+      }
+
+      footer {
+        width: min(1280px, calc(100% - 48px));
+        margin: 0 auto;
+        padding: 24px 0 40px;
+        color: var(--muted);
+        font-size: 14px;
+      }
+
+      @media (max-width: 900px) {
+        .nav {
+          align-items: flex-start;
+          flex-direction: column;
+          padding: 12px 0;
+        }
+
+        .nav-links {
+          width: 100%;
+          overflow-x: auto;
+          padding-bottom: 3px;
+        }
+
+        .summary {
+          grid-template-columns: 1fr;
+        }
+
+        h1 {
+          font-size: 34px;
+        }
+
+        h2 {
+          font-size: 25px;
+        }
+      }
+
+      @media (max-width: 560px) {
+        main,
+        .nav,
+        footer {
+          width: min(100% - 28px, 1280px);
+        }
+
+        .intro {
+          padding-top: 38px;
+        }
+
+        .lead {
+          font-size: 16px;
+        }
+
+        table {
+          display: block;
+          overflow-x: auto;
+          white-space: nowrap;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <header class="topbar">
+      <nav class="nav" aria-label="页面导航">
+        <a class="brand" href="#intro">AI Agent 工程结构</a>
+        <div class="nav-links">
+          <a href="#lifecycle">生命周期</a>
+          <a href="#skill-mcp-tool">技能 / 工具 / MCP</a>
+          <a href="#sources">分析来源</a>
+          <a href="#skill">Skill 安装</a>
+          <a
+            class="repo-link"
+            href="https://github.com/caocong1/ai-agent-skill-lab"
+            target="_blank"
+            rel="noreferrer"
+            aria-label="打开 GitHub 仓库"
+            title="GitHub 仓库"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <circle cx="6" cy="6" r="2.5"></circle>
+              <circle cx="18" cy="6" r="2.5"></circle>
+              <circle cx="12" cy="18" r="2.5"></circle>
+              <path d="M8.5 6h7"></path>
+              <path d="M6 8.5v2.2c0 2.2 1.8 4 4 4h2"></path>
+              <path d="M18 8.5v2.2c0 2.2-1.8 4-4 4h-2"></path>
+            </svg>
+          </a>
+        </div>
+      </nav>
+    </header>
+
+    <main>
+      <section id="intro" class="intro">
+        <div class="intro-grid">
+          <div>
+            <div class="eyebrow">Technical Documentation</div>
+            <h1>AI Agent 工程结构</h1>
+            <p class="lead">
+              本页只解释 AI agent 的运行逻辑：请求怎样进入模型，工具在哪里执行，状态怎样回到下一轮，以及 build-ai-agents skill 的分析来源和安装方式。
+            </p>
+            <div class="summary">
+              <div class="summary-item">
+                <strong>Agent 是运行时</strong>
+                <span>模型、指令、工具、循环/图、状态、权限、观测和测试共同构成 agent。</span>
+              </div>
+              <div class="summary-item">
+                <strong>模型只做决策</strong>
+                <span>模型产出回答或工具调用；真实副作用在运行时和工具处理器里完成。</span>
+              </div>
+              <div class="summary-item">
+                <strong>结果会回到下一轮</strong>
+                <span>工具执行后的结果会写回状态，再重新组装上下文给模型判断。</span>
+              </div>
+              <div class="summary-item">
+                <strong>Skill、Tool、MCP 分层</strong>
+                <span>Skill 提供工作方法；Tool 执行动作；MCP 是可复用能力协议。</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section id="lifecycle">
+        <h2>1. Agent 请求生命周期：从提示词到最终响应</h2>
+        <p class="section-note">
+          一次请求会经历任务准备、上下文组装、模型调用、执行分支、状态保存和退出判断。继续执行时，会回到上下文组装再调用模型。
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-title">流程图 A：Agent 请求生命周期</div>
+          <div class="chart-legend" aria-label="图表语义颜色">
+            <span class="legend-item boundary">边界 / 策略</span>
+            <span class="legend-item model">模型决策</span>
+            <span class="legend-item external">外部执行</span>
+            <span class="legend-item skill">隔离子任务</span>
+            <span class="legend-item stop">终止 / 响应</span>
+          </div>
+          <img
+            class="diagram-image"
+            src="assets/agent-lifecycle.svg"
+            alt="AI Agent 请求生命周期：用户请求、请求接入、任务解析、技能加载、上下文组装、策略检查、模型调用、工具执行、结果回填、状态保存、退出判断和最终响应。"
+          />
+        </div>
+
+        <table aria-label="生命周期阶段说明">
+          <thead>
+            <tr>
+              <th>阶段</th>
+              <th>发生了什么</th>
+              <th>怎么理解</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>请求进入</td>
+              <td>用户输入先被整理成任务</td>
+              <td>模型不会直接接管整个系统，它只处理这一轮需要看的内容。</td>
+            </tr>
+            <tr>
+              <td>上下文组装</td>
+              <td>系统指令、用户目标、状态、记忆、技能规则和工具定义被放到一起</td>
+              <td>这是“调用模型前”的准备步骤，继续执行时也会回到这里。</td>
+            </tr>
+            <tr>
+              <td>模型调用</td>
+              <td>模型决定直接回答，还是请求调用工具</td>
+              <td>模型做决策；读文件、写文件、命令行、MCP、接口调用由工具执行。</td>
+            </tr>
+            <tr>
+              <td>回填与退出</td>
+              <td>工具结果写回状态，然后判断继续还是结束</td>
+              <td>没完成就进入下一轮；完成后才生成最终响应。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="skill-mcp-tool">
+        <h2>2. 技能、工具、MCP 的关系</h2>
+        <p class="section-note">
+          这三个概念职责不同。Skill 指导 agent 怎么处理一类任务；Tool 是运行时可执行能力；MCP 是把外部能力接入成工具、资源或提示模板的协议边界。本地命令行、读写文件、浏览器等能力需要和 MCP 分开看。
+        </p>
+
+        <div class="diagram">
+          <div class="diagram-title">流程图 B：技能、工具、MCP 的边界</div>
+          <div id="chart-relations" class="chart compact" role="img" aria-label="技能、工具、MCP 的关系图"></div>
+        </div>
+
+        <table aria-label="Skill MCP Tool 对照">
+          <thead>
+            <tr>
+              <th>概念</th>
+              <th>一句话</th>
+              <th>例子</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Skill（技能）</td>
+              <td>告诉 agent 这类任务应该怎么处理</td>
+              <td><code>SKILL.md</code>、参考资料、模板</td>
+            </tr>
+            <tr>
+              <td>Tool（工具）</td>
+              <td>模型可以请求调用的具体能力</td>
+              <td>读写文件、命令行、浏览器、HTTP、数据库</td>
+            </tr>
+            <tr>
+              <td>MCP（协议）</td>
+              <td>把外部能力用统一协议接进来</td>
+              <td>MCP 工具、资源、提示模板</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="sources">
+        <h2>3. 这个项目分析了哪些项目</h2>
+        <p class="section-note">
+          这个 skill 不是从单一框架抽象出来的，而是把几个典型 agent 项目的模式压缩成通用说明。
+        </p>
+
+        <table aria-label="项目分析来源">
+          <thead>
+            <tr>
+              <th>项目</th>
+              <th>主要学习点</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Pi</td>
+              <td>编码 agent 的循环、会话、skill 加载、扩展机制和 subagent。</td>
+            </tr>
+            <tr>
+              <td>OpenAI Agents JS</td>
+              <td>标准 TypeScript agent SDK 里的 agent、tool、交接、防护规则和运行状态。</td>
+            </tr>
+            <tr>
+              <td>LangGraphJS</td>
+              <td>可持久化 graph、checkpoint、人工介入和多 agent 交接。</td>
+            </tr>
+            <tr>
+              <td>MCP TypeScript SDK</td>
+              <td>MCP 客户端/服务端、工具、资源、提示模板和传输边界。</td>
+            </tr>
+            <tr>
+              <td>Vercel AI SDK</td>
+              <td>应用层 ToolLoopAgent、WorkflowAgent、流式 UI、审批和 MCP 客户端。</td>
+            </tr>
+            <tr>
+              <td>Spring AI Examples</td>
+              <td>Java/Spring 里的 agentic workflow、函数回调和 MCP 注解。</td>
+            </tr>
+            <tr>
+              <td>LangChain4j</td>
+              <td>Java AI service、工具执行器/提供器、agentic service 和 skills 集成。</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <section id="skill">
+        <h2>4. 安装 build-ai-agents skill</h2>
+        <p class="section-note">
+          这个 skill 让 agent 在具体项目里处理 AI agent 相关任务。页面只保留安装方式；具体实现和审查由安装后的 skill 指导 agent 完成。
+        </p>
+
+        <div class="install">
+          <pre><code># 先获取 skill 仓库
+git clone https://github.com/caocong1/ai-agent-skill-lab.git
+
+# 方式一：安装到当前项目
+mkdir -p .agent/skills
+cp -R ai-agent-skill-lab/skills/build-ai-agents .agent/skills/build-ai-agents
+
+# 方式二：安装到当前用户
+mkdir -p ~/.agent/skills
+cp -R ai-agent-skill-lab/skills/build-ai-agents ~/.agent/skills/build-ai-agents
+
+# 方式三：复制下面这段 prompt 到你正在使用的 agent
+请帮我安装 build-ai-agents skill。
+Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
+请先获取该仓库，然后把仓库内的 skills/build-ai-agents
+安装到你当前打开工作目录的 .agent/skills/build-ai-agents。
+安装后请确认 .agent/skills/build-ai-agents/SKILL.md 存在。
+如果你无法访问该仓库，请停止并说明需要我粘贴哪些文件内容。</code></pre>
+          <p class="install-note">
+            触发示例：<code>用 build-ai-agents 审查这个项目的 agent 工具权限和循环控制</code>。
+          </p>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      AI Agent Skill Lab / docs/index.html
+    </footer>
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.1/dist/echarts.min.js"></script>
+    <script>
+      const chartText = "#101c2e";
+      const chartMuted = "#627084";
+      const chartLine = "#8a96a8";
+      const nodeStyles = {
+        default: { color: "#ffffff", borderColor: "#d9e1ec" },
+        model: { color: "#eef4ff", borderColor: "#2563eb" },
+        boundary: { color: "#fff8ea", borderColor: "#b45309" },
+        external: { color: "#effaf5", borderColor: "#0f766e" },
+        stop: { color: "#fff3f5", borderColor: "#b42318" },
+        skill: { color: "#f4f0ff", borderColor: "#6d5bd0" }
+      };
+
+      function styleFor(type) {
+        return nodeStyles[type] || nodeStyles.default;
+      }
+
+      function graphNode(name, x, y, type = "default", size = [128, 58], symbol = "rect") {
+        const style = styleFor(type);
+        return {
+          name,
+          x,
+          y,
+          symbol,
+          symbolSize: size,
+          itemStyle: {
+            color: style.color,
+            borderColor: style.borderColor,
+            borderWidth: 1.4,
+            shadowBlur: 6,
+            shadowColor: "rgba(21, 32, 51, 0.05)"
+          },
+          label: {
+            show: true,
+            color: chartText,
+            fontSize: 13,
+            lineHeight: 18,
+            formatter: name
+          }
+        };
+      }
+
+      function graphAnchor(name, x, y) {
+        return {
+          name,
+          x,
+          y,
+          symbolSize: 1,
+          silent: true,
+          tooltip: { show: false },
+          itemStyle: { opacity: 0 },
+          label: { show: false }
+        };
+      }
+
+      function edge(source, target, label = "", curveness = 0.04, color = chartLine, showLabel = false) {
+        return {
+          source,
+          target,
+          label: {
+            show: false,
+            formatter: label,
+            color: chartMuted,
+            fontSize: 11,
+            backgroundColor: "#fbfcfe",
+            borderColor: "#d9e1ec",
+            borderWidth: 1,
+            borderRadius: 0,
+            padding: [2, 4]
+          },
+          lineStyle: {
+            color,
+            width: 1.7,
+            curveness
+          }
+        };
+      }
+
+      function graphOption(nodes, links, heightPad = 20) {
+        return {
+          animation: false,
+          tooltip: {
+            trigger: "item",
+            confine: true
+          },
+          series: [
+            {
+              type: "graph",
+              layout: "none",
+              roam: false,
+              left: 10,
+              right: 10,
+              top: heightPad,
+              bottom: heightPad,
+              edgeSymbol: ["none", "arrow"],
+              edgeSymbolSize: 8,
+              labelLayout: { hideOverlap: false },
+              data: nodes,
+              links
+            }
+          ]
+        };
+      }
+
+      function initRelations(chart) {
+        const nodes = [
+          graphNode("技能文件\n规则 / 参考 / 模板", 90, 88, "skill", [172, 66]),
+          graphNode("技能加载\n按任务选择内容", 310, 88, "skill", [172, 66]),
+          graphNode("上下文组装\n把技能写入本轮消息", 530, 88, "default", [196, 66]),
+          graphNode("模型调用\n生成回答或工具调用", 760, 88, "model", [196, 66]),
+          graphNode("工具边界\n参数结构 / 权限 / 审批", 990, 88, "boundary", [194, 66]),
+          graphNode("宿主工具\n命令行 / 读写文件 / 浏览器", 285, 260, "external", [210, 74]),
+          graphNode("MCP 工具\n客户端 / 服务端 / 传输", 615, 260, "external", [220, 74]),
+          graphNode("应用接口工具\nHTTP / 数据库 / 业务函数", 945, 260, "external", [220, 74]),
+          graphAnchor("__rel_tl", -90, -20),
+          graphAnchor("__rel_br", 1120, 330)
+        ];
+
+        const links = [
+          edge(nodes[0].name, nodes[1].name, "加载"),
+          edge(nodes[1].name, nodes[2].name, "写入上下文"),
+          edge(nodes[2].name, nodes[3].name, "调用模型", 0.02, "#2563eb"),
+          edge(nodes[3].name, nodes[4].name, "工具调用", 0.02, "#b45309"),
+          edge(nodes[4].name, nodes[5].name, "宿主能力", 0.16, "#0f766e"),
+          edge(nodes[4].name, nodes[6].name, "协议能力", 0.04, "#0f766e"),
+          edge(nodes[4].name, nodes[7].name, "业务能力", -0.12, "#0f766e")
+        ];
+
+        chart.setOption(graphOption(nodes, links, 12));
+      }
+
+      function initCharts() {
+        const targets = [
+          ["chart-relations", initRelations]
+        ];
+
+        if (!window.echarts) {
+          for (const [id] of targets) {
+            const el = document.getElementById(id);
+            if (el) {
+              el.innerHTML = '<div class="chart-error">ECharts 未加载，无法渲染 canvas 图表。</div>';
+            }
+          }
+          return;
+        }
+
+        const charts = [];
+        for (const [id, render] of targets) {
+          const el = document.getElementById(id);
+          if (!el) continue;
+          const chart = echarts.init(el, null, { renderer: "canvas" });
+          render(chart);
+          charts.push(chart);
+        }
+
+        window.addEventListener("resize", () => {
+          for (const chart of charts) chart.resize();
+        });
+      }
+
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", initCharts);
+      } else {
+        initCharts();
+      }
+    </script>
+  </body>
+</html>
