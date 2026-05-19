@@ -837,7 +837,7 @@ Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
               top: heightPad,
               bottom: heightPad,
               edgeSymbol: ["none", "arrow"],
-              edgeSymbolSize: 8,
+              edgeSymbolSize: [0, 10],
               labelLayout: { hideOverlap: false },
               data: nodes,
               links
@@ -856,6 +856,9 @@ Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
           graphNode("宿主工具\n命令行 / 读写文件 / 浏览器", 285, 260, "external", [210, 74]),
           graphNode("MCP 工具\n客户端 / 服务端 / 传输", 615, 260, "external", [220, 74]),
           graphNode("应用接口工具\nHTTP / 数据库 / 业务函数", 945, 260, "external", [220, 74]),
+          graphAnchor("__host_tool_port", 390, 223),
+          graphAnchor("__mcp_tool_port", 615, 223),
+          graphAnchor("__api_tool_port", 945, 223),
           graphAnchor("__rel_tl", -90, -20),
           graphAnchor("__rel_br", 1120, 330)
         ];
@@ -865,9 +868,9 @@ Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
           edge(nodes[1].name, nodes[2].name, "写入上下文"),
           edge(nodes[2].name, nodes[3].name, "调用模型", 0.02, "#2563eb"),
           edge(nodes[3].name, nodes[4].name, "工具调用", 0.02, "#b45309"),
-          edge(nodes[4].name, nodes[5].name, "宿主能力", 0.16, "#0f766e"),
-          edge(nodes[4].name, nodes[6].name, "协议能力", 0.04, "#0f766e"),
-          edge(nodes[4].name, nodes[7].name, "业务能力", -0.12, "#0f766e")
+          edge(nodes[4].name, "__host_tool_port", "宿主能力", 0.04, "#0f766e"),
+          edge(nodes[4].name, "__mcp_tool_port", "协议能力", 0.02, "#0f766e"),
+          edge(nodes[4].name, "__api_tool_port", "业务能力", 0, "#0f766e")
         ];
 
         chart.setOption(graphOption(nodes, links, 12));

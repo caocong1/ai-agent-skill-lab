@@ -148,7 +148,7 @@
   <text class="small" x="748" y="1198" text-anchor="start">继续：回到上下文组装</text>
 
   <!-- Legend -->
-  <g transform="translate(94 116)">
+  <g transform="translate(94 108)">
     <rect class="node" x="0" y="0" width="16" height="16" rx="0" />
     <text class="small" x="24" y="13">流程</text>
     <rect class="boundary" x="80" y="0" width="16" height="16" rx="0" />
