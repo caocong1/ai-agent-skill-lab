@@ -1,5 +1,7 @@
 # Java Agent Patterns
 
+> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 覆盖来源：Spring AI Examples / LangChain4j（版本见 `analysis/SOURCE_INDEX.md`）
+
 Java 侧的资料主要来自 Spring AI examples 和 LangChain4j。它们的共同点是：不要照搬 Python/TS 的动态风格，而是利用 Java 的类型、接口、注解、DI、record 和 builder，把 agent 能力做成可测试的应用服务。
 
 ## Spring AI Examples

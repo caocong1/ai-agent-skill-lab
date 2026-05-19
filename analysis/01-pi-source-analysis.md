@@ -1,5 +1,7 @@
 # Pi 源码分析
 
+> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 来源：Pi（commit `4943c1d`，详见 `analysis/SOURCE_INDEX.md`）
+
 Pi 是这批材料里最适合学习“编码 agent 本身如何组织”的项目。它不是只把模型 API 包一层，而是把 agent loop、工具执行、会话持久化、资源加载、skill 发现、扩展机制和 subagent 都拆成了相对清晰的层。
 
 ## 模块边界

@@ -1,5 +1,7 @@
 # Distilled Skill Design
 
+> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 类型：skill 设计取舍（综合全部 7 个代码项目，版本见 `analysis/SOURCE_INDEX.md`）
+
 这一节说明最终 `build-ai-agents` skill 的设计取舍。
 
 ## Skill 目标
