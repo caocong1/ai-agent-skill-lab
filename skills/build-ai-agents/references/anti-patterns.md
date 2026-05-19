@@ -68,10 +68,10 @@ Use this catalog during reviews. For each smell, collect `file:line` evidence an
 
 ## Over-Engineered Agent
 
-- Symptom: graph, subagents, vector memory, or MCP used for a one-shot classification.
-- Detect: compare complexity against user-visible requirement.
-- Impact: latency, cost, maintenance burden.
-- Remediate: replace with deterministic code or single structured model call.
+- Symptom: graph, subagents, vector memory, or MCP used for a one-shot classification; or an autonomous tool loop where a fixed workflow (prompt chaining/routing) would be more reliable and transparent.
+- Detect: compare complexity against the user-visible requirement; check whether the steps are actually predictable enough to hard-code.
+- Impact: latency, cost, maintenance burden, and harder-to-audit non-deterministic behavior.
+- Remediate: replace with deterministic code, a single structured model call, or a fixed workflow; reserve autonomous agents for unpredictable steps in trusted tool environments.
 - Validate: behavior remains equivalent on golden cases.
 
 ## Human API Descriptions for Tools

@@ -1,18 +1,28 @@
 # Source Index
 
-更新时间：2026-05-18。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-05-19。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+
+逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
 ## Repositories
 
-| 项目 | 本地路径 | 当前 commit | 学习重点 |
-| --- | --- | --- | --- |
-| Pi | `raw/repos/pi` | `4943c1d62c8e6f3437446f480bb3e8422869535d` | agent loop、harness、skills、resource loader、extensions、subagents |
-| OpenAI Agents JS | `raw/repos/openai-agents-js` | `629d35af99e1ba80fc968b0d062c070caed0683d` | Agent、tools、handoffs、guardrails、interruptions、RunState |
-| LangGraphJS | `raw/repos/langgraphjs` | `bd72a897e15d0a29a06b8b8b4c589851b6c7b4a6` | graph orchestration、checkpoint、thread、HITL、multi-agent handoff |
-| MCP TypeScript SDK | `raw/repos/modelcontextprotocol-typescript-sdk` | `22595b96855b34f00adcc6c1e7932ad68ea5139d` | MCP server/client、tool/resource/prompt、stdio/http transport |
-| Vercel AI SDK | `raw/repos/vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` | ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP adapter |
-| Spring AI Examples | `raw/repos/spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` | Java agentic patterns、function callback、MCP annotations |
-| LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | Java AI service、tool executor/provider、agentic sequence、skills |
+| 项目 | 本地路径 | 来源版本 | 分析版本 | 最后更新 | 学习重点 |
+| --- | --- | --- | --- | --- | --- |
+| Pi | `raw/repos/pi` | `4943c1d62c8e6f3437446f480bb3e8422869535d` | 1.0 | 2026-05-18 | agent loop、harness、skills、resource loader、extensions、subagents |
+| OpenAI Agents JS | `raw/repos/openai-agents-js` | `629d35af99e1ba80fc968b0d062c070caed0683d` | 1.0 | 2026-05-18 | Agent、tools、handoffs、guardrails、interruptions、RunState |
+| LangGraphJS | `raw/repos/langgraphjs` | `bd72a897e15d0a29a06b8b8b4c589851b6c7b4a6` | 1.0 | 2026-05-18 | graph orchestration、checkpoint、thread、HITL、multi-agent handoff |
+| MCP TypeScript SDK | `raw/repos/modelcontextprotocol-typescript-sdk` | `22595b96855b34f00adcc6c1e7932ad68ea5139d` | 1.0 | 2026-05-18 | MCP server/client、tool/resource/prompt、stdio/http transport |
+| Vercel AI SDK | `raw/repos/vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` | 1.0 | 2026-05-18 | ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP adapter |
+| Spring AI Examples | `raw/repos/spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` | 1.0 | 2026-05-18 | Java agentic patterns、function callback、MCP annotations |
+| LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | 1.0 | 2026-05-18 | Java AI service、tool executor/provider、agentic sequence、skills |
+
+## Articles and Papers
+
+非代码来源的权威文章/论文。快照保存在 `raw/docs/`，分析报告在 `analysis/`。
+
+| 来源 | 快照路径 | 来源版本 | 分析版本 | 最后更新 | 学习重点 |
+| --- | --- | --- | --- | --- | --- |
+| Anthropic, Building Effective Agents | `raw/docs/anthropic-building-effective-agents.md` | 发布 2024-12-19 / 抓取 2026-05-19 | 1.0 | 2026-05-19 | workflow 与 agent 判定、五种 workflow 模式、自治 agent 循环、simplicity/transparency/ACI |
 
 ## Official Links
 
@@ -114,3 +124,8 @@ LangChain4j:
 - `langchain4j-agentic/src/test/java/dev/langchain4j/agentic/carrentalassistant/AssistantMain.java`
 - `langchain4j-skills/src/main/java/dev/langchain4j/skills/Skills.java`
 - `langchain4j-skills/src/test/resources/skills/test-skill/SKILL.md`
+
+Anthropic Building Effective Agents:
+
+- `raw/docs/anthropic-building-effective-agents.md`（原文快照）
+- `analysis/06-anthropic-building-effective-agents.md`（分析报告）

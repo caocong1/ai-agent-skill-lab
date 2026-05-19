@@ -1,5 +1,7 @@
 # Agent Framework Patterns
 
+> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 覆盖来源：OpenAI Agents JS / LangGraphJS / Vercel AI SDK / MCP TypeScript SDK（版本见 `analysis/SOURCE_INDEX.md`）
+
 这一节把 OpenAI Agents JS、LangGraphJS、Vercel AI SDK 和 MCP TypeScript SDK 放在一起比较。它们解决的问题不完全相同：OpenAI Agents JS 更像标准 agent SDK，LangGraphJS 更像 durable workflow/graph runtime，Vercel AI SDK 更偏 TS 应用和流式 UI，MCP 是 agent 能力协议。
 
 ## OpenAI Agents JS

@@ -1,5 +1,7 @@
 # Claude Review and Applied Changes
 
+> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 类型：评审与变更记录
+
 本轮使用 Claude Code 通过 `ccw cli --tool claude --mode analysis --rule analysis-review-architecture` 对项目文档和 `skills/build-ai-agents` 进行只读评审。评审范围排除了 `raw/repos` 上游源码树，聚焦本项目生成的 README、analysis、raw/docs 和 skill 文件。
 
 ## Claude 的主要结论
