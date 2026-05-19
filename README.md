@@ -23,6 +23,14 @@
 - `spring-ai-examples`: 学习 Java/Spring agentic patterns、function callback、MCP annotation。
 - `langchain4j`: 学习 Java-native AI service、tool executor/provider、agentic service、skills 集成。
 
+除代码项目外，还分析了权威文章：
+
+- Anthropic, Building Effective Agents：workflow 与 agent 的判定框架、五种 workflow 模式、自治 agent 循环和工具接口（ACI）设计。分析见 `analysis/06-anthropic-building-effective-agents.md`，原文快照见 `raw/docs/anthropic-building-effective-agents.md`，跨来源综合见 `analysis/07-overall-agent-analysis.md`。
+
+## 版本与变更
+
+skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.1.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+
 ## 使用方式
 
 在别的项目里做 AI agent 功能时，优先参考：
