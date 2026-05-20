@@ -10,6 +10,35 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [1.2.0] - 2026-05-20
+
+### 新增
+
+- 新增权威文章分析 `analysis/08-anthropic-writing-effective-tools.md`：Anthropic《Writing Effective Tools for Agents》，覆盖 tool 选择、命名空间、返回上下文、token 效率、tool description/spec 优化和工具评测闭环。
+- 新增权威指南分析 `analysis/09-openai-practical-guide-building-agents.md`：OpenAI《A Practical Guide to Building Agents》，覆盖 agent 适用场景、三要素（model/tools/instructions）、单 agent 到多 agent 编排、guardrails 与 human intervention。
+- 新增两个 paraphrased digest 快照：`raw/docs/anthropic-writing-effective-tools.md` 与 `raw/docs/openai-practical-guide-building-agents.md`。
+
+### 变更（skill 优化）
+
+- `SKILL.md`：`Build Workflow` 与 `Dual-Use Rubric` 强化“先建 eval 基线再扩工具/拆 agent”、工具风险分级、模型选择与 human intervention 触发条件。
+- `references/context-and-tools.md`：把 tool 设计从“schema/description”扩展为“面向 agent 的工具产品设计”：高价值工具选择、命名空间、响应格式、token 预算、错误响应与真实任务评测。
+- `references/agent-architecture.md`：补充用例筛选、单 agent 优先、何时拆分 multi-agent、manager vs handoff 的适用边界。
+- `references/security-and-safety.md`：补充 layered guardrails、tool risk rating、失败阈值与高风险动作的人类介入策略。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增两篇文章的来源版本、分析版本和重点阅读文件。
+- `analysis/07-overall-agent-analysis.md`：把 OpenAI 与 Anthropic tool 文章纳入跨来源共识矩阵，更新形态选择与后续候选。
+- `docs/index.html`：分析来源表新增两篇文章，footer 更新到 skill 1.2.0。
+- `README.md`：当前资料集新增两篇权威文章，版本说明更新到 1.2.0。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| Anthropic, Writing Effective Tools for Agents | article | 发布 2025-09-11 / 抓取 2026-05-20 | 1.0 | 2026-05-20 |
+| OpenAI, A Practical Guide to Building Agents | article | 发布未标注 / 抓取 2026-05-20 | 1.0 | 2026-05-20 |
+
 ## iterate-skill-lab [1.0.1] - 2026-05-20
 
 ### 修复
