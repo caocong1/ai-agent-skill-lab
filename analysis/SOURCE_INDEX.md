@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-05-19。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-05-20。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -23,6 +23,8 @@
 | 来源 | 快照路径 | 来源版本 | 分析版本 | 最后更新 | 学习重点 |
 | --- | --- | --- | --- | --- | --- |
 | Anthropic, Building Effective Agents | `raw/docs/anthropic-building-effective-agents.md` | 发布 2024-12-19 / 抓取 2026-05-19 | 1.0 | 2026-05-19 | workflow 与 agent 判定、五种 workflow 模式、自治 agent 循环、simplicity/transparency/ACI |
+| Anthropic, Writing Effective Tools for Agents | `raw/docs/anthropic-writing-effective-tools.md` | 发布 2025-09-11 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | tool 选择、命名空间、返回上下文、token 效率、tool description/spec、工具评测 |
+| OpenAI, A Practical Guide to Building Agents | `raw/docs/openai-practical-guide-building-agents.md` | 发布未标注 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | agent 适用性、model/tools/instructions、单 agent 优先、多 agent 编排、guardrails、人类介入 |
 
 ## Official Links
 
@@ -129,3 +131,13 @@ Anthropic Building Effective Agents:
 
 - `raw/docs/anthropic-building-effective-agents.md`（原文快照）
 - `analysis/06-anthropic-building-effective-agents.md`（分析报告）
+
+Anthropic Writing Effective Tools for Agents:
+
+- `raw/docs/anthropic-writing-effective-tools.md`（结构化摘要快照）
+- `analysis/08-anthropic-writing-effective-tools.md`（分析报告）
+
+OpenAI Practical Guide to Building Agents:
+
+- `raw/docs/openai-practical-guide-building-agents.md`（结构化摘要快照）
+- `analysis/09-openai-practical-guide-building-agents.md`（分析报告）
