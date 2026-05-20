@@ -22,15 +22,23 @@ Pick the mode before anything else:
 - `update-source`: refresh an existing source against a newer upstream version. Skips creating new analysis/synthesis files; updates the existing report and bumps its `分析版本`.
 - `skill-only`: optimization to `build-ai-agents` with no source change. Skips snapshot/analysis steps.
 
-## Inputs to Confirm Up Front
+## Kickoff
 
-Before any file change, get explicit answers:
+The user often invokes this skill with a short prompt like "iterate the lab" or "找一个新的 agent 论文来分析" rather than a fully specified request. **Do not block the conversation by listing required inputs.** Take initiative, then confirm.
 
-- Source URL and identity. For repos: shallow-clone target. For articles/papers: fetchable URL.
-- Source type: `repo`, `article`, or `paper`.
-- Whether this is a new source (`add-source`) or a refresh (`update-source`).
-- Expected `build-ai-agents` version bump (MAJOR/MINOR/PATCH) per the rules below.
-- Whether the source materially changes cross-source consensus (drives whether `analysis/07-overall-agent-analysis.md` needs update).
+1. **Survey what's already known.** Read `analysis/SOURCE_INDEX.md` (both tables + the `## Official Links` list) and `analysis/07-overall-agent-analysis.md` `## 后续可分析方向`. These already encode pre-curated candidates the lab considered worth analyzing later.
+2. **Propose 2–4 candidates** with one-line reasoning each: name, type (`repo` / `article` / `paper`), whether it is already referenced but not yet analyzed standalone, why it is authoritative, and what gap in the current coverage it fills. Mark one as the recommendation. Typical strong defaults: Anthropic/OpenAI/Google engineering articles already in `Official Links`, foundational arXiv papers (ReAct, Reflexion, Toolformer, agent surveys), or a major version bump of an already-analyzed repo.
+3. **Pre-fill the rest of the inputs** for each candidate so the user only has to pick: default mode (`add-source` for new, `update-source` for a refreshed existing source, `skill-only` for pure guidance edits), predicted version bump (new authoritative source adding additive guidance → MINOR; refresh with no guidance shift → PATCH or none; breaking change to modes/deliverables → MAJOR), and whether `analysis/07-overall-agent-analysis.md` likely needs an update (default YES if the candidate changes the cross-source consensus matrix, otherwise NO).
+4. **Ask the user to confirm** the choice. Prefer `AskUserQuestion` when the host agent supports it; otherwise present the candidates inline with the pre-filled fields. If the user names a source directly in the original prompt, skip step 1–2 and proceed with that source's pre-filled defaults.
+5. **Verify network access** before committing to an article/paper. Do a single read-only `WebFetch` of the chosen URL to confirm reachability and to capture enough structure to write the analysis later. If it fails repeatedly and no offline content is available, surface this to the user before further work.
+
+Hard blockers — the only situations that warrant stopping work before any commit:
+
+- The candidate set is empty (no un-analyzed `Official Links` entries, no leads in `## 后续可分析方向`, no user-provided URL).
+- The chosen source is inaccessible (multiple `WebFetch` failures, no clone access, no offline snapshot).
+- The user explicitly asked to wait, clarify, or change direction.
+
+Everything else (mode, version, synthesis impact) is a proposed default the user can accept or override — never a precondition.
 
 ## Versioning Rules (SemVer on the build-ai-agents contract)
 
