@@ -1,6 +1,6 @@
 # Changelog
 
-本文件记录 `build-ai-agents` skill 及其分析报告的版本变更。
+本文件记录本仓库各 skill 与分析报告的版本变更。除非另注，`## [X.Y.Z]` 形式的条目默认指 `build-ai-agents`；其他 skill 的条目以 `## <skill 名称> [X.Y.Z]` 形式标注。
 
 版本号遵循语义化版本（SemVer），作用于 skill 契约：
 
@@ -8,7 +8,11 @@
 - MINOR：新增能力、新增 reference、新增对指导有实质影响的分析来源。
 - PATCH：措辞澄清、小幅补充，不改变契约。
 
-skill 当前版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
+各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
+
+## iterate-skill-lab [1.0.0] - 2026-05-19
+
+新增项目专属维护 skill `skills/iterate-skill-lab/`，把 `build-ai-agents 1.1.0` 这次迭代用到的更新方式沉淀为可复用流程：新增/更新来源 → 元数据 → 综合 → `build-ai-agents` 优化 → 文档 → 分步 commit → 草稿 PR。后续遇到新的 AI agent 论文、文章、框架或重要更新，按该 skill 的 `add-source` / `update-source` / `skill-only` 模式执行。
 
 ## [1.1.0] - 2026-05-19
 
