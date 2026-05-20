@@ -22,6 +22,7 @@ Tool execution:
 
 - Each mutating tool checks user, tenant, role, and policy in code.
 - Sensitive tools require approval or explicit scoped permission.
+- Each tool has a risk rating based on read/write scope, reversibility, required permissions, user/financial impact, and blast radius.
 - Tool results redact secrets and private fields.
 - Side-effect tools are idempotent or have a compensation plan.
 
@@ -46,6 +47,13 @@ Observability:
 - Approval decisions are recorded.
 - Cost, step count, tool count, and stop reason are tracked.
 
+Guardrails and fallback:
+
+- Guardrails are layered: relevance/scope, prompt-injection or jailbreak detection, PII/data filters, moderation when applicable, deterministic input limits, tool safeguards, and output validation.
+- High-risk or irreversible actions pause for approval or human handling until reliability is proven.
+- Repeated failures, policy ambiguity, or tool errors beyond a threshold trigger human intervention instead of continued autonomous retries.
+- Guardrails supplement code-level authentication, authorization, tenant isolation, and handler checks; they do not replace them.
+
 ## Remediation Patterns
 
 - Move policy from prompt text into tool handlers.
@@ -55,6 +63,7 @@ Observability:
 - Add approval response messages so the model knows the action was denied.
 - Use sandboxed execution for shell/code tools and validate commands before execution.
 - Add tenant-isolation tests with two users and conflicting data.
+- Add failure thresholds and human handoff paths for workflows where repeated attempts can harm users or external systems.
 
 ## Severity Hints
 

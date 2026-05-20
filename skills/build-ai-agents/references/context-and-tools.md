@@ -92,6 +92,8 @@ Good compaction output has:
 
 ## Tool Description Rubric
 
+Treat tools as agent-facing product surfaces, not one-to-one wrappers around backend endpoints. A small set of high-value tools that match real user tasks is usually easier for the model to select, evaluate, and recover from than a large set of low-level CRUD tools (see `analysis/08-anthropic-writing-effective-tools.md`).
+
 Good tool descriptions tell the model:
 
 - what the tool does
@@ -111,6 +113,26 @@ Weak descriptions:
 
 Treat the agent-computer interface (ACI) like a public API: invest in tool names, descriptions, schemas, examples, and error messages with the same rigor as developer-facing API docs, and exercise tool specs against realistic cases before shipping. Tool ergonomics often move agent success more than prompt wording (see `analysis/06-anthropic-building-effective-agents.md`).
 
+## Agent-Facing Tool Design
+
+Use these checks before adding a tool:
+
+- Does this tool map to a natural work unit for the agent, or is it just an internal endpoint exposed verbatim?
+- Can the tool consolidate deterministic substeps that the model would otherwise perform wastefully in context?
+- Is it distinct from existing tools by name, purpose, parameters, and side effects?
+- Does it return high-signal context for the next model step rather than raw internal records?
+- Can a failed call return a model-correctable error with examples or narrowing instructions?
+
+For large tool inventories or MCP servers:
+
+- namespace tools by service/resource when names overlap;
+- gate active tools by task, user, role, or workflow phase;
+- prefer targeted search/filter tools over broad list/read-all tools;
+- expose response verbosity such as `concise` vs `detailed` when downstream IDs are sometimes needed;
+- include pagination, filtering, range selection, and truncation notices with next-step hints.
+
+Evaluate tool changes with realistic tasks. Track accuracy, tool count, invalid-parameter errors, token usage, runtime, and repeated calls. Read transcripts in addition to metrics: the model may not explicitly explain why a tool description, response shape, or namespace confused it.
+
 ## Tool Schema Rubric
 
 - Use enums for closed choices.
@@ -122,8 +144,8 @@ Treat the agent-computer interface (ACI) like a public API: invest in tool names
 
 ## Optimization Moves
 
-- Rewrite broad tools into small composable tools.
-- Merge overlapping tools when the model cannot distinguish them.
+- Rewrite broad tools into targeted tools when the model wastes context filtering raw output.
+- Merge overlapping tools when the model cannot distinguish them, as long as permission and audit boundaries remain clear.
 - Add examples only for tools the model misuses.
 - Move sensitive context from prompt to typed tool context.
 - Add `activeTools` or equivalent gating by step/user/task.

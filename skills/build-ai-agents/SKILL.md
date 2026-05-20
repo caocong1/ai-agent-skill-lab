@@ -18,26 +18,30 @@ Pick the mode before anything else:
 
 ## Build Workflow
 
-1. Classify the requested agent shape before implementing:
+1. Qualify whether the request needs an agent before implementing. Prefer deterministic code or a simpler LLM workflow unless the task has complex judgment, brittle rules, heavy unstructured data, or a path that cannot be hard-coded (see `analysis/09-openai-practical-guide-building-agents.md`).
+2. Classify the requested agent shape:
    - single model call
    - structured workflow
    - tool loop agent
    - durable graph/workflow
    - subagent or multi-agent system
    - MCP server/client capability layer
-2. Inspect the host project first. Match its language, framework, dependency injection, test style, logging, persistence, and security patterns.
-3. Define the agent contract:
+3. Inspect the host project first. Match its language, framework, dependency injection, test style, logging, persistence, and security patterns.
+4. Define the agent contract:
    - user-visible goal
    - model instructions
    - tool list and schemas
+   - tool boundaries, risk rating, and model-facing descriptions
    - runtime state
    - memory/session persistence
    - stop conditions and budgets
    - approval rules for sensitive actions
+   - human intervention triggers for repeated failure or high-risk actions
    - events/traces/logs
-4. Implement the smallest architecture that satisfies the goal. Do not introduce graph runtimes, MCP, vector memory, or subagents unless the requirement needs them, and do not build an autonomous agent when a fixed workflow or single model call suffices.
-5. Add focused tests for tool handlers, orchestration logic, failure paths, permissions, and resume/approval behavior when applicable.
-6. Verify with the project's normal test/build commands and record any unverified risk.
+5. Establish a small realistic eval or golden task baseline before expanding tools, splitting agents, or optimizing model cost. Start with a capable model to prove the task is solvable, then downshift models only when quality remains acceptable (see `analysis/08-anthropic-writing-effective-tools.md` and `analysis/09-openai-practical-guide-building-agents.md`).
+6. Implement the smallest architecture that satisfies the goal. Do not introduce graph runtimes, MCP, vector memory, or subagents unless the requirement needs them, and do not build an autonomous agent when a fixed workflow or single model call suffices.
+7. Add focused tests for tool handlers, orchestration logic, failure paths, permissions, and resume/approval behavior when applicable.
+8. Verify with the project's normal test/build commands and record any unverified risk.
 
 ## Review Workflow
 
@@ -60,13 +64,13 @@ Pick the mode before anything else:
 
 ## Dual-Use Rubric
 
-- Tool schemas and descriptions: build with explicit schemas and model-facing descriptions; review for missing/loose schemas or descriptions written only for humans.
+- Tool schemas and descriptions: build with explicit schemas, clear tool boundaries, model-facing descriptions, useful names/namespaces, actionable errors, and token-aware outputs; review for missing/loose schemas, overlapping tools, endpoint sprawl, noisy returns, or descriptions written only for humans.
 - Secrets isolation: build with typed runtime/tool context; review prompts and instruction builders for leaked keys, tokens, tenant ids, or private data.
-- Permission enforcement: build checks into dangerous tool handlers; review for tools whose only guard is prompt text.
+- Permission enforcement: build checks into dangerous tool handlers, rate tools by risk, and require approval or human fallback for high-risk actions; review for tools whose only guard is prompt text.
 - Loop bounds: build step, timeout, cost, or stop limits; review for unbounded loops, recursion, or missing `stopWhen`.
 - Error classification: build model-correctable tool errors separately from system failures; review for swallowed exceptions, raw stack traces, or vague failures.
 - Message contracts: build separate domain, runtime, model, and UI message contracts; review for UI artifacts or internal state leaking into model context.
-- Tests and evals: build fake-model orchestration tests plus small eval coverage; review for zero agent tests before recommending risky refactors.
+- Tests and evals: build fake-model orchestration tests plus small realistic eval coverage that tracks quality, tool count, token/cost, latency, and tool errors; review for zero agent tests before recommending risky refactors.
 
 ## 中文报告
 

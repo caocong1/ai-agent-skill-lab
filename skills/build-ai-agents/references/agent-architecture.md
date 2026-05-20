@@ -24,6 +24,8 @@ Separate two shapes before choosing a framework (see `analysis/06-anthropic-buil
 
 Default to the least powerful shape: deterministic code, then a single call, then a fixed workflow. Choose an autonomous agent only when steps are genuinely unpredictable, the path cannot be hard-coded, and the tool environment is trustworthy. Frameworks are a starting point, not a substitute for understanding this choice.
 
+Before calling something an agent, qualify the use case (see `analysis/09-openai-practical-guide-building-agents.md`). Agent complexity is most justified when a workflow has nuanced decisions, brittle rule systems, or heavy unstructured data that simpler automation cannot handle. If the requirement is a single classification, extraction, summary, or fixed sequence, keep it out of the agent loop.
+
 ## Decision Table
 
 | Requirement | Recommended shape | Avoid |
@@ -43,6 +45,22 @@ Default to the least powerful shape: deterministic code, then a single call, the
 | Multi-tenant data access | Per-request scoped tool context plus isolation tests | Shared/global tool context |
 | Side effects must be reversible | Idempotent tools plus compensation plan | Fire-and-forget mutations |
 | Context exceeds window | Compaction/retrieval before model call | Unbounded message array |
+
+## Single vs Multi-Agent
+
+Prefer one capable agent with well-shaped tools until there is concrete evidence that splitting helps. Add a second agent only when one of these pressures is visible:
+
+- instructions have grown into many conditional branches that are hard to test;
+- similar or overlapping tools cause repeated selection errors even after naming and descriptions are improved;
+- separate expertise, context, or permissions must be isolated;
+- a specialist result can be treated as a tool output without giving the specialist control of the user conversation.
+
+Choose the coordination shape deliberately:
+
+- **Manager / agent-as-tool**: one primary agent remains in control, calls specialist agents as tools, and synthesizes the result for the user. Use when continuity and a single final answer matter.
+- **Handoff**: one agent transfers control to another specialist. Use when the specialist should own the next part of the conversation or workflow.
+
+Do not use multi-agent decomposition as a substitute for clearer prompts, better tools, or a smaller workflow.
 
 ## Loop Design
 
