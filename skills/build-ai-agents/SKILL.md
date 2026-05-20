@@ -1,7 +1,7 @@
 ---
 name: build-ai-agents
 description: Design, implement, review, and test AI agent features across TypeScript, Java, MCP, and general LLM application stacks. Use for tool-calling agents, agent loops, workflows, subagents, memory, approvals, MCP tools, prompt/context assembly, long-document handling, context compaction, retrieval, or agent skill integration.
-version: 1.1.0
+version: 1.2.0
 ---
 
 # Build AI Agents
