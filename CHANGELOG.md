@@ -10,6 +10,13 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## iterate-skill-lab [1.0.1] - 2026-05-20
+
+### 修复
+
+- 重写 `Kickoff` 流程（原 `Inputs to Confirm Up Front` 段落），不再要求用户一次性给出 5 个输入才能开始。改为：skill 先调研 `analysis/SOURCE_INDEX.md` 的 `Official Links` 与 `analysis/07-overall-agent-analysis.md` 的 `## 后续可分析方向`，提出 2–4 个候选来源并给出推荐与默认模式/版本/综合更新判断，由用户挑选或接受默认。仅"来源身份完全无法推断"才是硬阻塞。
+- 修复用户报告：直接 `/iterate-skill-lab` 不带参数时，skill 之前会列出 5 个必填项后停下；现在会主动给候选与推荐。
+
 ## iterate-skill-lab [1.0.0] - 2026-05-19
 
 新增项目专属维护 skill `skills/iterate-skill-lab/`，把 `build-ai-agents 1.1.0` 这次迭代用到的更新方式沉淀为可复用流程：新增/更新来源 → 元数据 → 综合 → `build-ai-agents` 优化 → 文档 → 分步 commit → 草稿 PR。后续遇到新的 AI agent 论文、文章、框架或重要更新，按该 skill 的 `add-source` / `update-source` / `skill-only` 模式执行。
