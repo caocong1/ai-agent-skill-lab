@@ -2,7 +2,7 @@
 
 Local source root: `/Users/dongli/work/ai-agent-skill-lab/raw/repos`
 
-When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 and the Building Effective Agents article was captured 2026-05-19 (snapshot `raw/docs/anthropic-building-effective-agents.md`); verify APIs against the host project's installed framework version before applying version-specific code.
+When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18; article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
 
 ## Local Repositories
 
@@ -20,6 +20,7 @@ When this skill is installed outside the lab, for example under `~/.codex/skills
 
 - Pi: https://github.com/earendil-works/pi
 - OpenAI, A Practical Guide to Building Agents: https://openai.com/business/guides-and-resources/a-practical-guide-to-building-ai-agents/
+- OpenAI, A Practical Guide to Building Agents PDF: https://cdn.openai.com/business-guides-and-resources/a-practical-guide-to-building-agents.pdf
 - Anthropic, Building Effective Agents: https://www.anthropic.com/engineering/building-effective-agents
 - Anthropic, Writing Effective Tools for AI Agents: https://www.anthropic.com/engineering/writing-tools-for-agents
 - OpenAI Agents JS: https://github.com/openai/openai-agents-js
@@ -70,6 +71,12 @@ MCP:
 - `modelcontextprotocol-typescript-sdk/docs/server.md`
 - `modelcontextprotocol-typescript-sdk/docs/client.md`
 - `vercel-ai/content/docs/03-ai-sdk-core/16-mcp-tools.mdx`
+
+Articles and guides:
+
+- `raw/docs/anthropic-building-effective-agents.md` -> `analysis/06-anthropic-building-effective-agents.md`
+- `raw/docs/anthropic-writing-effective-tools.md` -> `analysis/08-anthropic-writing-effective-tools.md`
+- `raw/docs/openai-practical-guide-building-agents.md` -> `analysis/09-openai-practical-guide-building-agents.md`
 
 Java:
 
