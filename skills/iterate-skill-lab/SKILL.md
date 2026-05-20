@@ -1,7 +1,7 @@
 ---
 name: iterate-skill-lab
 description: Iterate this ai-agent-skill-lab repository when there is new AI agent research, framework, paper, article, or technique to absorb. Use to add a brand-new source analysis, refresh an existing source against a newer upstream version, or apply a skill-only optimization. Codifies versioning, CHANGELOG, SOURCE_INDEX metadata, analysis-file format, synthesis update, build-ai-agents optimization, docs/README updates, commit cadence, and PR flow.
-version: 1.0.0
+version: 1.0.1
 ---
 
 # Iterate Skill Lab
