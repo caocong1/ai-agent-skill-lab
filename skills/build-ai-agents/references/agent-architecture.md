@@ -15,6 +15,25 @@ Treat an agent as an application subsystem:
 
 Do not let one controller, route handler, or prompt own all of these concerns.
 
+## Agent vs Harness Boundary
+
+Agency — the capacity to perceive, reason, and act — is produced by model training, not by code orchestration. The engineering work in this codebase is harness engineering: shaping the environment in which a capable model operates (see `analysis/10-learn-claude-code.md`).
+
+A harness has five jobs. Use them as the mental model when scoping an agent feature:
+
+- **Tools**: the actions the model can take (file I/O, shell, HTTP, database, browser, MCP). Atomic, composable, clearly described.
+- **Knowledge**: domain references, style guides, SOPs, skills. Loaded on demand, not dumped into the system prompt up front.
+- **Context management**: prompt assembly, compaction, subagent isolation, memory writes. Keeps the working window relevant and bounded.
+- **Observation and action interfaces**: how the model sees the world (diffs, logs, search results, sensor data) and how its decisions become side effects (tool handlers, approvals, message bus).
+- **Permissions**: code-level enforcement of what is allowed, what requires approval, and what is denied — independent of prompt wording.
+
+The loop itself does not change as the harness grows; new capability is added by composing the five jobs above. If a feature appears to demand rewriting the loop, the loop is probably being asked to absorb work that belongs in the harness.
+
+Two consequences for design:
+
+- A "smarter agent" is usually a better harness, not a more elaborate prompt chain. Before adding orchestration logic, check whether better tools, sharper knowledge selection, tighter context, cleaner observations, or stricter permissions would solve the same problem with less moving code.
+- A "richer interaction" is usually trajectory exhaust: the action sequences the model produces are simultaneously the user-visible behavior and raw material for future fine-tuning. Treat trajectories as a product output — same redaction and consistency standards as logs (see `references/security-and-safety.md`).
+
 ## Workflow vs Agent
 
 Separate two shapes before choosing a framework (see `analysis/06-anthropic-building-effective-agents.md`):
@@ -77,6 +96,8 @@ A robust tool loop has these phases:
 9. Emit events and persist state after safe checkpoints.
 
 Every iteration must consume real environment/tool feedback (ground truth such as tool results or execution output), and the loop must have explicit stop conditions: task complete, step/cost/token budget exhausted, or a human checkpoint. A loop without environment feedback is not an agent; a loop without an explicit stop is an incident.
+
+Add extension points around the loop, not inside it. A small set of named hooks — for example pre/post tool call, pre/post turn, on stop — lets you attach permission checks, redaction, audit logging, cost accounting, and experiment instrumentation without modifying the loop body (see `analysis/10-learn-claude-code.md`). If a feature can only be implemented by editing the main loop, treat that as a smell: either the hook surface is too small or the feature belongs in a tool or in state, not in the loop.
 
 ## State Design
 

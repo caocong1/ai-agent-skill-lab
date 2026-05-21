@@ -2,7 +2,12 @@
 
 Local source root: `/Users/dongli/work/ai-agent-skill-lab/raw/repos`
 
-When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18; article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
+When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 (production frameworks) and 2026-05-21 (teaching repo `learn-claude-code`); article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
+
+Distinguish two source kinds when citing:
+
+- **Production frameworks** (Pi, OpenAI Agents JS, LangGraphJS, MCP TS SDK, Vercel AI SDK, Spring AI Examples, LangChain4j) ship runtime behavior and are the authority for API shapes and trade-offs.
+- **Teaching repositories** (Learn Claude Code) ship 200–2000-line standalone Python lessons per mechanism. Cite them for the minimal skeleton of a mechanism, not as canonical production defaults — see `analysis/10-learn-claude-code.md` for which defaults are intentionally simplified.
 
 ## Local Repositories
 
@@ -15,6 +20,7 @@ When this skill is installed outside the lab, for example under `~/.codex/skills
 | Vercel AI SDK | `vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` |
 | Spring AI Examples | `spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` |
 | LangChain4j | `langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` |
+| Learn Claude Code (shareAI-lab, teaching) | `learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` |
 
 ## Upstream Links
 
@@ -36,6 +42,8 @@ When this skill is installed outside the lab, for example under `~/.codex/skills
 - Spring AI docs: https://docs.spring.io/spring-ai/reference/
 - LangChain4j: https://github.com/langchain4j/langchain4j
 - LangChain4j docs: https://docs.langchain4j.dev/
+- Learn Claude Code (shareAI-lab): https://github.com/shareAI-lab/learn-claude-code
+- Learn Claude Code site: https://learn.shareai.run
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
 
 ## High-Value Source Files
@@ -77,6 +85,25 @@ Articles and guides:
 - `raw/docs/anthropic-building-effective-agents.md` -> `analysis/06-anthropic-building-effective-agents.md`
 - `raw/docs/anthropic-writing-effective-tools.md` -> `analysis/08-anthropic-writing-effective-tools.md`
 - `raw/docs/openai-practical-guide-building-agents.md` -> `analysis/09-openai-practical-guide-building-agents.md`
+
+Learn Claude Code (cite when looking for the minimal skeleton of one harness mechanism):
+
+- `learn-claude-code/README.md`
+- `learn-claude-code/s01_agent_loop/code.py`
+- `learn-claude-code/s04_hooks/code.py`
+- `learn-claude-code/s07_skill_loading/code.py`
+- `learn-claude-code/s08_context_compact/code.py`
+- `learn-claude-code/s09_memory/code.py`
+- `learn-claude-code/s10_system_prompt/code.py`
+- `learn-claude-code/s11_error_recovery/code.py`
+- `learn-claude-code/s12_task_system/code.py`
+- `learn-claude-code/s13_background_tasks/code.py`
+- `learn-claude-code/s14_cron_scheduler/code.py`
+- `learn-claude-code/s15_agent_teams/code.py`
+- `learn-claude-code/s17_autonomous_agents/code.py`
+- `learn-claude-code/s18_worktree_isolation/code.py`
+- `learn-claude-code/s20_comprehensive/code.py`
+- `analysis/10-learn-claude-code.md`
 
 Java:
 

@@ -22,6 +22,7 @@
 - `vercel-ai`: 学习 TS/Next 应用层 ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP client。
 - `spring-ai-examples`: 学习 Java/Spring agentic patterns、function callback、MCP annotation。
 - `langchain4j`: 学习 Java-native AI service、tool executor/provider、agentic service、skills 集成。
+- `learn-claude-code`（教学型仓库，shareAI-lab）：20 课渐进式 harness 编目，把 agent loop、hooks、permission、skill 加载、cheap-first 多层 context compaction、selection/extraction/consolidation 三段 memory、模型层错误恢复三路径、task graph、background/cron、mailbox-based agent team、worktree 隔离、MCP 接入各自做成独立的最小可运行 `code.py`，强调 agency 来自模型训练、harness 来自工程的本体论区分。
 
 除代码项目外，还分析了权威文章：
 
@@ -31,7 +32,7 @@
 
 ## 版本与变更
 
-skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.2.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.3.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
 
 本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.0.1）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
 

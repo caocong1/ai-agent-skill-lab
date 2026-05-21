@@ -65,6 +65,25 @@ Classify errors:
 
 The first two usually become tool results the model can see. The latter two should be logged, retried only when safe, and surfaced through application error handling.
 
+For model-layer failures, plan three independent recovery paths instead of one shared try/except (see `analysis/10-learn-claude-code.md`):
+
+- **max_tokens reached** — escalate the max-tokens budget once (for example default → extended) and, if still truncated, issue a bounded number of "continuation" turns that pick up mid-thought. Track an explicit counter; cap retries.
+- **prompt_too_long** — invoke the reactive layer of the compaction pipeline (see `references/context-and-tools.md`), then retry the same turn once. Do not loop.
+- **rate-limit or model unavailable (429 / 5xx)** — exponential backoff with jitter, bounded total attempts, and a fallback model after N consecutive availability failures so the agent degrades gracefully instead of stalling.
+
+Record which recovery path was taken on each retry — repeated falls into the same path are a signal to adjust budget, compaction layer, or model choice rather than to keep retrying.
+
+## Long-Running and Triggered Work
+
+Background tools (slow shell commands, large builds, multi-minute API calls) and time-triggered runs (cron, scheduled jobs) need distinct observability beyond a single turn:
+
+- Assign every background or scheduled run a stable run id and emit `start / heartbeat / finish` events keyed by it.
+- On completion, inject the result back as a normal tool result or notification so the model sees it on the next turn — never silently mutate state.
+- Record both submission time and completion time; alert when heartbeats stop.
+- Cap concurrent background runs and total queue depth; reject or defer beyond the cap rather than fan out unbounded threads.
+- Persist scheduler state (last trigger time, next trigger time, missed runs) durably so restarts do not double-fire or silently skip.
+- Treat cron and background paths as first-class triggers in the test pyramid: a fake clock and a fake background runner are as important as a fake model.
+
 ## Observability Events
 
 Emit or record:
@@ -80,6 +99,8 @@ Emit or record:
 - token/cost usage
 - error class
 - checkpoint id or session version
+- background run id, submit/finish timestamps, and the turn id where the result was injected
+- scheduled-trigger id, planned vs actual fire time, and the run id it produced
 
 Never log raw secrets, credentials, full private documents, or unredacted PII.
 

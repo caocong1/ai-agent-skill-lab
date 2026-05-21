@@ -15,6 +15,7 @@ Review these threats for any production agent:
 - SSRF and redirect abuse in remote MCP or HTTP tools
 - tool-result poisoning that tricks later model steps
 - replay/resume bugs that duplicate side effects
+- trajectory leakage: action sequences emitted by the agent are simultaneously user-visible behavior, audit log material, and potential training data; PII/secret hygiene must extend to them, not just to logs (see `analysis/10-learn-claude-code.md`)
 
 ## Review Checklist
 
@@ -25,6 +26,7 @@ Tool execution:
 - Each tool has a risk rating based on read/write scope, reversibility, required permissions, user/financial impact, and blast radius.
 - Tool results redact secrets and private fields.
 - Side-effect tools are idempotent or have a compensation plan.
+- When multiple agents or tasks may run concurrently against a shared filesystem, give each task its own isolated working directory (git worktree, sandboxed temp dir, or container) bound to the task id, so parallel work cannot overwrite each other and rollback is per-task (see `analysis/10-learn-claude-code.md`).
 
 Context and memory:
 
