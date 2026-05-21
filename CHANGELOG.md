@@ -10,6 +10,35 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [1.3.0] - 2026-05-21
+
+### 新增
+
+- 新增教学型仓库分析 `analysis/10-learn-claude-code.md`：shareAI-lab《Learn Claude Code》20 课渐进式 harness 教程。覆盖 harness vs agent 的本体论框架、agent loop 一以贯之的演进、四层 context compaction 管线、memory 三段流程（selection/extraction/consolidation）、permission/hooks/skill loading/system prompt assembly/error recovery、task graph、background tasks、cron、worktree-isolated agent teams、autonomous claim-from-board 与 MCP 接入。
+- 新增源仓库快照 `raw/repos/learn-claude-code/`（commit `1baf1aca5af439694cb3a1772c0b1ab44b482a01`）作为 gitlink。
+
+### 变更（skill 优化）
+
+- `SKILL.md`：Architecture Rules 首条改写为"区分 agent 与 harness"——agent 的能力来自模型训练，工程师的工作是把 harness 建好；并把 harness 内含的工具/知识/上下文/权限/观测显式列出。
+- `references/agent-architecture.md`：新增 `Agent vs Harness Boundary` 小节，把 harness engineering 的工程职责（tools / knowledge / context / permissions / trajectory）作为 skill 的工程心智模型；`Loop Design` 增补 hook 扩展点（pre/post tool）作为不改主循环的扩展机制。
+- `references/context-and-tools.md`：`Compaction Strategy` 扩写为"cheap-first → expensive-last 多层管线"：snip → micro-replace → tool-result budget → 显式 LLM 摘要 → reactive 应急；`Long Document Handling` 加入 tool-result 持久化与句柄引用思路；新增 memory 三段流程（selection / extraction / consolidation）作为 memory 写入与回读的设计骨架。
+- `references/security-and-safety.md`：补充"按任务隔离工作目录（worktree / sandbox dir）"作为多 agent 并行执行与不可逆动作的隔离手段；补充"trajectory 是 PII/secrets 的扩散面，输出与日志按相同准则脱敏"。
+- `references/testing-observability.md`：补充长任务 / 后台执行 / cron 触发的观测要点（运行 id、注入回执、超时与重试上下限），并把"失败分级 + 退避 + fallback 模型"加入错误恢复模式。
+- `references/source-map.md`：补记 learn-claude-code 仓库与本地路径，并把"教学型来源（教学化简实现，可直读 200–1000 行）"与生产框架来源区分清楚。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 learn-claude-code 行（repos 表）、重点阅读文件块与 Official Links 条目。
+- `analysis/07-overall-agent-analysis.md`：把 learn-claude-code 纳入跨来源共识矩阵；`形态选择光谱` 补充"教学型 harness 实现"作为研究/学习参考；`后续可分析方向` 移除已落地候选，新增 Claude Code 官方文档、Anthropic Agents SDK 等候选。
+- `docs/index.html`：分析来源表新增 learn-claude-code 行，footer 更新到 skill 1.3.0；`<style>` 与 `<script>` 未触碰。
+- `README.md`：当前资料集新增 learn-claude-code 条目，版本说明更新到 1.3.0。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| Learn Claude Code (shareAI-lab) | repo | `1baf1ac` | 1.0 | 2026-05-21 |
+
 ## [1.2.0] - 2026-05-20
 
 ### 新增
