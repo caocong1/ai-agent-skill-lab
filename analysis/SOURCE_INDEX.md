@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-05-20。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-05-21。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -15,6 +15,7 @@
 | Vercel AI SDK | `raw/repos/vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` | 1.0 | 2026-05-18 | ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP adapter |
 | Spring AI Examples | `raw/repos/spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` | 1.0 | 2026-05-18 | Java agentic patterns、function callback、MCP annotations |
 | LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | 1.0 | 2026-05-18 | Java AI service、tool executor/provider、agentic sequence、skills |
+| Learn Claude Code | `raw/repos/learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` | 1.0 | 2026-05-21 | harness vs agent 区分、20 课渐进式编目、cheap-first 多层 compaction、memory 三段流程、错误恢复三路径、worktree 隔离、mailbox + claim-from-board 多 agent |
 
 ## Articles and Papers
 
@@ -47,7 +48,11 @@ Canonical link list for the reusable skill lives in `skills/build-ai-agents/refe
 - Spring AI docs: https://docs.spring.io/spring-ai/reference/
 - LangChain4j: https://github.com/langchain4j/langchain4j
 - LangChain4j docs: https://docs.langchain4j.dev/
+- Learn Claude Code (shareAI-lab): https://github.com/shareAI-lab/learn-claude-code
+- Learn Claude Code site: https://learn.shareai.run
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
+- Claude Code docs: https://docs.claude.com/claude-code
+- Anthropic Agent SDK docs: https://docs.claude.com/agent-sdk
 
 ## 重点阅读文件
 
@@ -141,3 +146,24 @@ OpenAI Practical Guide to Building Agents:
 
 - `raw/docs/openai-practical-guide-building-agents.md`（结构化摘要快照）
 - `analysis/09-openai-practical-guide-building-agents.md`（分析报告）
+
+Learn Claude Code (shareAI-lab)（教学型 harness 编目；每节课配独立 `code.py`）:
+
+- `raw/repos/learn-claude-code/README.md`
+- `raw/repos/learn-claude-code/s01_agent_loop/code.py`
+- `raw/repos/learn-claude-code/s04_hooks/code.py`
+- `raw/repos/learn-claude-code/s05_todo_write/code.py`
+- `raw/repos/learn-claude-code/s07_skill_loading/code.py`
+- `raw/repos/learn-claude-code/s08_context_compact/code.py`
+- `raw/repos/learn-claude-code/s09_memory/code.py`
+- `raw/repos/learn-claude-code/s10_system_prompt/code.py`
+- `raw/repos/learn-claude-code/s11_error_recovery/code.py`
+- `raw/repos/learn-claude-code/s12_task_system/code.py`
+- `raw/repos/learn-claude-code/s13_background_tasks/code.py`
+- `raw/repos/learn-claude-code/s14_cron_scheduler/code.py`
+- `raw/repos/learn-claude-code/s15_agent_teams/code.py`
+- `raw/repos/learn-claude-code/s17_autonomous_agents/code.py`
+- `raw/repos/learn-claude-code/s18_worktree_isolation/code.py`
+- `raw/repos/learn-claude-code/s19_mcp_plugin/code.py`
+- `raw/repos/learn-claude-code/s20_comprehensive/code.py`
+- `analysis/10-learn-claude-code.md`（分析报告）
