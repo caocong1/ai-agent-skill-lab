@@ -53,6 +53,7 @@ Pick the mode before anything else:
 
 ## Architecture Rules
 
+- Separate agent from harness. Agency comes from a trained model; engineering work shapes the harness around it — tools, knowledge, context management, observation, and permissions. "Building an agent" in this codebase means building a harness that lets a capable model act in this domain, not stitching prompt chains into pseudo-autonomy (see `analysis/10-learn-claude-code.md`).
 - Prefer the simplest shape that works and escalate only when the requirement forces it: deterministic code < single model call < structured workflow < autonomous tool loop < durable graph < multi-agent. Build an autonomous agent only when steps are unpredictable, the path cannot be hard-coded, and the tool environment is trustworthy.
 - Use plain deterministic code when no model judgment is required.
 - Use a single model call when the task is pure generation, classification, extraction, or summarization without external actions.

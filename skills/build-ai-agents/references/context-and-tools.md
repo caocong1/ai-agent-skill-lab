@@ -81,6 +81,16 @@ Apply these rules:
 - If a single turn is too large, summarize the early prefix and keep the recent suffix.
 - Never compact away pending approvals, unresolved tool calls, or facts needed to validate side effects.
 
+Layer compaction cheap-first, expensive-last — do not jump straight to a model summary (see `analysis/10-learn-claude-code.md`):
+
+1. **Structural snip** — when message count exceeds a threshold, drop or fold a contiguous middle window of low-value turns first. No tokens spent.
+2. **Tool-result micro-replace** — replace older `tool_result` payloads with short placeholders that keep the call/argument shape but lose the body. Cheap and reversible if you keep the bodies on disk.
+3. **Tool-result budget with handles** — when a single tool returns a large object, persist it (file, blob store, retrieval index) and put a handle/id back in the conversation. Subsequent steps fetch by id instead of re-pasting the body.
+4. **LLM summary checkpoint** — once cheaper layers cannot free enough room, do one model summary that updates the existing checkpoint (do not stack many summaries). Only this step costs a call.
+5. **Reactive compaction** — if the provider still returns `prompt_too_long`, run one emergency pass (re-run layers 1–3 more aggressively, summarize again if needed) and retry the same turn once.
+
+Drive the layers in this order on every assembly; only escalate when the previous layer leaves the context above budget.
+
 Good compaction output has:
 
 - goal and constraints
@@ -89,6 +99,23 @@ Good compaction output has:
 - next steps
 - critical source anchors
 - read/modified file lists when applicable
+
+## Memory Pipeline
+
+Memory is a flow, not a container. When you decide an agent needs cross-turn or cross-session memory, design three explicit stages — missing any of them produces either noisy or amnesic memory (see `analysis/10-learn-claude-code.md`):
+
+1. **Selection** — decide which turns, tool results, or decisions are worth remembering at all. Most history should be forgotten. Cheap signals: explicit user instruction, irreversible side effect, decision with rationale, error and its resolution, identity/preference statements. Persist a per-turn "remember? yes/no" classification rather than dumping all history.
+2. **Extraction** — turn selected raw content into typed facts with provenance: `{ kind, subject, value, source_turn_id, source_anchor, written_at }`. Extraction lets later writes dedupe and merge correctly. Without it, memory becomes a free-text scrapbook the model cannot reason over.
+3. **Consolidation** — merge new facts into the existing memory store: deduplicate, supersede stale entries, attach timestamps and sources, and surface contradictions for resolution. Consolidation is the only stage allowed to mutate the long-term store.
+
+Cross-cutting requirements for any of the three stages:
+
+- Tenant/user isolation: every record carries an owner key; readers filter by it.
+- Provenance: every fact links back to a source turn, tool result, or document id so it can be re-verified.
+- Forgetting policy: explicit TTL, supersede rules, or user-driven deletion. Memory without forgetting is a liability, not a feature.
+- Audit: writes go through one path that logs `who/what/why/when`.
+
+Use this pipeline whether the underlying store is a file (`MEMORY.md`), a structured table, a vector index, or a provider memory tool.
 
 ## Tool Description Rubric
 
