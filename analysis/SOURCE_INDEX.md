@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-05-21。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-05-22。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -16,6 +16,7 @@
 | Spring AI Examples | `raw/repos/spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` | 1.0 | 2026-05-18 | Java agentic patterns、function callback、MCP annotations |
 | LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | 1.0 | 2026-05-18 | Java AI service、tool executor/provider、agentic sequence、skills |
 | Learn Claude Code | `raw/repos/learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` | 1.0 | 2026-05-21 | harness vs agent 区分、20 课渐进式编目、cheap-first 多层 compaction、memory 三段流程、错误恢复三路径、worktree 隔离、mailbox + claim-from-board 多 agent |
+| Hello-Agents (Datawhale) | `raw/repos/hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` | 1.0 | 2026-05-22 | 流程驱动 vs AI Native Agent、16 章全栈编目、自建 HelloAgents 框架（Message/Config/Agent）、四级记忆 + RAG、GSSC 上下文工程、协议谱系（MCP/A2A/ANP）、Agentic-RL（SFT + GRPO）、BFCL/GAIA 评估、TODO 驱动深度研究、赛博小镇 |
 
 ## Articles and Papers
 
@@ -50,6 +51,8 @@ Canonical link list for the reusable skill lives in `skills/build-ai-agents/refe
 - LangChain4j docs: https://docs.langchain4j.dev/
 - Learn Claude Code (shareAI-lab): https://github.com/shareAI-lab/learn-claude-code
 - Learn Claude Code site: https://learn.shareai.run
+- Hello-Agents (Datawhale): https://github.com/datawhalechina/Hello-Agents
+- Hello-Agents site: https://datawhalechina.github.io/hello-agents/
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
 - Claude Code docs: https://docs.claude.com/claude-code
 - Anthropic Agent SDK docs: https://docs.claude.com/agent-sdk
@@ -167,3 +170,23 @@ Learn Claude Code (shareAI-lab)（教学型 harness 编目；每节课配独立 
 - `raw/repos/learn-claude-code/s19_mcp_plugin/code.py`
 - `raw/repos/learn-claude-code/s20_comprehensive/code.py`
 - `analysis/10-learn-claude-code.md`（分析报告）
+
+Hello-Agents (Datawhale)（教学型全栈编目；16 章中文教程 + 配套代码 + Extra-Chapter）:
+
+- `raw/repos/hello-agents/README.md`
+- `raw/repos/hello-agents/docs/chapter4/第四章 智能体经典范式构建.md`（ReAct / Plan-and-Solve / Reflection 经典范式手写实现）
+- `raw/repos/hello-agents/docs/chapter6/第六章 框架开发实践.md`（AutoGen / AgentScope / CAMEL / LangGraph 框架对比）
+- `raw/repos/hello-agents/docs/chapter7/第七章 构建你的Agent框架.md`（HelloAgents 自建框架 Message/Config/Agent）
+- `raw/repos/hello-agents/docs/chapter8/第八章 记忆与检索.md`（四级记忆 + RAG + 高级检索策略）
+- `raw/repos/hello-agents/docs/chapter9/第九章 上下文工程.md`（ContextBuilder 与 GSSC 流水线、NoteTool / TerminalTool）
+- `raw/repos/hello-agents/docs/chapter10/第十章 智能体通信协议.md`（MCP / A2A / ANP 协议谱系与自定义 MCP server）
+- `raw/repos/hello-agents/docs/chapter11/第十一章 Agentic-RL.md`（GSM8K + LoRA SFT + GRPO 训练通路）
+- `raw/repos/hello-agents/docs/chapter12/第十二章 智能体性能评估.md`（BFCL + GAIA 评估基准）
+- `raw/repos/hello-agents/docs/chapter14/第十四章 自动化深度研究智能体.md`（TODO 驱动深度研究范式）
+- `raw/repos/hello-agents/docs/chapter15/第十五章 构建赛博小镇.md`（NPC + 好感度 + Godot 集成案例）
+- `raw/repos/hello-agents/code/chapter11/`（Agentic-RL 训练 pipeline 8 个 py 脚本）
+- `raw/repos/hello-agents/code/chapter9/`（ContextBuilder / NoteTool / 代码库维护 demo）
+- `raw/repos/hello-agents/Extra-Chapter/Extra01-面试问题总结.md`（Agent 求职面试题库）
+- `raw/repos/hello-agents/Extra-Chapter/Extra05-AgentSkills解读.md`（Agent Skills vs MCP 对比）
+- `raw/repos/hello-agents/Extra-Chapter/Extra10-Agent自进化.md`（Agent 自进化四类闭环）
+- `analysis/11-hello-agents.md`（分析报告）

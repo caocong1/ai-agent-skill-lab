@@ -1,7 +1,7 @@
 ---
 name: build-ai-agents
 description: Design, implement, review, and test AI agent features across TypeScript, Java, MCP, and general LLM application stacks. Use for tool-calling agents, agent loops, workflows, subagents, memory, approvals, MCP tools, prompt/context assembly, long-document handling, context compaction, retrieval, or agent skill integration.
-version: 1.3.0
+version: 1.4.0
 ---
 
 # Build AI Agents
@@ -38,10 +38,11 @@ Pick the mode before anything else:
    - approval rules for sensitive actions
    - human intervention triggers for repeated failure or high-risk actions
    - events/traces/logs
-5. Establish a small realistic eval or golden task baseline before expanding tools, splitting agents, or optimizing model cost. Start with a capable model to prove the task is solvable, then downshift models only when quality remains acceptable (see `analysis/08-anthropic-writing-effective-tools.md` and `analysis/09-openai-practical-guide-building-agents.md`).
+5. Establish a small realistic eval or golden task baseline before expanding tools, splitting agents, or optimizing model cost. Start with a capable model to prove the task is solvable, then downshift models only when quality remains acceptable (see `analysis/08-anthropic-writing-effective-tools.md` and `analysis/09-openai-practical-guide-building-agents.md`). Before authoring a custom eval from scratch, check whether a public benchmark (e.g., BFCL for function-calling, GAIA for end-to-end assistant tasks — see `analysis/11-hello-agents.md`) already covers part of the capability; aligning to a public benchmark gives a comparable yardstick across model/prompt/tool changes.
 6. Implement the smallest architecture that satisfies the goal. Do not introduce graph runtimes, MCP, vector memory, or subagents unless the requirement needs them, and do not build an autonomous agent when a fixed workflow or single model call suffices.
 7. Add focused tests for tool handlers, orchestration logic, failure paths, permissions, and resume/approval behavior when applicable.
 8. Verify with the project's normal test/build commands and record any unverified risk.
+9. Exhaust inference-time levers (prompt, tools, context engineering, memory pipeline, retrieval) before considering model fine-tuning. Training-side agency — SFT, RL, RLHF, GRPO and similar (see `analysis/11-hello-agents.md`) — is the last resort, justified only when a public or internal eval has quantified a gap that inference-time work cannot close.
 
 ## Review Workflow
 

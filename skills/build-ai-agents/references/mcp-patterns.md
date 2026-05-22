@@ -8,6 +8,14 @@ Use MCP when tools, resources, or prompts should be shared across multiple agent
 
 Do not use MCP merely to call a private function from one local agent unless the boundary will be reused or isolated.
 
+MCP is one option on a small spectrum of agent-side protocols; choose by what the protocol is actually moving between (see `analysis/11-hello-agents.md` chapter 10):
+
+- **MCP (Model Context Protocol)** — LLM ↔ external tools / resources / prompts. Highest current adoption and tooling maturity. Default choice when "an agent needs an external capability". Treat as the baseline option unless a concrete requirement rules it out.
+- **A2A (Agent-to-Agent)** — direct agent ↔ agent messaging. Use when two or more agents need to negotiate or trade work without bouncing every message through a shared central runtime, and when agent-as-tool / handoff inside one runtime is not enough.
+- **ANP (Agent Network Protocol)** — decentralized agent discovery and capability advertisement. Use when agents must find each other across organizational boundaries without a pre-shared registry.
+
+Trade-offs are real, not symmetric: MCP gives the most interoperability and the most existing client/server code; A2A and ANP give more flexibility for cross-runtime or open networks but have smaller ecosystems and weaker tooling today. Pick MCP as the default; escalate to A2A or ANP only when the workload is genuinely cross-runtime (multi-vendor agent collaboration) or genuinely cross-organization (no shared catalog). Layering them is fine — an MCP-backed agent can still speak A2A to a peer.
+
 ## Server Design
 
 Expose three kinds of server capabilities:

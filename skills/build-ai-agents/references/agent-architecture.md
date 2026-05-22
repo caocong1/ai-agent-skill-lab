@@ -45,6 +45,10 @@ Default to the least powerful shape: deterministic code, then a single call, the
 
 Before calling something an agent, qualify the use case (see `analysis/09-openai-practical-guide-building-agents.md`). Agent complexity is most justified when a workflow has nuanced decisions, brittle rule systems, or heavy unstructured data that simpler automation cannot handle. If the requirement is a single classification, extraction, summary, or fixed sequence, keep it out of the agent loop.
 
+Workflow-driven platforms (Coze, Dify, n8n, similar low-code automation hubs) and AI-native agents are two methodologies, not two tool preferences (see `analysis/11-hello-agents.md`). The platforms treat the LLM as a data-processing backend inside engineer-authored flow; the AI-native shape puts the model's judgment at the center and arranges tools and context around it. Choose the platform shape when the flow is broadly enumerable and predictability matters; choose the AI-native shape when the path is unknown ahead of time. Calling a platform flow an "agent" because it embeds an LLM call obscures this judgment.
+
+If a team lacks shared vocabulary for what an agent must do, building a minimal Message/Config/Agent triplet against a raw provider API once — before adopting any framework — clarifies which abstractions are essential versus framework-specific (see `analysis/11-hello-agents.md` chapter 7). The exercise is a teaching tool, not a production substitute for LangGraph, OpenAI Agents JS, Vercel AI SDK, or Pi.
+
 ## Decision Table
 
 | Requirement | Recommended shape | Avoid |

@@ -27,6 +27,19 @@ Prefer many deterministic tests and a small number of real-model tests.
    - cost and latency thresholds
    - tool safety cases
 
+## Public Eval Baselines
+
+Before building a custom eval set from scratch, check whether a public benchmark already covers the capability you need to measure (see `analysis/11-hello-agents.md` chapter 12). Aligning even a slice of an agent's evaluation to a published benchmark gives a comparable number across model/prompt/tool changes, and makes regressions easier to spot against a fixed yardstick rather than a moving internal set.
+
+Two widely cited starting points:
+
+- **BFCL (Berkeley Function-Calling Leaderboard)** — measures tool-selection and function-calling accuracy across categories (simple, multiple, parallel, multi-turn, missing-parameter). Use it when the agent's main risk is "calls the wrong tool" or "fills arguments incorrectly".
+- **GAIA (General AI Assistant)** — end-to-end task completion across difficulty levels, including web search, file reasoning, and multi-step planning. Use it when the agent's main risk is "fails to finish realistic open-ended tasks".
+
+These do not replace a domain-specific golden set — most production agents need both: a public benchmark as a fixed comparable number, plus an internal eval that captures the actual user task distribution. Run them on the same trigger (e.g., before merging tool/prompt/model changes) so regressions surface in one report.
+
+When inference-time changes have stopped improving the public benchmark score and the gap is still meaningful, that is the point at which SFT/RL training of the underlying model becomes worth evaluating (see `analysis/11-hello-agents.md` chapter 11). Treat training-side work as the last resort after prompt, tool, context, and memory are tuned, not as a substitute for them.
+
 ## Legacy Retrofit Strategy
 
 When reviewing an existing agent with little or no test coverage, do not start by refactoring prompts, tools, or orchestration.

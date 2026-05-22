@@ -91,6 +91,8 @@ Layer compaction cheap-first, expensive-last — do not jump straight to a model
 
 Drive the layers in this order on every assembly; only escalate when the previous layer leaves the context above budget.
 
+The cheap-first layers cover "the context is already over budget — how to shrink it." They compose with an upstream phase: "the context is being assembled — what should be allowed in." Treat that upstream phase as a context-construction pipeline, e.g., the four-step GSSC pattern (Gathering → Structuring → Scoring → Compression) from `analysis/11-hello-agents.md` chapter 9: gather candidate context from multiple sources, structure it into typed records, score each record by relevance to the current step, and compress (or drop) low-score records before the model call. GSSC pre-shrinks context so cheap-first compaction triggers less often; the two are sequential, not alternatives. If both fire in the same turn, GSSC should already have removed irrelevant material and cheap-first should only be touching genuinely-needed material that no longer fits.
+
 Good compaction output has:
 
 - goal and constraints
@@ -116,6 +118,8 @@ Cross-cutting requirements for any of the three stages:
 - Audit: writes go through one path that logs `who/what/why/when`.
 
 Use this pipeline whether the underlying store is a file (`MEMORY.md`), a structured table, a vector index, or a provider memory tool.
+
+The selection/extraction/consolidation pipeline answers *how memory is written and read*. A parallel question is *which tier holds it*: working / short-term / long-term / permanent (see `analysis/11-hello-agents.md` chapter 8, mirroring cognitive-science conventions). Working memory is the current loop's scratch; short-term holds the active session; long-term is durable across sessions for one tenant/user; permanent holds tenant-wide facts (e.g., catalogs, policies). When you size and TTL the store, decide which tier each fact lives in — the three pipeline stages run inside each tier with different selectivity and forgetting rules. Treat the two views as complementary: pipeline answers "how does a fact get there", tier answers "where does it live and how long".
 
 ## Tool Description Rubric
 
