@@ -10,6 +10,35 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [1.4.0] - 2026-05-22
+
+### 新增
+
+- 新增教学型仓库分析 `analysis/11-hello-agents.md`：Datawhale《Hello-Agents》16 章 / 5 部分系统化中文教程，覆盖智能体基础理论、经典范式（ReAct / Plan-and-Solve / Reflection）、低代码平台对比、主流框架编目（AutoGen / AgentScope / CAMEL / LangGraph）、HelloAgents 自建框架、记忆与 RAG、上下文工程 GSSC 流水线、智能体通信协议（MCP / A2A / ANP）、Agentic-RL（SFT + GRPO 全流程）、智能体性能评估（BFCL / GAIA）以及三个综合案例（旅行助手 / TODO 驱动深度研究 / 赛博小镇）。
+- 新增源仓库快照 `raw/repos/hello-agents/`（commit `66401d9f54d989f3d35b32ae411faf0fb472164f`）作为 gitlink。
+
+### 变更（skill 优化）
+
+- `SKILL.md`：`Build Workflow` 第 5 条把 eval baseline 的来源从两篇文章扩展为"权威指南 + Hello-Agents 第 12 章给出的 BFCL / GAIA 基准"；新增可选的 training-time agency 提示——当任务在 inference-time 推理 / 工具 / 上下文工程穷尽后仍有缺口时再考虑 SFT/RL 微调，避免本末倒置（见 `analysis/11-hello-agents.md`）。
+- `references/agent-architecture.md`：`Workflow vs Agent` 小节强化"流程驱动平台（Coze/Dify/n8n）与 AI Native Agent 的差异"，并把"自建最小框架以理解原理"作为团队建立共同语言的一条可选路径。
+- `references/context-and-tools.md`：`Compaction Strategy` 与 `Memory Pipeline` 末尾并列引用 Hello-Agents 的 GSSC（Gathering → Structuring → Scoring → Compression）四步与四级记忆划分（工作 / 短期 / 长期 / 永久），作为对 cheap-first 与 selection/extraction/consolidation 的互补视角。
+- `references/mcp-patterns.md`：协议选择部分补充"MCP 之外还有 A2A（agent 直连）与 ANP（去中心化服务发现），按互操作性 / 灵活性 / 性能取舍"，并引用 Hello-Agents 第 10 章作为协议谱系的参考来源。
+- `references/testing-observability.md`：`Eval Strategy` 把 BFCL（工具调用准确率）与 GAIA（端到端通用任务）写成默认可参考的基准命名，提示"自建评测前先看是否已有可对齐的公开基准"。
+- `references/source-map.md`：补记 hello-agents 仓库与本地路径，并说明它在教学型来源中扮演"广覆盖、含训练侧（Agentic-RL）"的角色，与 learn-claude-code 的"窄而深、harness 机制穷举"形成互补。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 hello-agents 行（repos 表）、重点阅读文件块与 Official Links 条目。
+- `analysis/07-overall-agent-analysis.md`：把 hello-agents 纳入跨来源共识矩阵；`形态选择光谱` 末行补充"训练侧 agency（SFT + RL）"作为推理侧穷尽后的兜底；`后续可分析方向` 移除已落地候选并新增 ReAct 原论文、Reflexion、Toolformer、Anthropic Agent SDK 等候选。
+- `docs/index.html`：分析来源表新增 hello-agents 行，footer 更新到 skill 1.4.0；`<style>` 与 `<script>` 未触碰。
+- `README.md`：当前资料集新增 hello-agents 条目，版本说明更新到 1.4.0。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| Hello-Agents (Datawhale) | repo | `66401d9` | 1.0 | 2026-05-22 |
+
 ## [1.3.0] - 2026-05-21
 
 ### 新增
