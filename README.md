@@ -31,9 +31,13 @@
 - Anthropic, Writing Effective Tools for Agents：agent tool 选择、命名空间、返回上下文、token 效率、tool description/spec 和真实任务评测。分析见 `analysis/08-anthropic-writing-effective-tools.md`，摘要快照见 `raw/docs/anthropic-writing-effective-tools.md`。
 - OpenAI, A Practical Guide to Building Agents：agent 适用性、model/tools/instructions、单 agent 优先、多 agent 编排、guardrails 和人类介入。分析见 `analysis/09-openai-practical-guide-building-agents.md`，摘要快照见 `raw/docs/openai-practical-guide-building-agents.md`。
 
+此外还纳入了一篇**多来源研究综述**（区别于单一仓库 / 文章）：
+
+- 检索策略研究综述（向量 RAG vs Agentic 工具检索 vs 长上下文）：基于 2024–2026 约 55 个 web 源 + 对抗式核验，给出"按语料规模分层 + 按查询类型路由"的检索选型（小语料 agentic grep/read、必要时再 hybrid 向量+重排），并含 grep 工具层（ripgrep / ast-grep / ripgrep-all）盘点。分析见 `analysis/12-retrieval-strategy-vector-vs-agentic.md`，快照见 `raw/docs/retrieval-strategy-research.md`。
+
 ## 版本与变更
 
-skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.4.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.5.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
 
 本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.0.1）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
 
