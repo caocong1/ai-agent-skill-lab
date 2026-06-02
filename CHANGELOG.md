@@ -10,6 +10,31 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [1.5.0] - 2026-06-02
+
+### 新增
+
+- 新增专题研究综述分析 `analysis/12-retrieval-strategy-vector-vs-agentic.md`：向量 RAG vs Agentic 工具检索 vs 长上下文的检索选型，基于 2024–2026 多来源 web 研究（约 55 个源 + 对抗式核验）综合。覆盖"RAG 已死是伪命题 / 向量库被商品化为既有数据库内置功能"、agentic 检索的力量（模型坚持性）与代价（input token 近二次增长）、检索失败的静默性、混合（BM25+向量）+重排为何是生产标准、Anthropic Contextual Retrieval / DeepMind LIMIT / NoLiMa 等分层可信度证据，以及"按语料规模分层 + 按查询类型路由"的决策框架；并含 grep 类工具（ripgrep / ugrep / ast-grep / ripgrep-all）的具体工具层盘点。这是本仓库首篇"多来源研究综述"型来源（区别于单仓库 / 单文章）。
+- 新增研究快照 `raw/docs/retrieval-strategy-research.md`（多来源 paraphrased digest，含源 URL 与"实测 / 厂商自报 / 营销"的可靠度分层标注）。
+
+### 变更（skill 优化）
+
+- `SKILL.md`：`Architecture Rules` 新增一条检索默认——文档检索默认 agentic 工具检索 / 小语料全量上下文，仅当语料规模、语义 / 跨文档查询、延迟或多租户隔离逼迫时才升级到 hybrid 向量+重排（且先用现有数据库如 pgvector），不默认自建向量库。
+- `references/context-and-tools.md`：在 `Long Document Handling` 之后新增 `Retrieval Strategy` 小节——按语料规模分层 + 按查询类型路由的选型闸、升级信号（先 pgvector 后专用库）、agentic 检索两条标配（查询扩展治同义漏检 / 精确匹配通道治编号·条款·型号·否定词的静默漏检）、检索失败的静默性提示，以及 grep 工具层背景。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 `Research Syntheses` 小节与检索策略综述行、对应 `重点阅读文件` 块与 Official Links 条目；`更新时间` 改 2026-06-02。
+- `analysis/07-overall-agent-analysis.md`：`跨来源共识矩阵` 新增 `文档检索策略` 行；`综合结论` 增"检索按规模与查询类型分层"一条；`后续可分析方向` 补 Anthropic Contextual Retrieval、DeepMind LIMIT / NoLiMa 等候选；元数据与"对 skill 的总体指导"更新到 1.5.0。
+- `docs/index.html`：分析来源表新增"检索策略研究综述"行，section-note 与 footer 更新到 skill 1.5.0；`<style>` 与 `<script>` 未触碰。
+- `README.md`：当前资料集新增研究综述说明，版本说明更新到 1.5.0。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| 检索策略研究综述（向量 vs Agentic） | research-synthesis | 综合 2024–2026 多源 / 抓取 2026-06-02 | 1.0 | 2026-06-02 |
+
 ## [1.4.0] - 2026-05-22
 
 ### 新增
