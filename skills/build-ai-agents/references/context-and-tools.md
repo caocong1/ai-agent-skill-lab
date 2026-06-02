@@ -67,6 +67,26 @@ For read tools, prefer contracts that support:
 - total line/page counts when known
 - structured metadata for document type, headings, and source location
 
+## Retrieval Strategy
+
+Choose how the agent reaches document content before writing any retrieval code. Default to the cheapest approach that fits the corpus; do not stand up a vector database by reflex (see `analysis/12-retrieval-strategy-vector-vs-agentic.md`).
+
+Route by corpus size first, query type second:
+
+- Small corpus (roughly under ~200K tokens / a single project or document, tens of files): prefer agentic tool retrieval — give the model `search` and `read` tools over the corpus and let it iterate (search → read the surrounding window → answer with source anchors) — or just put the whole corpus in context. Do NOT build a RAG index here; it only adds index drift, re-embedding cost, and a chunking-tuning burden for no gain.
+- Crossing the size threshold, or queries that are semantic / synonym-rewritten / cross-document / high-frequency-low-latency / multi-tenant isolated: escalate to hybrid retrieval (keyword/BM25 + dense vector) with a reranker. When you do add vectors, start with the database you already run (e.g. pgvector in the same transactional store) before a dedicated vector DB; reserve dedicated vector engines for billion-scale or very-high-write workloads.
+- Whole static corpus that fits a long window and where most content is relevant: long-context with prompt caching can beat retrieval; for mixed workloads route per query (simple facts → retrieval, global synthesis → long-context).
+
+Retrieval failures are usually silent — design against them explicitly:
+
+- Pure vector search silently misses exact strings (error codes, IDs, SKUs/model numbers, clause/section numbers, negations like "must not"); pure keyword/grep silently misses synonym/paraphrase wording. Neither raises an error — the model just generates a fluent-but-wrong answer on a wrong retrieval set.
+- For exact-token lookups (numbers, codes, clause ids, model names, negations), force an exact literal-match channel (grep/BM25), not semantic similarity. Production "hybrid + rerank" exists precisely to let BM25 backstop vectors on this class.
+- For natural-language questions over a keyword index, add an LLM query-expansion step (rewrite the question into the document's likely wording/synonyms) before searching — measured to improve hit rate substantially with no vector infrastructure.
+
+Treat `search`/`read` as agent-facing tools (apply the Tool Description Rubric): targeted search over list-all, returns carrying file + offset/anchor, `read` with offset/length and truncation notices. Fold the retrieval loop's step budget and read-window caching into the same budget/compaction design as the main loop. Record a "which file/spans were read → which conclusion" trace when answers must be auditable.
+
+Concrete CLI-tool layer (background): ripgrep is the de-facto default for filesystem search (respects `.gitignore`, skips binaries, Unicode on, zero-config); ugrep adds archive/compressed search and some complex-regex wins; ast-grep matches by code AST for refactors; ripgrep-all (rga) searches PDF/docx/zip originals. Most application agents search already-extracted text in-process and never shell out to these.
+
 ## Compaction Strategy
 
 Use compaction for accumulated conversation or tool history, not as a replacement for source retrieval.
