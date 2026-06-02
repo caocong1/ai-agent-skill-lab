@@ -1,7 +1,7 @@
 ---
 name: build-ai-agents
 description: Design, implement, review, and test AI agent features across TypeScript, Java, MCP, and general LLM application stacks. Use for tool-calling agents, agent loops, workflows, subagents, memory, approvals, MCP tools, prompt/context assembly, long-document handling, context compaction, retrieval, or agent skill integration.
-version: 1.4.0
+version: 1.5.0
 ---
 
 # Build AI Agents
@@ -63,6 +63,7 @@ Pick the mode before anything else:
 - Use a durable graph/workflow when the agent needs checkpointing, replay, resume, long-running execution, or human approval across process boundaries.
 - Use subagents when isolation of context, tools, or specialist behavior is worth the latency and complexity.
 - Use MCP when external capabilities should be reusable by multiple clients or agents through a stable protocol boundary.
+- For document retrieval, default to agentic tool retrieval (model-driven `search`/`read` over the corpus) or full-context for a small corpus; escalate to hybrid keyword+vector retrieval with reranking only when corpus size, semantic/cross-document queries, latency, or multi-tenant isolation force it, and start with the database you already run (e.g. pgvector) before a dedicated vector DB. Do not stand up a vector database by reflex (see `references/context-and-tools.md` Retrieval Strategy and `analysis/12-retrieval-strategy-vector-vs-agentic.md`).
 
 ## Dual-Use Rubric
 
