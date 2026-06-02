@@ -7,9 +7,11 @@
 ## 目录
 
 - `raw/repos/`: 拉取的原始开源项目，只作为学习资料和证据来源。
-- `raw/docs/`: 预留给后续下载的白皮书、官方文档快照或文章。
+- `raw/docs/`: 白皮书、官方文档快照、文章摘要或研究综述。
 - `analysis/`: 分主题的源码分析、模式总结和结论。
 - `skills/build-ai-agents/`: 最终可复用的 Codex skill。
+- `skills/iterate-skill-lab/`: 维护本仓库自身迭代流程的 Codex skill。
+- `docs/index.html`: 面向阅读的资料索引和可视化入口。
 
 ## 当前资料集
 
@@ -43,7 +45,51 @@ skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version
 
 ## 使用方式
 
-在别的项目里做 AI agent 功能时，优先参考：
+### 快速阅读路径
+
+如果只是想快速吸收结论，建议按下面顺序读：
+
+1. `analysis/07-overall-agent-analysis.md`: 跨来源总综合，先建立 agent / workflow / harness / tool / memory 的整体判断框架。
+2. `skills/build-ai-agents/SKILL.md`: 查看最终沉淀成 Codex skill 的执行契约。
+3. `skills/build-ai-agents/references/agent-architecture.md`: 决定是否真的需要 agent，以及应该选哪种形态。
+4. `skills/build-ai-agents/references/context-and-tools.md`: 处理 prompt、context、retrieval、tool description 和 token 预算。
+5. `skills/build-ai-agents/references/testing-observability.md`: 落地测试、回放、审批、trace 和 eval。
+
+### 安装 skill
+
+如果要让 Codex 自动发现本仓库里的 skill，可以把 skill 目录复制或软链到 Codex skills 目录：
+
+```bash
+mkdir -p "$HOME/.codex/skills"
+ln -sfn "<repo-path>/skills/build-ai-agents" "$HOME/.codex/skills/build-ai-agents"
+ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skill-lab"
+```
+
+其中 `<repo-path>` 替换为本仓库路径，例如 `/home/cao/workspace/ai-agent-skill-lab`。如果更喜欢复制而不是软链，也可以复制对应目录；软链的好处是仓库更新后 Codex 看到的 skill 会同步更新。
+
+### 使用 `build-ai-agents`
+
+`build-ai-agents` 用于在其他项目里设计、实现、扩展或审查 AI agent 能力。它有三种模式：
+
+- `build`: 从零设计并实现一个新的 agent 功能。
+- `extend`: 在已有 agent 上增加工具、记忆、审批、MCP、检索或其他能力。
+- `review`: 审查已有 agent 代码，按风险优先级输出中文整改计划，并给出 `file:line` 证据。
+
+可以显式点名 skill，也可以描述任务让 Codex 自动匹配。典型提示：
+
+```text
+请使用 build-ai-agents，帮我为这个项目设计一个带工具调用和人工审批的客服工单 agent。
+```
+
+```text
+请使用 build-ai-agents 的 review 模式审查 src/agents，重点看 tool schema、权限边界、循环上限和测试缺口。
+```
+
+```text
+请用 build-ai-agents 扩展现有 agent，让它通过 MCP 调用内部知识库，并补上回放测试。
+```
+
+使用时优先参考这些文件：
 
 1. `skills/build-ai-agents/SKILL.md`: 给 Codex 的触发和执行流程。
 2. `skills/build-ai-agents/references/agent-architecture.md`: 选择 agent 架构。
@@ -56,4 +102,34 @@ skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version
 9. `skills/build-ai-agents/references/context-and-tools.md`: prompt/context 与 tool 描述优化。
 10. `skills/build-ai-agents/references/testing-observability.md`: 测试、回放、审批和可观测性。
 
-如果要让 Codex 自动发现该 skill，可以后续把 `skills/build-ai-agents` 复制或软链到 `~/.codex/skills/`。当前按你的要求保留在 `~/work/ai-agent-skill-lab/` 内。
+`build-ai-agents` 的一个核心原则是先判断任务是否真的需要 agent：能用确定性代码解决的就不要引入模型；能用单次模型调用或固定 workflow 解决的就不要上自治 tool loop；只有当路径无法硬编码、需要模型动态选择工具并处理不确定状态时，才逐步升级到 tool loop、durable graph 或 multi-agent。
+
+### 使用 `iterate-skill-lab`
+
+`iterate-skill-lab` 只用于维护本仓库。当你想把新的 AI agent 论文、工程文章、开源框架或检索策略吸收到这个 lab 里时，用它来保持版本、元数据、分析报告、综合结论、skill 更新和文档更新一致。
+
+典型提示：
+
+```text
+请使用 iterate-skill-lab，找一个新的 agent 论文或权威工程文章纳入这个仓库。
+```
+
+```text
+请使用 iterate-skill-lab，更新已分析来源 openai-agents-js 到最新版本，并同步 SOURCE_INDEX、综合分析和 build-ai-agents。
+```
+
+它支持三种模式：
+
+- `add-source`: 新增一个来源，生成快照、分析报告，并更新综合结论和 skill。
+- `update-source`: 刷新已有来源的新版本，更新对应分析版本和索引。
+- `skill-only`: 不新增来源，只对 `build-ai-agents` 做小范围优化。
+
+### 维护检查清单
+
+每次扩展资料集或改动 skill 后，至少检查这些内容：
+
+- `skills/build-ai-agents/SKILL.md` 的 `version` 是否与 `README.md` 和 `CHANGELOG.md` 一致。
+- `analysis/SOURCE_INDEX.md` 是否记录了来源版本、分析版本和最后更新日期。
+- 新增分析文件是否包含元数据块，并说明“对最终 skill 的影响”。
+- `docs/index.html` 是否把新来源展示出来。
+- README 是否说明了新增来源、版本变化和实际使用方式。
