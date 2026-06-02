@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-05-22。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-06-02。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -27,6 +27,14 @@
 | Anthropic, Building Effective Agents | `raw/docs/anthropic-building-effective-agents.md` | 发布 2024-12-19 / 抓取 2026-05-19 | 1.0 | 2026-05-19 | workflow 与 agent 判定、五种 workflow 模式、自治 agent 循环、simplicity/transparency/ACI |
 | Anthropic, Writing Effective Tools for Agents | `raw/docs/anthropic-writing-effective-tools.md` | 发布 2025-09-11 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | tool 选择、命名空间、返回上下文、token 效率、tool description/spec、工具评测 |
 | OpenAI, A Practical Guide to Building Agents | `raw/docs/openai-practical-guide-building-agents.md` | 发布未标注 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | agent 适用性、model/tools/instructions、单 agent 优先、多 agent 编排、guardrails、人类介入 |
+
+## Research Syntheses
+
+多来源 web 研究综合（非单一仓库 / 单篇文章）。快照保存在 `raw/docs/`（paraphrased digest，含源 URL 与可靠度分层），分析报告在 `analysis/`。`来源版本` 记为综合时间窗 + 抓取日期；`最后更新` 按再综述时间推进，不随单个上游来源的小改动走。
+
+| 来源 | 快照路径 | 来源版本 | 分析版本 | 最后更新 | 学习重点 |
+| --- | --- | --- | --- | --- | --- |
+| 检索策略研究综述（向量 RAG vs Agentic 检索） | `raw/docs/retrieval-strategy-research.md` | 综合 2024–2026 多源（约 55 源 + 对抗式核验）/ 抓取 2026-06-02 | 1.0 | 2026-06-02 | 检索按语料规模分层 + 查询类型路由、agentic 检索 vs 向量 RAG vs 长上下文、查询扩展 + 精确匹配兜底、混合+重排为生产标准、检索失败的静默性、grep 工具层盘点 |
 
 ## Official Links
 
@@ -56,6 +64,13 @@ Canonical link list for the reusable skill lives in `skills/build-ai-agents/refe
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
 - Claude Code docs: https://docs.claude.com/claude-code
 - Anthropic Agent SDK docs: https://docs.claude.com/agent-sdk
+- 检索策略综述关键源 — Anthropic Contextual Retrieval: https://www.anthropic.com/news/contextual-retrieval
+- 检索策略综述关键源 — Latent Space《Claude Code》(agentic search 弃用向量索引的一手陈述): https://www.latent.space/p/claude-code
+- 检索策略综述关键源 — LlamaIndex《Did filesystem tools kill vector search》(规模拐点基准): https://www.llamaindex.ai/blog/did-filesystem-tools-kill-vector-search
+- 检索策略综述关键源 — 长上下文 vs RAG 生产决策框架: https://tianpan.co/blog/2026-04-09-long-context-vs-rag-production-decision-framework
+- grep 工具层 — ripgrep: https://github.com/BurntSushi/ripgrep
+- grep 工具层 — ast-grep: https://ast-grep.github.io/
+- grep 工具层 — ripgrep-all (rga): https://github.com/phiresky/ripgrep-all
 
 ## 重点阅读文件
 
@@ -190,3 +205,8 @@ Hello-Agents (Datawhale)（教学型全栈编目；16 章中文教程 + 配套�
 - `raw/repos/hello-agents/Extra-Chapter/Extra05-AgentSkills解读.md`（Agent Skills vs MCP 对比）
 - `raw/repos/hello-agents/Extra-Chapter/Extra10-Agent自进化.md`（Agent 自进化四类闭环）
 - `analysis/11-hello-agents.md`（分析报告）
+
+检索策略研究综述（向量 RAG vs Agentic 检索；多来源综合，非单一仓库 / 文章）:
+
+- `raw/docs/retrieval-strategy-research.md`（多来源 paraphrased digest 快照）
+- `analysis/12-retrieval-strategy-vector-vs-agentic.md`（分析报告）
