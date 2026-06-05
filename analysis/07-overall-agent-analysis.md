@@ -1,6 +1,6 @@
 # AI Agent 总体分析总结
 
-> 分析版本：1.4 ｜ 最后更新：2026-06-02 ｜ 覆盖来源：全部 9 个代码项目 + Anthropic Building Effective Agents / Anthropic Writing Effective Tools for Agents / OpenAI Practical Guide to Building Agents + 检索策略研究综述（向量 RAG vs Agentic，多来源）（版本见 `analysis/SOURCE_INDEX.md`）
+> 分析版本：1.5 ｜ 最后更新：2026-06-05 ｜ 覆盖来源：全部 9 个代码项目 + Anthropic Building Effective Agents / Anthropic Writing Effective Tools for Agents / OpenAI Practical Guide to Building Agents + 检索策略研究综述（向量 RAG vs Agentic，多来源）（版本见 `analysis/SOURCE_INDEX.md`）
 
 这份报告把已分析的 9 个代码项目（Pi、OpenAI Agents JS、LangGraphJS、MCP TS SDK、Vercel AI SDK、Spring AI Examples、LangChain4j、Learn Claude Code、Hello-Agents）和 3 篇权威文章/指南（Anthropic Building Effective Agents、Anthropic Writing Effective Tools for Agents、OpenAI Practical Guide to Building Agents）放在一起，回答一个问题：跨这些来源，关于"怎样做一个有效的 agent"，哪些结论是收敛的、哪些是有条件的。生产框架（Pi / OpenAI / LangGraph / Vercel / MCP / Spring AI / LangChain4j）回答"怎么实现"，权威文章回答"该不该做、做到什么程度、如何上线和优化"，教学型仓库（Learn Claude Code 窄而深 / Hello-Agents 宽而长）回答"把这些机制各自最小化或全栈编目给我看一遍"——三类拼起来才是完整的工程判断。它是 `analysis/01..06`、`08..11` 之上的一层归纳，`analysis/04` 仍专注 skill 设计取舍，本文件不替代它。
 
@@ -13,7 +13,7 @@
 - **边界比循环更重要**。权限在工具执行边界、敏感上下文走 typed context 而不是 prompt、UI/model 消息分离、guardrails 分层部署、并行 agent 按任务隔离工作目录——这几条在 TS、Java、文章和教学版里反复出现，是最稳的可复用准则。
 - **复杂度要被需求拉动，不能被框架推动**。durable graph、subagent、MCP、vector memory 都只在需求出现时才引入；文章的"能用 workflow 就别上 agent"是这条的权威背书。
 - **训练侧 agency 是兜底通路，不是起点**。inference-time（prompt / 工具 / 上下文 / 记忆 / 评估）穷尽后，再考虑 SFT / RL 微调；Hello-Agents 第 11 章给出了完整的 SFT + GRPO 最小训练通路，但教程同样强调"反过来做（一缺什么就训练）会陷入算力陷阱"。BFCL / GAIA 等公开基准在量化 inference-time 天花板时尤其有用。
-- **协议要按谱系而非单点选**。MCP / A2A / ANP 三档分别对应不同的互操作性、灵活性、性能要求；MCP 当前最成熟默认，但 agent-to-agent 直连或去中心化服务发现是真实场景时，需要按谱系而不是单点决策。
+- **协议要按谱系而非单点选**。MCP / A2A / ANP 三档分别对应不同的互操作性、灵活性、性能要求；按谱系（互操作性 / 灵活性 / 性能 / 生态成熟度）而非单点决策——agent-to-agent 直连或去中心化服务发现是真实场景时尤需如此。成熟度排名随版本周期变动，是会过期的"现状"而非 durable 结论：截至 2026-06 源快照，MCP 采纳与工具链最成熟、可作默认，但实现前请复核 A2A / ANP 的当前成熟度。
 - **文档检索按规模与查询类型分层，不默认上向量库**。小语料（约 < 20 万 token / 单项目几十文件）用 agentic grep/read 或全量上下文；越过拐点、或需语义 / 跨全库 / 高频低延迟 / 多租户隔离时才上 hybrid 向量+重排（且先 pgvector，专用向量库留给十亿级）。检索失败常是静默的——纯向量漏精确串（编号 / 型号 / 条款号 / 否定词）、纯关键词漏同义改写——故精确串走精确匹配兜底、自然语言查询前加查询扩展（见 `analysis/12-retrieval-strategy-vector-vs-agentic.md`）。这是"复杂度被需求拉动，不被框架推动"在检索维度的体现。
 
 ## 形态选择光谱
@@ -47,7 +47,7 @@
 | 记忆设计 | 简单 retrieval 起步 | 不在范围 | 长任务 / 跨会话才用 memory | retrieval、provider memory、 LangGraph store | 用 DI/session/外部存储 | 三段流程：selection（什么值得记）→ extraction（结构化抽取）→ consolidation（合并去重） | 四级容器：工作 / 短期 / 长期 / 永久 + MemoryTool + 高级 RAG（重排序 / 多跳 / 语义路由） | memory 是流程也是层次：三段流程决定"怎么写"，四级容器决定"放哪一层"，两者互补；并按租户隔离 |
 | 错误恢复 | 累积失败需护栏 | 错误应可被模型修正或可继续 | 失败阈值 → 人工 | OpenAI/Vercel：可中断 / 拒绝 / 重试 | service 层异常分类 | 三路径：max_tokens 升档+continuation；prompt_too_long → reactive compact；429/529 → 指数退避 + fallback 模型 | ReAct/PlanAndSolve 章节内含死循环防护与调用失败重试模板 | 错误按类型分路径恢复；退避要带 jitter；模型不可用要有 fallback；超阈值升给人 |
 | 评测与优化 | sandbox + 真实反馈 | 真实任务 eval、transcript 分析、held-out 测试 | 先强模型建 baseline，再降成本 | fake model tests、trace、replay | service/test 分层 | 每节课 standalone `code.py` 自带最小用例，可读可跑 | BFCL（工具调用准确率）+ GAIA（端到端通用助手）作为公开基准；评估闭环驱动 Agentic-RL 训练 | tool/prompt/model 变更要有可比较的 eval 或回放证据；建自定义 eval 前先看 BFCL / GAIA 等公开基准能否对齐 |
-| 协议选择 | 不在范围 | MCP 是接入外部能力的协议层 | MCP 作为 orchestration 工具的标准化通道 | MCP TS SDK：server / client / transport 完整实现 | Spring AI MCP annotations | 简化 MCP 客户端教学版（s19） | MCP / A2A / ANP 三档谱系，按互操作性 / 灵活性 / 性能取舍 | MCP 是当前最成熟默认；A2A 用于 agent 直连、ANP 用于去中心化服务发现；按场景升级而非平替 |
+| 协议选择 | 不在范围 | MCP 是接入外部能力的协议层 | MCP 作为 orchestration 工具的标准化通道 | MCP TS SDK：server / client / transport 完整实现 | Spring AI MCP annotations | 简化 MCP 客户端教学版（s19） | MCP / A2A / ANP 三档谱系，按互操作性 / 灵活性 / 性能取舍 | 按谱系选（互操作性 / 灵活性 / 性能），按场景升级而非平替；成熟度随时间变（截至 2026-06 源快照 MCP 采纳最广、可作默认，A2A 用于 agent 直连、ANP 用于去中心化服务发现——实现前复核当前成熟度） |
 | 训练侧 agency | 不在范围 | 不在范围 | 不在范围（focus 推理侧） | 不在范围 | 不在范围 | 不在范围 | Agentic-RL：GSM8K + LoRA SFT（学会思考）+ GRPO（无需 critic 的策略优化） + 评估闭环 | inference-time（prompt/工具/上下文/记忆）穷尽后再考虑训练侧；BFCL/GAIA 量化差距驱动 SFT/RL 决策 |
 | 文档检索策略 | 简单 retrieval 起步、留压缩空间 | targeted search 优于 list-all、返回高信号片段 | 数据类工具含 retrieval | retrieval / provider memory / LangGraph store | Spring AI / LC4j 含 RAG | grep/read agentic 检索、明确弃用向量索引 | 四级记忆 + 向量 RAG + 高级检索（重排 / 多跳 / 语义路由） | 按语料规模分层 + 查询类型路由：小语料 agentic grep/read 或全量上下文，大语料 / 语义查询才 hybrid 向量+重排（先 pgvector）；编号 / 条款 / 型号 / 否定词精确匹配兜底，自然语言查询先扩展；检索失败常静默（`analysis/12`） |
 

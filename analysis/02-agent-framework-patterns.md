@@ -102,7 +102,7 @@ MCP 不是 agent runtime，而是能力和上下文协议。它解决的是“ag
 - tool handler 返回 `content`，有结构化输出时返回 `structuredContent`。
 - 工具执行错误应尽量作为 tool result 的 `isError:true` 返回，让模型能自我修复；连接、协议、参数 schema 错误才作为协议错误。
 - server instructions 可描述工具组合方式，但不要重复每个 tool description。
-- MCP SDK 主分支可能处于 v2 pre-alpha；生产项目要确认版本线。
+- 在本分析锁定的 commit（2026-05-18 快照）时，MCP SDK 主分支处于 v2 pre-alpha——版本线随时变化，生产前务必确认当前发布线（撰写时 v1.x 仍为推荐生产线）。
 
 工程启发：
 
