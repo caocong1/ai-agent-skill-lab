@@ -10,6 +10,30 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [1.5.1] - 2026-06-05
+
+### 文档（来源新鲜度审计 SEED-001）
+
+- 执行 SEED-001 源新鲜度审计：13 个来源（9 仓库 + 3 文章 + 1 研究综述）全部可达，所有快照均在一个季度内（最早 2026-05-18，阈值 2026-03-05），无 stale-by-time。11 个来源相对快照有 upstream 漂移，但经对抗式核验仅 Vercel AI SDK 为实质性变更（v7 canary 的 `onFinish`→`onEnd` 重命名 + finalStep 聚合语义，PR 15245，命中已分析的 Agent/ToolLoopAgent/streamText 表面），已在 `analysis/SOURCE_INDEX.md` 标记待再分析；其余为补丁级/纯增量改动，不影响已分析模式。原先疑似的 Pi tool-allowlist 破坏性迁移经核验为误归（该变更在 v0.68.0，早于 v0.75.3 快照），v0.75.4–v0.78.1 漂移窗口仅增量。完整审计报告见 `.planning/freshness-reviews/2026-06-05-source-freshness-review.md`。
+- `analysis/SOURCE_INDEX.md`：`更新时间` 改 2026-06-05，新增 `## 新鲜度审查` 小节记录本次 SEED-001 运行与逐来源结论；逐来源 `最后更新` 与 `来源版本` 维持各自分析快照不变（本次仅核验新鲜度，未再分析单个来源）。
+
+### 变更（skill 优化 / SEED-001 措辞收口）
+
+- `references/context-and-tools.md`：reactive compaction 触发条件由厂商字符串 `prompt_too_long` 改为按行为命名（“provider 仍报上下文超长 / 长度超限错误”），`prompt_too_long` 降为括注示例，并提示按 provider 当前错误分类核对。
+- `references/testing-observability.md`：模型层两类失败由 `max_tokens reached` / `prompt_too_long` 字面名改为按行为命名（“输出在 token 预算处被截断” / “输入超出上下文窗口”），注明字段/错误名按 provider 而异（如 `finish_reason`/`stop_reason` 值 vs 专用错误），字面名保留为示例。
+- `references/mcp-patterns.md`：MCP/A2A/ANP 的成熟度排名由“当前最高采纳/生态更弱”改为带日期的观测（“截至源快照…，实现前请复核”），保留“默认 MCP、按跨运行时/跨组织需要升级”的决策规则不变。
+
+### 变更（分析层措辞收口）
+
+- `analysis/07-overall-agent-analysis.md`：`综合结论` 与 `跨来源共识矩阵` 中 MCP/A2A/ANP 成熟度排名降级为带日期观测，保留“按谱系而非单点选”的决策规则；`分析版本` 1.4→1.5，`最后更新` 2026-06-05。
+- `analysis/11-hello-agents.md`、`analysis/02-agent-framework-patterns.md`、`analysis/12-retrieval-strategy-vector-vs-agentic.md`：将随时间漂移的“现状”表述（A2A/ANP 早期、MCP SDK 主分支 v2 pre-alpha、ripgrep “事实标准”、查询扩展“约 10 倍”实测值）锚定到快照日期或降为带保留的观测；durable 决策规则与能力事实不变（这些文件的 `分析版本`/`最后更新` 维持其分析快照不变，仅措辞收口、行内自带日期）。
+
+### 待办（不在本次落地）
+
+- 对 Vercel AI SDK 执行再分析并 re-snapshot 到当前 v7 canary commit（`onFinish`→`onEnd`、`allowSystemInMessages`、streaming-UI helpers 弃用 `fullStream`/`toUIMessageStream`/`toTextStreamResponse`）。
+- 例行刷新（均为纯增量，无需再分析）：Pi v0.78.1、OpenAI Agents JS v0.11.6、LangGraphJS 1.3.5、LangChain4j 1.15.1、Learn Claude Code / Hello-Agents 最新 commit，可在下次常规同步时 re-snapshot。
+- SEED-001 维持 dormant（递归触发型看护），已记录 `last_reviewed: 2026-06-05`，下个季度或下次 provider-API 集成里程碑重新触发。
+
 ## [1.5.0] - 2026-06-02
 
 ### 新增
