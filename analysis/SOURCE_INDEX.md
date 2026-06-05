@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-06-02。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-06-05（2026-06-05 执行 SEED-001 来源新鲜度审查，详见下方 `## 新鲜度审查`）。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -12,7 +12,7 @@
 | OpenAI Agents JS | `raw/repos/openai-agents-js` | `629d35af99e1ba80fc968b0d062c070caed0683d` | 1.0 | 2026-05-18 | Agent、tools、handoffs、guardrails、interruptions、RunState |
 | LangGraphJS | `raw/repos/langgraphjs` | `bd72a897e15d0a29a06b8b8b4c589851b6c7b4a6` | 1.0 | 2026-05-18 | graph orchestration、checkpoint、thread、HITL、multi-agent handoff |
 | MCP TypeScript SDK | `raw/repos/modelcontextprotocol-typescript-sdk` | `22595b96855b34f00adcc6c1e7932ad68ea5139d` | 1.0 | 2026-05-18 | MCP server/client、tool/resource/prompt、stdio/http transport |
-| Vercel AI SDK | `raw/repos/vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` | 1.0 | 2026-05-18 | ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP adapter |
+| Vercel AI SDK | `raw/repos/vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` | 1.0 | 2026-05-18 | ToolLoopAgent、WorkflowAgent、streaming UI、approval、MCP adapter ｜ ⚠ 待再分析：v7 canary `onFinish`→`onEnd`（PR 15245，2026-06-05 审查） |
 | Spring AI Examples | `raw/repos/spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` | 1.0 | 2026-05-18 | Java agentic patterns、function callback、MCP annotations |
 | LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | 1.0 | 2026-05-18 | Java AI service、tool executor/provider、agentic sequence、skills |
 | Learn Claude Code | `raw/repos/learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` | 1.0 | 2026-05-21 | harness vs agent 区分、20 课渐进式编目、cheap-first 多层 compaction、memory 三段流程、错误恢复三路径、worktree 隔离、mailbox + claim-from-board 多 agent |
@@ -35,6 +35,32 @@
 | 来源 | 快照路径 | 来源版本 | 分析版本 | 最后更新 | 学习重点 |
 | --- | --- | --- | --- | --- | --- |
 | 检索策略研究综述（向量 RAG vs Agentic 检索） | `raw/docs/retrieval-strategy-research.md` | 综合 2024–2026 多源（约 55 源 + 对抗式核验）/ 抓取 2026-06-02 | 1.0 | 2026-06-02 | 检索按语料规模分层 + 查询类型路由、agentic 检索 vs 向量 RAG vs 长上下文、查询扩展 + 精确匹配兜底、混合+重排为生产标准、检索失败的静默性、grep 工具层盘点 |
+
+## 新鲜度审查
+
+逐次新鲜度审查（SEED-001）记录于此。审查只核验“上游相对快照是否漂移、漂移是否实质”，**不等于再分析**；除非某来源被实际再分析，否则上方表格的 `来源版本` / `最后更新` 维持其分析快照不变。
+
+### 2026-06-05（SEED-001 首次审查）
+
+- 覆盖：13 个来源（9 仓库 + 3 文章 + 1 研究综述）；全部可达；所有快照均在一个季度内（最早 2026-05-18，阈值 2026-03-05），无 stale-by-time。
+- 结论：仅 **Vercel AI SDK** 为实质性变更（v7 canary `onFinish`→`onEnd` + finalStep 聚合语义，PR 15245，命中已分析表面）→ 标记待再分析。其余 10 个漂移来源为补丁级/纯增量，无破坏已分析模式的变更；Spring AI Examples 零漂移；3 篇文章与检索综述内容未变。
+- 误归纠正：Pi 的 tool-allowlist/factory 破坏性迁移在 v0.68.0（早于 v0.75.3 快照），不在 v0.75.4–v0.78.1 漂移窗口内（对抗式核验推翻初判）。
+- 逐来源（current HEAD / latest release / 状态）：
+  - Pi：`89a92207` / v0.78.1 / 漂移-非实质
+  - OpenAI Agents JS：`5ffee544` / v0.11.6 / 漂移-非实质
+  - LangGraphJS：`f552c058` / 1.3.5 / 漂移-非实质
+  - MCP TypeScript SDK：`ab552c30` / v1.29.0 稳定线（main 为 v2 pre-alpha）/ 漂移-非实质
+  - Vercel AI SDK：`d66ae028` / ai@7.0.0-canary.165 / **实质变更，待再分析**
+  - Spring AI Examples：`2a6088db` / 无 tag / 零漂移
+  - LangChain4j：`c9f52740` / 1.15.1 / 漂移-非实质
+  - Learn Claude Code：`3d018a0d` / 无 tag / 漂移-非实质
+  - Hello-Agents：`248aa248` / V1.0.2 / 漂移-非实质
+  - Anthropic Building Effective Agents：发布 2024-12-19，未改 / Fresh
+  - Anthropic Writing Effective Tools：发布 2025-09-11，未改 / Fresh
+  - OpenAI Practical Guide to Building Agents：未改 / Fresh
+  - 检索策略研究综述：综合 2026-06-02，结论未失效 / Fresh
+- 同批落地的措辞收口（SEED-001 体质）见 `CHANGELOG.md` [1.5.1]；完整报告见 `.planning/freshness-reviews/2026-06-05-source-freshness-review.md`。
+- 待办：Vercel AI SDK 再分析 + re-snapshot；其余可在下次常规同步 re-snapshot（纯增量，无需再分析）。
 
 ## Official Links
 
