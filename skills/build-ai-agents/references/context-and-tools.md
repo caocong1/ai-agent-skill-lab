@@ -107,7 +107,7 @@ Layer compaction cheap-first, expensive-last — do not jump straight to a model
 2. **Tool-result micro-replace** — replace older `tool_result` payloads with short placeholders that keep the call/argument shape but lose the body. Cheap and reversible if you keep the bodies on disk.
 3. **Tool-result budget with handles** — when a single tool returns a large object, persist it (file, blob store, retrieval index) and put a handle/id back in the conversation. Subsequent steps fetch by id instead of re-pasting the body.
 4. **LLM summary checkpoint** — once cheaper layers cannot free enough room, do one model summary that updates the existing checkpoint (do not stack many summaries). Only this step costs a call.
-5. **Reactive compaction** — if the provider still returns `prompt_too_long`, run one emergency pass (re-run layers 1–3 more aggressively, summarize again if needed) and retry the same turn once.
+5. **Reactive compaction** — if the provider still signals a context-window / length-exceeded error (the exact error type is provider-specific — check your provider's current error taxonomy, e.g. an OpenAI-family `prompt_too_long`), run one emergency pass (re-run layers 1–3 more aggressively, summarize again if needed) and retry the same turn once.
 
 Drive the layers in this order on every assembly; only escalate when the previous layer leaves the context above budget.
 

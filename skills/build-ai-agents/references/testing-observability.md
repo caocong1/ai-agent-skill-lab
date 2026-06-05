@@ -80,8 +80,10 @@ The first two usually become tool results the model can see. The latter two shou
 
 For model-layer failures, plan three independent recovery paths instead of one shared try/except (see `analysis/10-learn-claude-code.md`):
 
-- **max_tokens reached** — escalate the max-tokens budget once (for example default → extended) and, if still truncated, issue a bounded number of "continuation" turns that pick up mid-thought. Track an explicit counter; cap retries.
-- **prompt_too_long** — invoke the reactive layer of the compaction pipeline (see `references/context-and-tools.md`), then retry the same turn once. Do not loop.
+- **output truncated at the token budget** — escalate the max-tokens budget once (for example default → extended) and, if still truncated, issue a bounded number of "continuation" turns that pick up mid-thought. Track an explicit counter; cap retries.
+- **input exceeds the context window** — invoke the reactive layer of the compaction pipeline (see `references/context-and-tools.md`), then retry the same turn once. Do not loop.
+
+The exact field/error name for each is provider-specific and shifts across API versions — check your provider's current docs rather than hard-coding a literal (e.g. a `finish_reason`/`stop_reason` value vs. a dedicated error; OpenAI-family names are `max_tokens reached` and `prompt_too_long`).
 - **rate-limit or model unavailable (429 / 5xx)** — exponential backoff with jitter, bounded total attempts, and a fallback model after N consecutive availability failures so the agent degrades gracefully instead of stalling.
 
 Record which recovery path was taken on each retry — repeated falls into the same path are a signal to adjust budget, compaction layer, or model choice rather than to keep retrying.
