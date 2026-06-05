@@ -5,6 +5,7 @@ planted: 2026-06-05
 planted_during: ai-agent-skill-lab provider API discussion
 trigger_when: when starting a new milestone, adding provider API integration guidance, or when source snapshots are older than one quarter
 scope: small
+last_reviewed: 2026-06-05
 ---
 
 # SEED-001: Review freshness of learned AI agent sources and provider API assumptions
@@ -37,3 +38,9 @@ Before relying on older source analysis, review `analysis/SOURCE_INDEX.md` for:
 ## Notes
 
 Captured during discussion of provider API differences and OpenAI-compatible limitations. Keep future provider API work framed as a documentation-reading and adaptation discipline, not as a static vendor compatibility table.
+
+## Review Log
+
+This seed is a recurring trigger-based watchdog, not a one-shot task — it stays `dormant` and re-arms after each review.
+
+- **2026-06-05** — first review. Audited all 13 sources (9 repos + 3 articles + 1 synthesis): all reachable, none stale-by-time, only Vercel AI SDK materially changed (v7 canary `onFinish`→`onEnd`, flagged for re-analysis). Skill already free of frozen provider specifics; landed minor framing-hygiene edits (provider error names → behavior-named; MCP/A2A/ANP maturity → dated observations). Shipped as `1.5.1` (patch). Full report: `../freshness-reviews/2026-06-05-source-freshness-review.md`. Outstanding: Vercel re-analysis; routine re-snapshots of additively-drifted repos. Consumed only the "snapshots aging" trigger.
