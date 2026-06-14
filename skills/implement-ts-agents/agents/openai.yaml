@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement TS Agents"
+  short_description: "Implement TypeScript agent patterns"
+  default_prompt: "Use $implement-ts-agents to implement this TypeScript agent using the project’s existing framework."

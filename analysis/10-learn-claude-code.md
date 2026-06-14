@@ -20,7 +20,7 @@
 - **Plan-then-execute via TodoWrite（s05）**：把"列计划"做成一个工具，agent 在执行前显式写下 todo 列表，再分步执行。它是 chain-of-thought 的工程化版本：计划被持久化为 tool result，可以被人读、被压缩、被回放。
 - **Skill loading 的两层结构（s07）**：layer 1 在系统 prompt 注入 `name + 一句话描述`（廉价），layer 2 通过 `load_skill(name)` 在需要时把整份 SKILL.md 注入为 tool_result（昂贵）。这与 Pi 的 progressive disclosure 完全一致，但教学实现把"前后两次注入的 token 估计"写到了注释里，让读者能直接判断何时升级到 layer 2。
 - **Cheap-first 多层 context compaction（s08）**：四层依次执行——`snip_compact`（消息条数 > 50 时截中段）→ `micro_compact`（把老的 tool_result 换成 placeholder）→ `tool_result_budget`（把大 tool 输出落盘并用句柄引用）→ `compact_history`（一次 LLM 总结）→ `reactive_compact`（API 返回 prompt_too_long 时应急压一次）。"cheap first, expensive last" 是核心原则；这种分层管线比"满了就喊 LLM 总结"既省钱又少损信息。
-- **Memory 三段流程（s09）**：selection（哪些会话片段值得留）→ extraction（从片段里抽出可结构化的事实）→ consolidation（把抽出的事实合并、去重、归档到 `.memory/MEMORY.md`）。本仓库之前在 `references/agent-architecture.md` 的 Memory Design 只列了"用哪几种 memory"，没拆"怎么决定写什么"。
+- **Memory 三段流程（s09）**：selection（哪些会话片段值得留）→ extraction（从片段里抽出可结构化的事实）→ consolidation（把抽出的事实合并、去重、归档到 `.memory/MEMORY.md`）。本仓库之前在 `skills/design-ai-agent/SKILL.md` 的 Memory Design 只列了"用哪几种 memory"，没拆"怎么决定写什么"。
 - **System prompt 的 runtime 拼装（s10）**：按 `identity / tools / workspace / memory / …` 等 section 在每次调用前拼装，并对相同 context 缓存。这把"系统提示词"从"静态字符串"变成"按需 section 组合"，与 reference 里"keep prompts layered"是同一原则，但更具体。
 - **Error recovery 三路径 + 指数退避（s11）**：
   - 路径 1：`max_tokens` 用尽 → 先升档 8K→64K（首次不 append），再 max 3 次"continuation prompt"接龙；
@@ -67,19 +67,19 @@
 
 - `SKILL.md`：
   - `Architecture Rules` 首条改写为"区分 agent 与 harness"，并明确 harness 由 tools / knowledge / context / permissions / observation 组成；其余条目维持"最简优先"语义不变。
-- `references/agent-architecture.md`：
+- `skills/design-ai-agent/SKILL.md`：
   - 新增 `Agent vs Harness Boundary` 小节，把 harness engineering 的五项工程职责写成 skill 的工程心智模型，并引用本文件。
   - `Loop Design` 增补"hook 扩展点（pre/post tool）在不修改 loop 主体的前提下添加策略与观测"。
-- `references/context-and-tools.md`：
+- `skills/design-agent-tools/SKILL.md`：
   - `Compaction Strategy` 扩写为 cheap-first → expensive-last 多层管线（snip → micro-replace → tool-result budget → LLM summary → reactive），并把"将大 tool_result 落盘 + 句柄引用"显式写入；
   - 新增 `Memory Pipeline` 小节，把 memory 写入回读拆成 selection / extraction / consolidation 三段。
-- `references/security-and-safety.md`：
+- `skills/secure-ai-agents/SKILL.md`：
   - `Review Checklist` 增"按任务隔离工作目录（worktree / sandbox dir）以避免并行 agent 互踩与高风险动作扩散"；
   - `Threat Model` 后增一条"trajectory（行动序列）作为日志与训练原料同样需要按 PII/secrets 规则脱敏"。
-- `references/testing-observability.md`：
+- `skills/test-ai-agents/SKILL.md`：
   - `Observability Events` 增"后台任务运行 id / 完成通知注入回执 / cron 触发记录"；
   - `Tool Error Strategy` 增"模型 token / 限流 / 模型不可用的三路径恢复 + 指数退避 + fallback 模型"。
-- `references/source-map.md`：
+- `skills/build-ai-agents/references/source-map.md`：
   - 新增 learn-claude-code 仓库行（commit + 本地路径）与"教学型来源 vs 生产框架来源"的简短说明，并补上几个核心 `s0x/code.py` 文件路径。
 - `analysis/07-overall-agent-analysis.md`：
   - 跨来源共识矩阵新增 learn-claude-code 列；形态选择光谱新增"教学型 harness 实现作为学习/原型脚手架"；`后续可分析方向` 移除已落地候选并新增 Claude Code 官方文档、Anthropic Agents SDK、ReAct/Reflexion 论文。

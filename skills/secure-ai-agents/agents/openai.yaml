@@ -1,0 +1,4 @@
+interface:
+  display_name: "Secure AI Agents"
+  short_description: "Harden agent safety boundaries"
+  default_prompt: "Use $secure-ai-agents to threat-model and harden this agent’s tool, context, and tenant boundaries."

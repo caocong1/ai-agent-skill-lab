@@ -26,7 +26,7 @@ OpenAI 这份指南和 Anthropic《Building Effective Agents》有明显交集�
 - **用例筛选应进入 Build Workflow**：在实现 agent 前先验证任务是否包含复杂判断、难维护规则或非结构化数据，否则 deterministic code / workflow 更合适。
 - **instructions 应来自真实流程资料**：SOP、客服脚本、政策文档和边界情况要被转换成 model-facing routine，而不是只写一句泛化角色提示。
 - **tool risk rating 可执行化安全策略**：每个工具按读/写、可逆性、权限、财务或用户影响分级，才能决定是否自动执行、需要 guardrail 还是必须审批。
-- **多 agent 不是扩展的默认答案**：OpenAI 对 single-agent-first 的强调，与 Anthropic 的最简优先和本仓库 anti-patterns 中的 over-engineering 判断一致。
+- **多 agent 不是扩展的默认答案**：OpenAI 对 single-agent-first 的强调，与 Anthropic 的最简优先和本仓库 `skills/review-ai-agents/SKILL.md` 中的 over-engineering 判断一致。
 
 ## 适用场景
 
@@ -48,11 +48,11 @@ OpenAI 这份指南和 Anthropic《Building Effective Agents》有明显交集�
 - `SKILL.md`：
   - `Build Workflow` 增加 use-case qualification、model/eval baseline、human intervention 条件。
   - `Dual-Use Rubric` 增加 tool risk rating、guardrail layer 和 human fallback 检查。
-- `references/agent-architecture.md`：
+- `skills/design-ai-agent/SKILL.md`：
   - 补充何时值得构建 agent、单 agent 优先、manager vs handoff 的选择规则。
-- `references/security-and-safety.md`：
+- `skills/secure-ai-agents/SKILL.md`：
   - 补充 layered guardrails、工具风险分级、失败阈值和高风险动作升级为人工处理。
-- `references/source-map.md`：
+- `skills/build-ai-agents/references/source-map.md`：
   - 记录本文 HTML/PDF 链接、快照和分析路径。
 - `analysis/07-overall-agent-analysis.md`：
   - 把 OpenAI 的 use-case qualification 与 production guardrails 纳入共识矩阵。

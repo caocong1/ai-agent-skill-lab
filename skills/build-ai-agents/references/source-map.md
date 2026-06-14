@@ -1,8 +1,8 @@
 # Source Map
 
-Local source root: `/Users/dongli/work/ai-agent-skill-lab/raw/repos`
+Local source root: `raw/repos`
 
-When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 (production frameworks), 2026-05-21 (teaching repo `learn-claude-code`), and 2026-05-22 (teaching repo `hello-agents`); article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
+When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 (production frameworks), 2026-05-21 (teaching repo `learn-claude-code`), 2026-05-22 (teaching repo `hello-agents`), and 2026-06-10 (SkillOpt); article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
 
 Distinguish two source kinds when citing:
 
@@ -10,6 +10,7 @@ Distinguish two source kinds when citing:
 - **Teaching repositories** (Learn Claude Code, Hello-Agents) ship pedagogical implementations meant to be read end-to-end rather than imported into production. Cite them for the minimal skeleton of a mechanism, not as canonical production defaults — see `analysis/10-learn-claude-code.md` and `analysis/11-hello-agents.md` for which defaults are intentionally simplified. They play different roles:
   - `learn-claude-code`: narrow but deep, exhausts harness mechanisms (20 lessons, one mechanism each, 200–2000-line Python per lesson).
   - `hello-agents`: broad and long, covers the full stack (theory → paradigms → frameworks → memory/RAG → context engineering → protocols → Agentic-RL → eval → case studies → capstone, 16 chapters).
+- **Skill optimization source** (SkillOpt) treats skill text as an optimizable external state for a frozen agent. Cite it for validation-gated skill/prompt evolution, not as a default runtime dependency for application agents.
 
 ## Local Repositories
 
@@ -24,6 +25,7 @@ Distinguish two source kinds when citing:
 | LangChain4j | `langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` |
 | Learn Claude Code (shareAI-lab, teaching) | `learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` |
 | Hello-Agents (Datawhale, teaching) | `hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` |
+| SkillOpt (Microsoft) | `skillopt` | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` |
 
 ## Upstream Links
 
@@ -50,6 +52,9 @@ Distinguish two source kinds when citing:
 - Hello-Agents (Datawhale): https://github.com/datawhalechina/Hello-Agents
 - Hello-Agents site: https://datawhalechina.github.io/hello-agents/
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
+- SkillOpt (Microsoft): https://github.com/microsoft/SkillOpt
+- SkillOpt project page: https://microsoft.github.io/SkillOpt/
+- SkillOpt arXiv paper: https://arxiv.org/abs/2605.23904
 
 ## High-Value Source Files
 
@@ -125,6 +130,22 @@ Hello-Agents (cite when looking for full-stack pedagogical coverage, especially 
 - `hello-agents/code/chapter11/` (Agentic-RL training pipeline, 8 Python scripts)
 - `hello-agents/Extra-Chapter/Extra01-面试问题总结.md` (Chinese interview Q&A)
 - `analysis/11-hello-agents.md`
+
+SkillOpt (cite when improving skill/prompt artifacts from trajectory evidence):
+
+- `skillopt/README.md`
+- `skillopt/docs/guide/training-loop.md`
+- `skillopt/docs/guide/skill-document.md`
+- `skillopt/docs/guide/dl-analogy.md`
+- `skillopt/docs/reference/config.md`
+- `skillopt/skillopt/engine/trainer.py`
+- `skillopt/skillopt/evaluation/gate.py`
+- `skillopt/skillopt/optimizer/skill.py`
+- `skillopt/skillopt/gradient/reflect.py`
+- `skillopt/skillopt_sleep/cycle.py`
+- `skillopt/docs/sleep/CONTROLLABLE_DREAMING.md`
+- `skillopt/plugins/codex/skills/skillopt-sleep/SKILL.md`
+- `analysis/13-skillopt.md`
 
 Java:
 

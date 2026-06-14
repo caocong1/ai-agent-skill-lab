@@ -1,0 +1,4 @@
+interface:
+  display_name: "Review AI Agents"
+  short_description: "Audit agent correctness and risk"
+  default_prompt: "Use $review-ai-agents to review this agent codebase and produce a prioritized Chinese remediation plan."

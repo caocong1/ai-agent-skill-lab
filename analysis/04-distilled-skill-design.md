@@ -41,16 +41,17 @@
 
 ## References 结构
 
-- `agent-architecture.md`: 跨框架架构原则和决策表。
-- `typescript-patterns.md`: Pi、OpenAI Agents JS、LangGraphJS、Vercel AI SDK 的 TS 模式。
-- `java-patterns.md`: Spring AI、LangChain4j 模式。
-- `mcp-patterns.md`: MCP server/client 设计。
-- `review-playbook.md`: 审查已有 agent 代码的定位、分级、报告和整改模板。
-- `anti-patterns.md`: 常见 agent 反模式、检测、影响、修复和验证。
-- `security-and-safety.md`: agent threat model、prompt/tool injection、权限与多租户。
-- `context-and-tools.md`: prompt/context、compaction、retrieval、tool 描述质量。
-- `testing-observability.md`: 测试、eval、trace、approval、replay。
-- `source-map.md`: 原始资料、本地路径、commit 和官方链接。
+历史说明：下列是 1.x 单体 skill 的 reference 拆分。2.0.0 后主体内容已迁入 sibling skills，`skills/build-ai-agents/references/` 仅保留 `source-map.md`。
+
+- `skills/design-ai-agent/SKILL.md`（原 `agent-architecture.md`）: 跨框架架构原则和决策表。
+- `skills/implement-ts-agents/SKILL.md`（原 `typescript-patterns.md`）: Pi、OpenAI Agents JS、LangGraphJS、Vercel AI SDK 的 TS 模式。
+- `skills/implement-java-agents/SKILL.md`（原 `java-patterns.md`）: Spring AI、LangChain4j 模式。
+- `skills/build-mcp-capabilities/SKILL.md`（原 `mcp-patterns.md`）: MCP server/client 设计。
+- `skills/review-ai-agents/SKILL.md`（原 `review-playbook.md` + `anti-patterns.md`）: 审查已有 agent 代码的定位、分级、报告、反模式和整改模板。
+- `skills/secure-ai-agents/SKILL.md`（原 `security-and-safety.md`）: agent threat model、prompt/tool injection、权限与多租户。
+- `skills/design-agent-tools/SKILL.md`（原 `context-and-tools.md`）: prompt/context、compaction、retrieval、tool 描述质量。
+- `skills/test-ai-agents/SKILL.md`（原 `testing-observability.md`）: 测试、eval、trace、approval、replay。
+- `skills/build-ai-agents/references/source-map.md`: 原始资料、本地路径、commit 和官方链接。
 
 ## 可直接复用的准则
 

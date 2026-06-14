@@ -1,0 +1,4 @@
+interface:
+  display_name: "Optimize Agent Skills"
+  short_description: "Improve skills with validation gates"
+  default_prompt: "Use $optimize-agent-skills to improve this agent skill or prompt using rollout evidence and validation-gated edits."

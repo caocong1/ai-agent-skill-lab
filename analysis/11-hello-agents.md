@@ -46,7 +46,7 @@
 
 ## 注意
 
-- **"流程驱动 vs AI Native"是教程立场，不是普适定理**。教程对 Coze / Dify / n8n 的"软件工程类 Agent"用了较强的判断口吻。本仓库吸收时应保留它对 agency 的边界感（不把流水线伪装成 agency），但避免把这种修辞挪入 skill 文本——`references/agent-architecture.md` 仍要保持中立、可执行风格。
+- **"流程驱动 vs AI Native"是教程立场，不是普适定理**。教程对 Coze / Dify / n8n 的"软件工程类 Agent"用了较强的判断口吻。本仓库吸收时应保留它对 agency 的边界感（不把流水线伪装成 agency），但避免把这种修辞挪入 skill 文本——`skills/design-ai-agent/SKILL.md` 仍要保持中立、可执行风格。
 - **HelloAgents 自建框架的目的是教学，不是替代生产框架**。它的 Message / Config / Agent 三件套故意做得轻，目的是看清抽象边界；要落生产仍应回到 LangGraph / OpenAI Agents JS / Vercel AI SDK / Pi 等被验证过的框架。
 - **GSSC 与 cheap-first 不要混用为同一阶段**。GSSC 是"上下文组装时的预压"，cheap-first 是"上下文过载时的应急压"，分两个阶段、各自的代价不同；如果都堆在过载时刻执行，会同时损失结构性和细节。
 - **Agentic-RL 章节要算清算力账**。GSM8K + Qwen-1.8B + LoRA + GRPO 单机能跑，但本仓库的多数读者面临的是"产品需要更准的工具调用"，先用 BFCL 量化差距、再决定是否上训练侧。教程顺带提示了分布式训练，但分布式 GRPO 的工程成本远超过本章演示。
@@ -61,15 +61,15 @@
 
 - `SKILL.md`：
   - `Build Workflow` 第 5 条 eval baseline 引用扩展到"BFCL / GAIA（见 `analysis/11-hello-agents.md`）"作为公开基准的可选对齐点；并补充"先把 inference-time（prompt/tool/context/memory）优化做到天花板，再考虑 SFT/RL 等训练侧通路"作为训练侧 agency 的进入条件。
-- `references/agent-architecture.md`：
+- `skills/design-ai-agent/SKILL.md`：
   - `Workflow vs Agent` 小节加一段"流程驱动平台（Coze / Dify / n8n）与 AI Native Agent 的差异是方法论而非工具偏好"；
   - 增补"自建最小框架（Message / Config / Agent 三件套）作为团队建立抽象共同语言的一条可选路径"。
-- `references/context-and-tools.md`：
+- `skills/design-agent-tools/SKILL.md`：
   - `Compaction Strategy` 末尾并列引用 Hello-Agents 第 9 章 GSSC（Gathering → Structuring → Scoring → Compression），说明它与 cheap-first 的前后衔接关系；
   - `Memory Pipeline` 并列引用第 8 章四级记忆划分（工作 / 短期 / 长期 / 永久），作为对 selection / extraction / consolidation 三段流程的互补"层次视角"。
-- `references/mcp-patterns.md`：
+- `skills/build-mcp-capabilities/SKILL.md`：
   - 协议选择部分新增"MCP 之外的协议选项：A2A（agent 直连）/ ANP（去中心化服务发现）"，并把"按互操作性 / 灵活性 / 性能取舍"作为协议谱系的选取准则。
-- `references/testing-observability.md`：
+- `skills/test-ai-agents/SKILL.md`：
   - `Eval Strategy` 把 BFCL（工具调用准确率）与 GAIA（端到端通用助手任务）写成"建自定义 eval 前先看公开基准"的默认参考。
-- `references/source-map.md`：
+- `skills/build-ai-agents/references/source-map.md`：
   - 补记 hello-agents 仓库与本地路径；在"教学型来源"分类里把它与 learn-claude-code 并列，并标注角色差异（"广覆盖 + 训练侧" vs "窄而深 + harness 机制穷举"）。

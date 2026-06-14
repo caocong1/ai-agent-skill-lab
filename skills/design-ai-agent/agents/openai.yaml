@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design AI Agent"
+  short_description: "Choose the right agent architecture"
+  default_prompt: "Use $design-ai-agent to design the smallest reliable AI agent architecture for this project."

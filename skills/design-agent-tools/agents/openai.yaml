@@ -1,0 +1,4 @@
+interface:
+  display_name: "Design Agent Tools"
+  short_description: "Design tools, context, retrieval, memory"
+  default_prompt: "Use $design-agent-tools to design the tool schemas, context pipeline, retrieval, and memory for this agent."

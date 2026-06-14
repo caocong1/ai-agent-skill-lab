@@ -1,7 +1,9 @@
 ---
 name: iterate-skill-lab
 description: Iterate this ai-agent-skill-lab repository when there is new AI agent research, framework, paper, article, or technique to absorb. Use to add a brand-new source analysis, refresh an existing source against a newer upstream version, or apply a skill-only optimization. Codifies versioning, CHANGELOG, SOURCE_INDEX metadata, analysis-file format, synthesis update, build-ai-agents optimization, docs/README updates, commit cadence, and PR flow.
-version: 1.0.1
+metadata:
+  version: 1.0.2
+  short-description: Iterate the agent skill lab
 ---
 
 # Iterate Skill Lab
@@ -66,7 +68,7 @@ Maintained in two places. Both must stay in sync.
 
 Run these steps in order. Omit ones the mode does not need. Each step is a separate commit (see Commit Discipline).
 
-1. **Bump skill version** (when applicable). Edit `skills/build-ai-agents/SKILL.md` frontmatter `version:` to the target X.Y.Z. Do this first so subsequent commits can reference it.
+1. **Bump skill version** (when applicable). Edit `skills/build-ai-agents/SKILL.md` frontmatter `metadata.version:` to the target X.Y.Z. Do this first so subsequent commits can reference it.
 2. **Update CHANGELOG.md**. Add a new top entry `## [X.Y.Z] - YYYY-MM-DD` with `新增 / 变更 / 文档 / 来源版本与最后更新` subsections. The per-source table must reflect the post-iteration state of any changed sources.
 3. **Acquire and snapshot the source** (skip for `update-source` when the file already exists — instead bump it):
    - **Repository**: shallow clone into `raw/repos/<slug>/`. Record the full commit hash.
@@ -122,7 +124,7 @@ For `update-source`: typical sequence is 1 + 2 + (3 or 4) + 5 + 6 + 7 + 8.
 Before marking the iteration complete:
 
 - `git status` clean after each commit; only intended text files staged.
-- `SKILL.md` frontmatter is valid YAML with `name`, `description`, `version`; `---` fences intact; no tabs.
+- `SKILL.md` frontmatter is valid YAML with `name`, `description`, and `metadata.version`; `---` fences intact; no tabs.
 - `CHANGELOG.md` has the new `## [X.Y.Z] - YYYY-MM-DD` entry; per-source table pipe-balanced; date matches reality.
 - `SOURCE_INDEX.md`: top date bumped; both tables 6 columns; new `重点阅读文件` block points at files that actually exist.
 - New `analysis/NN-…md` starts with `# 标题` + metadata blockquote and ends with `## 对最终 skill 的影响` whose items match the actual skill diff.
@@ -136,9 +138,9 @@ If a `quick_validate.py` (or equivalent) exists at the repo root, run it as a fi
 
 - **Verbatim copy of copyrighted source text into `raw/docs/`**. Always paraphrase; mark the snapshot as a structured digest.
 - **Single commit lumping multiple steps together.** The user explicitly values step-per-commit.
-- **Bumping `SKILL.md` `version` without a matching `CHANGELOG.md` entry**, or vice versa.
+- **Bumping `SKILL.md` `metadata.version` without a matching `CHANGELOG.md` entry**, or vice versa.
 - **Touching `<style>` or `<script>` in `docs/index.html`** during a normal iteration. They're self-contained; touching them without an explicit reason is out of scope.
-- **Adding new reference files inside `build-ai-agents/references/` for a MINOR bump.** New references are contract-adjacent; prefer extending existing references additively.
+- **Adding new monolithic reference files inside `build-ai-agents/references/` for a MINOR bump.** Keep that directory limited to `source-map.md`; put reusable guidance in the focused child skill that owns the topic.
 - **Overwriting `analysis/04-distilled-skill-design.md` or `analysis/05-claude-review-and-applied-changes.md`**. They have historical roles (skill-design rationale and prior review record). New synthesis content goes in `07` or a new file.
 - **Listing skill edits in `## 对最终 skill 的影响` that don't match what was actually committed.** That section is a contract with the reader; keep it truthful.
 - **Stale `更新时间` in `SOURCE_INDEX.md`.** This is the canonical registry; a wrong date here misleads future iterations and any tooling that reads it.
@@ -147,5 +149,5 @@ If a `quick_validate.py` (or equivalent) exists at the repo root, run it as a fi
 
 - New or refreshed analysis file at `analysis/NN-<slug>.md` with metadata block and `对最终 skill 的影响` list.
 - Snapshot at `raw/docs/<slug>.md` (article/paper) or `raw/repos/<slug>/` shallow clone (repo).
-- Updated `analysis/SOURCE_INDEX.md`, `analysis/07-overall-agent-analysis.md` (when applicable), `CHANGELOG.md`, `skills/build-ai-agents/SKILL.md` (frontmatter and possibly content), affected `references/*.md`, `docs/index.html`, `README.md`.
+- Updated `analysis/SOURCE_INDEX.md`, `analysis/07-overall-agent-analysis.md` (when applicable), `CHANGELOG.md`, `skills/build-ai-agents/SKILL.md` (frontmatter and possibly routing), affected child skills or `skills/build-ai-agents/references/source-map.md`, `docs/index.html`, `README.md`.
 - Feature branch pushed and a draft PR opened against `main` with a Test plan that mirrors Definition of Done.

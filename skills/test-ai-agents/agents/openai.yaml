@@ -1,0 +1,4 @@
+interface:
+  display_name: "Test AI Agents"
+  short_description: "Plan tests, evals, traces, guardrails"
+  default_prompt: "Use $test-ai-agents to add deterministic tests, evals, traces, and production guardrails for this agent."

@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build AI Agents"
+  short_description: "Route agent work to focused skills"
+  default_prompt: "Use $build-ai-agents to route this AI agent task to the right focused skill and implement it safely."

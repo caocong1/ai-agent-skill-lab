@@ -27,9 +27,9 @@
 
 - **最简优先的判定链**：能用确定性代码就不要单次调用，能用单次调用就不要 workflow，能用固定 workflow 就不要自治 agent。这条链让 skill 的 Architecture Rules 有了一个权威出处，而不只是"经验上建议"。
 - **simplicity / transparency / ACI 三原则**：
-  - simplicity——本仓库 anti-patterns 里"过度工程 agent"的正面表述。
+  - simplicity——本仓库 `skills/review-ai-agents/SKILL.md` 里"过度工程 agent"反模式的正面表述。
   - transparency——让规划步骤对人可见，对应本仓库一贯的 event 化 agent loop（Pi 的 `agent_start/turn_start/...` 事件、Vercel 的 UI message 边界）。
-  - ACI——把 agent-computer interface 当公共 API 一样设计：工具描述、参数命名、用法示例、边界情况、充分测试、poka-yoke 防误用（如强制绝对路径）。这是 `context-and-tools.md` 里 Tool Description/Schema Rubric 缺的那句"为什么"。
+  - ACI——把 agent-computer interface 当公共 API 一样设计：工具描述、参数命名、用法示例、边界情况、充分测试、poka-yoke 防误用（如强制绝对路径）。这是 `skills/design-agent-tools/SKILL.md` 里 Tool Description/Schema Rubric 缺的那句"为什么"。
 - **框架只是起点**：要理解底层代码，不要被框架抽象掩盖——这正好支撑本仓库"架构优先、框架适配"的 skill 设计取舍（见 `analysis/04`）。
 
 ## 适用场景
@@ -52,7 +52,7 @@
 - `SKILL.md`：
   - `Architecture Rules` 增加首条"最简优先"判定：deterministic > 单次调用 > 结构化 workflow > 自治 tool loop，只有步骤不可预测且工具可信才升级到自治 agent；五种 workflow 模式术语与原文对齐。
   - `Build Workflow` 第 4 步补一句：能用固定 workflow 或单次调用就不要做自治 agent。
-- `references/agent-architecture.md`：新增 `Workflow vs Agent` 小节（引用本文件）；决策表新增"开放式 / 步骤不可预测 / 工具可信 → 自治循环"行；`Loop Design` 增加 environment feedback + 显式停止条件一条。
-- `references/anti-patterns.md`：强化 `Over-Engineered Agent`，明确点出"在固定 workflow 更可靠、更透明时却做自治 agent"这一具体反模式。
-- `references/context-and-tools.md`：Tool Description Rubric 增加 ACI 准则——把 agent-computer interface 当公共 API 一样投入设计与测试。
-- `references/source-map.md`：补记该文章快照路径与抓取日期。
+- `skills/design-ai-agent/SKILL.md`：新增 `Workflow vs Agent` 小节（引用本文件）；决策表新增"开放式 / 步骤不可预测 / 工具可信 → 自治循环"行；`Loop Design` 增加 environment feedback + 显式停止条件一条。
+- `skills/review-ai-agents/SKILL.md`：强化 `Over-Engineered Agent`，明确点出"在固定 workflow 更可靠、更透明时却做自治 agent"这一具体反模式。
+- `skills/design-agent-tools/SKILL.md`：Tool Description Rubric 增加 ACI 准则——把 agent-computer interface 当公共 API 一样投入设计与测试。
+- `skills/build-ai-agents/references/source-map.md`：补记该文章快照路径与抓取日期。

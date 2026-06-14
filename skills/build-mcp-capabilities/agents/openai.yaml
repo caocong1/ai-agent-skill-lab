@@ -1,0 +1,4 @@
+interface:
+  display_name: "Build MCP Capabilities"
+  short_description: "Design MCP tools, resources, clients"
+  default_prompt: "Use $build-mcp-capabilities to design an MCP server or client capability layer for this agent."

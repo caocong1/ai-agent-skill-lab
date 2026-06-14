@@ -1,0 +1,4 @@
+interface:
+  display_name: "Implement Java Agents"
+  short_description: "Implement Java and Spring agents"
+  default_prompt: "Use $implement-java-agents to implement this Java agent with the project’s service and DI patterns."

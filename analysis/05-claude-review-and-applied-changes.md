@@ -18,6 +18,8 @@ Claude 认为第一版 skill 对“新建 AI agent 功能”已经比较完整�
 
 ## 已采纳修改
 
+历史说明：本节记录 1.x 单体 skill 的 Claude 评审落地；2.0.0 后这些 reference 文件已迁入 sibling skills，当前路径见 `analysis/04-distilled-skill-design.md` 的映射。
+
 - `SKILL.md` 新增 `Mode`、`Review Workflow`、`Deliverables` 和 `Definition of Done`。
 - `SKILL.md` 将原 `Mandatory Checks` 改成 `Dual-Use Rubric`，同时服务 build 和 review。
 - `agent-architecture.md` 扩展决策表，加入 deterministic code、streaming UI、多租户、可逆 side effects、context overflow 等场景。

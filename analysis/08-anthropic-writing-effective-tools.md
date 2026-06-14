@@ -2,7 +2,7 @@
 
 > 分析版本：1.0 ｜ 最后更新：2026-05-20 ｜ 来源：Anthropic, Writing Effective Tools for Agents（发布 2025-09-11，抓取 2026-05-20）｜ 快照：`raw/docs/anthropic-writing-effective-tools.md`
 
-这篇文章是 `analysis/06-anthropic-building-effective-agents.md` 的自然后续：前一篇回答"何时需要 agent / workflow"，这一篇把焦点压到 agent 成败最常见的工程边界——tool。它把 `context-and-tools.md` 里已有的 ACI 原则展开成可评测、可迭代的工具设计流程。
+这篇文章是 `analysis/06-anthropic-building-effective-agents.md` 的自然后续：前一篇回答"何时需要 agent / workflow"，这一篇把焦点压到 agent 成败最常见的工程边界——tool。它把 `skills/design-agent-tools/SKILL.md` 里已有的 ACI 原则展开成可评测、可迭代的工具设计流程。
 
 已有代码项目已经展示了 schema-first tool、审批边界、MCP server/client 与 tool loop 的实现形态；这篇文章补上一个更上层的问题：不要只把现有 API 机械包成 tool，而要把 tool 当成模型要使用的产品界面来设计。
 
@@ -48,9 +48,9 @@
 - `SKILL.md`：
   - `Build Workflow` 增加在扩充工具前先用真实任务建立 eval 基线的要求。
   - `Dual-Use Rubric` 把 tool quality 从 schema/description 扩展到工具边界、命名、返回上下文、错误可修复性和 token 预算。
-- `references/context-and-tools.md`：
+- `skills/design-agent-tools/SKILL.md`：
   - 新增 agent-facing tool design 指导：选择高价值工具、避免 endpoint sprawl、命名空间、响应格式、token 控制、可修复错误和 transcript/eval 优化。
-- `references/source-map.md`：
+- `skills/build-ai-agents/references/source-map.md`：
   - 记录本文链接、快照和分析路径。
 - `analysis/07-overall-agent-analysis.md`：
   - 把"tool ergonomics / eval-driven tool design"纳入跨来源共识。
