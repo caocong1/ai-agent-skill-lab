@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-06-05（2026-06-05 执行 SEED-001 来源新鲜度审查，详见下方 `## 新鲜度审查`）。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-06-14（新增 Microsoft SkillOpt 来源，并将 `build-ai-agents` 重构为复合 skill suite；2026-06-05 执行 SEED-001 来源新鲜度审查，详见下方 `## 新鲜度审查`）。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -17,6 +17,7 @@
 | LangChain4j | `raw/repos/langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` | 1.0 | 2026-05-18 | Java AI service、tool executor/provider、agentic sequence、skills |
 | Learn Claude Code | `raw/repos/learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` | 1.0 | 2026-05-21 | harness vs agent 区分、20 课渐进式编目、cheap-first 多层 compaction、memory 三段流程、错误恢复三路径、worktree 隔离、mailbox + claim-from-board 多 agent |
 | Hello-Agents (Datawhale) | `raw/repos/hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` | 1.0 | 2026-05-22 | 流程驱动 vs AI Native Agent、16 章全栈编目、自建 HelloAgents 框架（Message/Config/Agent）、四级记忆 + RAG、GSSC 上下文工程、协议谱系（MCP/A2A/ANP）、Agentic-RL（SFT + GRPO）、BFCL/GAIA 评估、TODO 驱动深度研究、赛博小镇 |
+| SkillOpt (Microsoft) | `raw/repos/skillopt` | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` | 1.0 | 2026-06-14 | skill 文档作为可训练外部状态、rollout/reflect/aggregate/select/update/gate、textual learning rate、held-out validation、slow/meta update、SkillOpt-Sleep 离线巩固、staged adoption |
 
 ## Articles and Papers
 
@@ -88,6 +89,9 @@ Canonical link list for the reusable skill lives in `skills/build-ai-agents/refe
 - Hello-Agents (Datawhale): https://github.com/datawhalechina/Hello-Agents
 - Hello-Agents site: https://datawhalechina.github.io/hello-agents/
 - Google Agent Development Kit docs: https://google.github.io/adk-docs/
+- SkillOpt (Microsoft): https://github.com/microsoft/SkillOpt
+- SkillOpt project page: https://microsoft.github.io/SkillOpt/
+- SkillOpt arXiv paper: https://arxiv.org/abs/2605.23904
 - Claude Code docs: https://docs.claude.com/claude-code
 - Anthropic Agent SDK docs: https://docs.claude.com/agent-sdk
 - 检索策略综述关键源 — Anthropic Contextual Retrieval: https://www.anthropic.com/news/contextual-retrieval
@@ -236,3 +240,18 @@ Hello-Agents (Datawhale)（教学型全栈编目；16 章中文教程 + 配套�
 
 - `raw/docs/retrieval-strategy-research.md`（多来源 paraphrased digest 快照）
 - `analysis/12-retrieval-strategy-vector-vs-agentic.md`（分析报告）
+
+SkillOpt (Microsoft)（skill/prompt 文本空间优化；仓库 + 论文 + Codex 插件）:
+
+- `raw/repos/skillopt/README.md`
+- `raw/repos/skillopt/docs/guide/training-loop.md`（rollout → reflect → aggregate → select → update → gate）
+- `raw/repos/skillopt/docs/guide/skill-document.md`（skill document 作为 prompt weights）
+- `raw/repos/skillopt/docs/guide/dl-analogy.md`（DL ↔ SkillOpt 映射）
+- `raw/repos/skillopt/docs/reference/config.md`（optimizer/target/backend/eval knobs）
+- `raw/repos/skillopt/skillopt/engine/trainer.py`（主训练循环）
+- `raw/repos/skillopt/skillopt/evaluation/gate.py`（validation gate）
+- `raw/repos/skillopt/skillopt/optimizer/skill.py`（有界 edit 应用与 protected region）
+- `raw/repos/skillopt/skillopt/gradient/reflect.py`（minibatch trajectory reflection）
+- `raw/repos/skillopt/docs/sleep/CONTROLLABLE_DREAMING.md`（train/val/test、multi-rollout、budget、slow update）
+- `raw/repos/skillopt/plugins/codex/skills/skillopt-sleep/SKILL.md`（Codex sleep cycle skill）
+- `analysis/13-skillopt.md`（分析报告）
