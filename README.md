@@ -9,7 +9,8 @@
 - `raw/repos/`: 拉取的原始开源项目，只作为学习资料和证据来源。
 - `raw/docs/`: 白皮书、官方文档快照、文章摘要或研究综述。
 - `analysis/`: 分主题的源码分析、模式总结和结论。
-- `skills/build-ai-agents/`: 最终可复用的 Codex skill。
+- `skills/build-ai-agents/`: 最终可复用的 Codex skill suite 入口。
+- `skills/design-*` / `skills/implement-*` / `skills/review-*` / `skills/secure-*` / `skills/test-*` / `skills/optimize-*`: `build-ai-agents` 拆出的 focused child skills。
 - `skills/iterate-skill-lab/`: 维护本仓库自身迭代流程的 Codex skill。
 - `docs/index.html`: 面向阅读的资料索引和可视化入口。
 
@@ -26,6 +27,7 @@
 - `langchain4j`: 学习 Java-native AI service、tool executor/provider、agentic service、skills 集成。
 - `learn-claude-code`（教学型仓库，shareAI-lab）：20 课渐进式 harness 编目，把 agent loop、hooks、permission、skill 加载、cheap-first 多层 context compaction、selection/extraction/consolidation 三段 memory、模型层错误恢复三路径、task graph、background/cron、mailbox-based agent team、worktree 隔离、MCP 接入各自做成独立的最小可运行 `code.py`，强调 agency 来自模型训练、harness 来自工程的本体论区分。
 - `hello-agents`（教学型仓库，Datawhale）：16 章 / 5 部分系统化中文教程，覆盖智能体基础理论、经典范式（ReAct / Plan-and-Solve / Reflection）、低代码平台（Coze / Dify / n8n）、主流框架（AutoGen / AgentScope / CAMEL / LangGraph）、自建 HelloAgents 框架（Message / Config / Agent 三件套）、记忆与 RAG、上下文工程 GSSC 流水线、智能体通信协议谱系（MCP / A2A / ANP）、Agentic-RL（SFT + GRPO 训练通路）、智能体性能评估（BFCL / GAIA）以及三个综合案例（旅行助手 / TODO 驱动深度研究 / 赛博小镇）。与 `learn-claude-code` 形成互补："窄而深 + harness 机制穷举" vs "广覆盖 + 含训练侧"。
+- `skillopt`（Microsoft）：把 skill/prompt 文档当作 frozen agent 的可训练外部状态，通过 rollout → reflect → aggregate → select → update → gate 的文本空间优化循环产出 compact `best_skill.md`，并提供 SkillOpt-Sleep 的离线 session replay / held-out gate / staged adoption 形态。本仓库吸收其思想用于 `optimize-agent-skills`，不把它作为其他项目 agent runtime 的默认依赖。
 
 除代码项目外，还分析了权威文章：
 
@@ -39,9 +41,9 @@
 
 ## 版本与变更
 
-skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version` 字段（当前 1.5.1），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+skill 版本记录在各 `SKILL.md` frontmatter 的 `metadata.version` 字段（`build-ai-agents` suite 当前 2.0.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
 
-本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.0.1）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
+本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.0.2）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
 
 ## 使用方式
 
@@ -51,9 +53,9 @@ skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version
 
 1. `analysis/07-overall-agent-analysis.md`: 跨来源总综合，先建立 agent / workflow / harness / tool / memory 的整体判断框架。
 2. `skills/build-ai-agents/SKILL.md`: 查看最终沉淀成 Codex skill 的执行契约。
-3. `skills/build-ai-agents/references/agent-architecture.md`: 决定是否真的需要 agent，以及应该选哪种形态。
-4. `skills/build-ai-agents/references/context-and-tools.md`: 处理 prompt、context、retrieval、tool description 和 token 预算。
-5. `skills/build-ai-agents/references/testing-observability.md`: 落地测试、回放、审批、trace 和 eval。
+3. `skills/design-ai-agent/SKILL.md`: 决定是否真的需要 agent，以及应该选哪种形态。
+4. `skills/design-agent-tools/SKILL.md`: 处理 prompt、context、retrieval、tool description 和 token 预算。
+5. `skills/test-ai-agents/SKILL.md`: 落地测试、回放、审批、trace 和 eval。
 
 ### 安装 skill
 
@@ -62,6 +64,15 @@ skill 版本记录在 `skills/build-ai-agents/SKILL.md` frontmatter 的 `version
 ```bash
 mkdir -p "$HOME/.codex/skills"
 ln -sfn "<repo-path>/skills/build-ai-agents" "$HOME/.codex/skills/build-ai-agents"
+ln -sfn "<repo-path>/skills/design-ai-agent" "$HOME/.codex/skills/design-ai-agent"
+ln -sfn "<repo-path>/skills/design-agent-tools" "$HOME/.codex/skills/design-agent-tools"
+ln -sfn "<repo-path>/skills/build-mcp-capabilities" "$HOME/.codex/skills/build-mcp-capabilities"
+ln -sfn "<repo-path>/skills/implement-ts-agents" "$HOME/.codex/skills/implement-ts-agents"
+ln -sfn "<repo-path>/skills/implement-java-agents" "$HOME/.codex/skills/implement-java-agents"
+ln -sfn "<repo-path>/skills/review-ai-agents" "$HOME/.codex/skills/review-ai-agents"
+ln -sfn "<repo-path>/skills/secure-ai-agents" "$HOME/.codex/skills/secure-ai-agents"
+ln -sfn "<repo-path>/skills/test-ai-agents" "$HOME/.codex/skills/test-ai-agents"
+ln -sfn "<repo-path>/skills/optimize-agent-skills" "$HOME/.codex/skills/optimize-agent-skills"
 ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skill-lab"
 ```
 
@@ -69,11 +80,12 @@ ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skil
 
 ### 使用 `build-ai-agents`
 
-`build-ai-agents` 用于在其他项目里设计、实现、扩展或审查 AI agent 能力。它有三种模式：
+`build-ai-agents` 用于在其他项目里设计、实现、扩展或审查 AI agent 能力。2.0.0 起它是 suite 入口，会按任务路由到 focused child skills。它支持四种模式：
 
 - `build`: 从零设计并实现一个新的 agent 功能。
 - `extend`: 在已有 agent 上增加工具、记忆、审批、MCP、检索或其他能力。
 - `review`: 审查已有 agent 代码，按风险优先级输出中文整改计划，并给出 `file:line` 证据。
+- `optimize-skill`: 用真实轨迹、held-out gate 和 staged adoption 优化 agent skill / prompt / tool 描述。
 
 可以显式点名 skill，也可以描述任务让 Codex 自动匹配。典型提示：
 
@@ -91,16 +103,16 @@ ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skil
 
 使用时优先参考这些文件：
 
-1. `skills/build-ai-agents/SKILL.md`: 给 Codex 的触发和执行流程。
-2. `skills/build-ai-agents/references/agent-architecture.md`: 选择 agent 架构。
-3. `skills/build-ai-agents/references/typescript-patterns.md`: TS/OpenAI/Vercel/LangGraph/Pi 模式。
-4. `skills/build-ai-agents/references/java-patterns.md`: Spring AI 和 LangChain4j 模式。
-5. `skills/build-ai-agents/references/mcp-patterns.md`: MCP server/client 设计。
-6. `skills/build-ai-agents/references/review-playbook.md`: 审查已有 agent 代码的定位、分级和整改模板。
-7. `skills/build-ai-agents/references/anti-patterns.md`: 常见 agent 反模式、检测方式和修复方案。
-8. `skills/build-ai-agents/references/security-and-safety.md`: agent 安全威胁模型和审查清单。
-9. `skills/build-ai-agents/references/context-and-tools.md`: prompt/context 与 tool 描述优化。
-10. `skills/build-ai-agents/references/testing-observability.md`: 测试、回放、审批和可观测性。
+1. `skills/build-ai-agents/SKILL.md`: suite 入口和路由规则。
+2. `skills/design-ai-agent/SKILL.md`: 选择 agent 架构。
+3. `skills/design-agent-tools/SKILL.md`: prompt/context、retrieval、memory、tool schema/description。
+4. `skills/build-mcp-capabilities/SKILL.md`: MCP server/client 设计。
+5. `skills/implement-ts-agents/SKILL.md`: TS/OpenAI/Vercel/LangGraph/Pi 模式。
+6. `skills/implement-java-agents/SKILL.md`: Spring AI 和 LangChain4j 模式。
+7. `skills/review-ai-agents/SKILL.md`: 审查已有 agent 代码的定位、分级和整改模板。
+8. `skills/secure-ai-agents/SKILL.md`: agent 安全威胁模型和审查清单。
+9. `skills/test-ai-agents/SKILL.md`: 测试、回放、审批和可观测性。
+10. `skills/optimize-agent-skills/SKILL.md`: SkillOpt 风格的 skill/prompt 优化流程。
 
 `build-ai-agents` 的一个核心原则是先判断任务是否真的需要 agent：能用确定性代码解决的就不要引入模型；能用单次模型调用或固定 workflow 解决的就不要上自治 tool loop；只有当路径无法硬编码、需要模型动态选择工具并处理不确定状态时，才逐步升级到 tool loop、durable graph 或 multi-agent。
 
@@ -128,7 +140,7 @@ ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skil
 
 每次扩展资料集或改动 skill 后，至少检查这些内容：
 
-- `skills/build-ai-agents/SKILL.md` 的 `version` 是否与 `README.md` 和 `CHANGELOG.md` 一致。
+- `skills/build-ai-agents/SKILL.md` 的 `metadata.version` 是否与 `README.md` 和 `CHANGELOG.md` 一致。
 - `analysis/SOURCE_INDEX.md` 是否记录了来源版本、分析版本和最后更新日期。
 - 新增分析文件是否包含元数据块，并说明“对最终 skill 的影响”。
 - `docs/index.html` 是否把新来源展示出来。

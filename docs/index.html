@@ -534,7 +534,7 @@
             <div class="eyebrow">Technical Documentation</div>
             <h1>AI Agent 工程结构</h1>
             <p class="lead">
-              本页只解释 AI agent 的运行逻辑：请求怎样进入模型，工具在哪里执行，状态怎样回到下一轮，以及 build-ai-agents skill 的分析来源和安装方式。
+              本页只解释 AI agent 的运行逻辑：请求怎样进入模型，工具在哪里执行，状态怎样回到下一轮，以及 build-ai-agents skill suite 的分析来源和安装方式。
             </p>
             <div class="summary">
               <div class="summary-item">
@@ -655,7 +655,7 @@
       <section id="sources">
         <h2>3. 这个项目分析了哪些项目</h2>
         <p class="section-note">
-          这个 skill 不是从单一框架抽象出来的，而是把几个典型 agent 项目、权威文章与专题研究综述的模式压缩成通用说明。
+          这个 skill suite 不是从单一框架抽象出来的，而是把典型 agent 项目、权威文章、专题研究综述与 SkillOpt 式 skill 优化方法压缩成可按任务加载的通用说明。
         </p>
 
         <table aria-label="项目分析来源">
@@ -728,6 +728,11 @@
               <td>流程驱动 vs AI Native Agent 方法论、自建框架（Message/Config/Agent）、GSSC 上下文工程流水线、MCP/A2A/ANP 协议谱系、Agentic-RL（SFT + GRPO）训练通路、BFCL/GAIA 评估基准。</td>
             </tr>
             <tr>
+              <td>SkillOpt（Microsoft）</td>
+              <td>把自然语言 skill 文档当作 frozen agent 的可训练外部状态，通过离线轨迹、反思、有界文本编辑和 held-out gate 优化可部署的 compact skill artifact。</td>
+              <td>rollout → reflect → aggregate → select → update → gate、textual learning rate、train/val/test split、strong optimizer vs frozen target、slow/meta update、SkillOpt-Sleep staged adoption。</td>
+            </tr>
+            <tr>
               <td>检索策略研究综述（向量 vs Agentic）</td>
               <td>2024–2026 多来源 web 研究综合（约 55 源 + 对抗式核验），回答 agent 文档检索该用向量 RAG、agentic 工具检索还是长上下文。</td>
               <td>按语料规模分层 + 查询类型路由、检索失败的静默性、查询扩展 + 精确匹配兜底、混合+重排为生产标准、grep 工具层（ripgrep/ast-grep/rga）盘点。</td>
@@ -737,9 +742,9 @@
       </section>
 
       <section id="skill">
-        <h2>4. 安装 build-ai-agents skill</h2>
+        <h2>4. 安装 build-ai-agents skill suite</h2>
         <p class="section-note">
-          这个 skill 让 agent 在具体项目里处理 AI agent 相关任务。页面只保留安装方式；具体实现和审查由安装后的 skill 指导 agent 完成。
+          这个 suite 让 agent 在具体项目里处理 AI agent 相关任务。`build-ai-agents` 是入口，其他 sibling skills 承载架构、工具、MCP、语言实现、审查、安全、测试和 SkillOpt 式优化。
         </p>
 
         <div class="install">
@@ -749,17 +754,39 @@ git clone https://github.com/caocong1/ai-agent-skill-lab.git
 # 方式一：安装到当前项目
 mkdir -p .agent/skills
 cp -R ai-agent-skill-lab/skills/build-ai-agents .agent/skills/build-ai-agents
+cp -R ai-agent-skill-lab/skills/design-ai-agent .agent/skills/design-ai-agent
+cp -R ai-agent-skill-lab/skills/design-agent-tools .agent/skills/design-agent-tools
+cp -R ai-agent-skill-lab/skills/build-mcp-capabilities .agent/skills/build-mcp-capabilities
+cp -R ai-agent-skill-lab/skills/implement-ts-agents .agent/skills/implement-ts-agents
+cp -R ai-agent-skill-lab/skills/implement-java-agents .agent/skills/implement-java-agents
+cp -R ai-agent-skill-lab/skills/review-ai-agents .agent/skills/review-ai-agents
+cp -R ai-agent-skill-lab/skills/secure-ai-agents .agent/skills/secure-ai-agents
+cp -R ai-agent-skill-lab/skills/test-ai-agents .agent/skills/test-ai-agents
+cp -R ai-agent-skill-lab/skills/optimize-agent-skills .agent/skills/optimize-agent-skills
 
 # 方式二：安装到当前用户
 mkdir -p ~/.agent/skills
 cp -R ai-agent-skill-lab/skills/build-ai-agents ~/.agent/skills/build-ai-agents
+cp -R ai-agent-skill-lab/skills/design-ai-agent ~/.agent/skills/design-ai-agent
+cp -R ai-agent-skill-lab/skills/design-agent-tools ~/.agent/skills/design-agent-tools
+cp -R ai-agent-skill-lab/skills/build-mcp-capabilities ~/.agent/skills/build-mcp-capabilities
+cp -R ai-agent-skill-lab/skills/implement-ts-agents ~/.agent/skills/implement-ts-agents
+cp -R ai-agent-skill-lab/skills/implement-java-agents ~/.agent/skills/implement-java-agents
+cp -R ai-agent-skill-lab/skills/review-ai-agents ~/.agent/skills/review-ai-agents
+cp -R ai-agent-skill-lab/skills/secure-ai-agents ~/.agent/skills/secure-ai-agents
+cp -R ai-agent-skill-lab/skills/test-ai-agents ~/.agent/skills/test-ai-agents
+cp -R ai-agent-skill-lab/skills/optimize-agent-skills ~/.agent/skills/optimize-agent-skills
 
 # 方式三：复制下面这段 prompt 到你正在使用的 agent
-请帮我安装 build-ai-agents skill。
+请帮我安装 build-ai-agents skill suite。
 Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
-请先获取该仓库，然后把仓库内的 skills/build-ai-agents
-安装到你当前打开工作目录的 .agent/skills/build-ai-agents。
-安装后请确认 .agent/skills/build-ai-agents/SKILL.md 存在。
+请先获取该仓库，然后把仓库内 skills/build-ai-agents
+以及 design-ai-agent、design-agent-tools、build-mcp-capabilities、
+implement-ts-agents、implement-java-agents、review-ai-agents、
+secure-ai-agents、test-ai-agents、optimize-agent-skills
+安装到你当前打开工作目录的 .agent/skills/。
+安装后请确认 .agent/skills/build-ai-agents/SKILL.md
+和 .agent/skills/design-ai-agent/SKILL.md 存在。
 如果你无法访问该仓库，请停止并说明需要我粘贴哪些文件内容。</code></pre>
           <p class="install-note">
             触发示例：<code>用 build-ai-agents 审查这个项目的 agent 工具权限和循环控制</code>。
@@ -769,7 +796,7 @@ Skill 仓库地址：https://github.com/caocong1/ai-agent-skill-lab.git
     </main>
 
     <footer>
-      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill v1.5.1 ｜
+      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.0.0 ｜
       <a
         href="https://github.com/caocong1/ai-agent-skill-lab/blob/main/CHANGELOG.md"
         target="_blank"

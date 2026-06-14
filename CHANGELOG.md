@@ -8,7 +8,41 @@
 - MINOR：新增能力、新增 reference、新增对指导有实质影响的分析来源。
 - PATCH：措辞澄清、小幅补充，不改变契约。
 
-各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
+各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `metadata.version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
+
+## [2.0.0] - 2026-06-14
+
+### 新增
+
+- 新增 Microsoft SkillOpt 来源分析 `analysis/13-skillopt.md`，并以 shallow clone 记录 `raw/repos/skillopt/`（commit `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392`）。该来源把 skill 文档视为 frozen agent 的可训练外部状态，核心循环为 rollout → reflect → aggregate → select → update → gate，并强调 textual learning rate、held-out validation、slow/meta update、strong optimizer vs frozen target、SkillOpt-Sleep 的离线 replay / staged adoption。
+- 新增 9 个 focused child skills：`design-ai-agent`、`design-agent-tools`、`build-mcp-capabilities`、`implement-ts-agents`、`implement-java-agents`、`review-ai-agents`、`secure-ai-agents`、`test-ai-agents`、`optimize-agent-skills`。
+- 为 `build-ai-agents` suite 入口和所有 child skills 新增 `agents/openai.yaml` UI metadata。
+
+### 变更
+
+- `skills/build-ai-agents/SKILL.md` 从单体执行 skill 重构为 suite router，保留旧入口名并按任务路由到 focused child skills；`build / extend / review` 外新增 `optimize-skill` 模式。
+- 原 `skills/build-ai-agents/references/*.md` 的主体内容迁入对应 child skills；`references/` 下仅保留 `source-map.md` 作为共享来源索引，避免重复维护。
+- skill 版本字段从顶层 `version` 迁移到 `metadata.version`，使通用 `quick_validate.py` 能通过。`build-ai-agents` suite 当前版本为 2.0.0；`iterate-skill-lab` 更新到 1.0.2，并同步其版本字段说明。
+- `analysis/07-overall-agent-analysis.md` 更新到分析版本 2.0，把 SkillOpt 纳入“skill / prompt 文本空间优化”维度，并把 `build-ai-agents` 的沉淀形态更新为复合 skill suite。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 SkillOpt 仓库行、Official Links 与重点阅读文件块，顶部更新时间改为 2026-06-14。
+- `skills/build-ai-agents/references/source-map.md`：补充 SkillOpt 本地路径、commit、官方链接和高价值文件；本地 source root 改为仓库相对路径。
+- `README.md`：说明 `build-ai-agents` 2.0.0 suite 结构、安装所有 child skills、SkillOpt 来源和 `metadata.version` 版本约定。
+- `docs/index.html`：分析来源表新增 SkillOpt，安装说明改为复制整个 `skills/` suite，footer 更新到 skill suite v2.0.0；`<style>` 与 `<script>` 不应改动。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| SkillOpt (Microsoft) | repo | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` | 1.0 | 2026-06-14 |
+
+## iterate-skill-lab [1.0.2] - 2026-06-14
+
+### 修复
+
+- 将 `skills/iterate-skill-lab/SKILL.md` 的顶层 `version` 迁移为 `metadata.version`，并把自身流程中对 `build-ai-agents` 版本字段的说明同步为 `metadata.version`。
 
 ## [1.5.1] - 2026-06-05
 
@@ -19,9 +53,9 @@
 
 ### 变更（skill 优化 / SEED-001 措辞收口）
 
-- `references/context-and-tools.md`：reactive compaction 触发条件由厂商字符串 `prompt_too_long` 改为按行为命名（“provider 仍报上下文超长 / 长度超限错误”），`prompt_too_long` 降为括注示例，并提示按 provider 当前错误分类核对。
-- `references/testing-observability.md`：模型层两类失败由 `max_tokens reached` / `prompt_too_long` 字面名改为按行为命名（“输出在 token 预算处被截断” / “输入超出上下文窗口”），注明字段/错误名按 provider 而异（如 `finish_reason`/`stop_reason` 值 vs 专用错误），字面名保留为示例。
-- `references/mcp-patterns.md`：MCP/A2A/ANP 的成熟度排名由“当前最高采纳/生态更弱”改为带日期的观测（“截至源快照…，实现前请复核”），保留“默认 MCP、按跨运行时/跨组织需要升级”的决策规则不变。
+- `skills/design-agent-tools/SKILL.md`：reactive compaction 触发条件由厂商字符串 `prompt_too_long` 改为按行为命名（“provider 仍报上下文超长 / 长度超限错误”），`prompt_too_long` 降为括注示例，并提示按 provider 当前错误分类核对。
+- `skills/test-ai-agents/SKILL.md`：模型层两类失败由 `max_tokens reached` / `prompt_too_long` 字面名改为按行为命名（“输出在 token 预算处被截断” / “输入超出上下文窗口”），注明字段/错误名按 provider 而异（如 `finish_reason`/`stop_reason` 值 vs 专用错误），字面名保留为示例。
+- `skills/build-mcp-capabilities/SKILL.md`：MCP/A2A/ANP 的成熟度排名由“当前最高采纳/生态更弱”改为带日期的观测（“截至源快照…，实现前请复核”），保留“默认 MCP、按跨运行时/跨组织需要升级”的决策规则不变。
 
 ### 变更（分析层措辞收口）
 
@@ -44,7 +78,7 @@
 ### 变更（skill 优化）
 
 - `SKILL.md`：`Architecture Rules` 新增一条检索默认——文档检索默认 agentic 工具检索 / 小语料全量上下文，仅当语料规模、语义 / 跨文档查询、延迟或多租户隔离逼迫时才升级到 hybrid 向量+重排（且先用现有数据库如 pgvector），不默认自建向量库。
-- `references/context-and-tools.md`：在 `Long Document Handling` 之后新增 `Retrieval Strategy` 小节——按语料规模分层 + 按查询类型路由的选型闸、升级信号（先 pgvector 后专用库）、agentic 检索两条标配（查询扩展治同义漏检 / 精确匹配通道治编号·条款·型号·否定词的静默漏检）、检索失败的静默性提示，以及 grep 工具层背景。
+- `skills/design-agent-tools/SKILL.md`：在 `Long Document Handling` 之后新增 `Retrieval Strategy` 小节——按语料规模分层 + 按查询类型路由的选型闸、升级信号（先 pgvector 后专用库）、agentic 检索两条标配（查询扩展治同义漏检 / 精确匹配通道治编号·条款·型号·否定词的静默漏检）、检索失败的静默性提示，以及 grep 工具层背景。
 
 ### 文档
 
@@ -69,11 +103,11 @@
 ### 变更（skill 优化）
 
 - `SKILL.md`：`Build Workflow` 第 5 条把 eval baseline 的来源从两篇文章扩展为"权威指南 + Hello-Agents 第 12 章给出的 BFCL / GAIA 基准"；新增可选的 training-time agency 提示——当任务在 inference-time 推理 / 工具 / 上下文工程穷尽后仍有缺口时再考虑 SFT/RL 微调，避免本末倒置（见 `analysis/11-hello-agents.md`）。
-- `references/agent-architecture.md`：`Workflow vs Agent` 小节强化"流程驱动平台（Coze/Dify/n8n）与 AI Native Agent 的差异"，并把"自建最小框架以理解原理"作为团队建立共同语言的一条可选路径。
-- `references/context-and-tools.md`：`Compaction Strategy` 与 `Memory Pipeline` 末尾并列引用 Hello-Agents 的 GSSC（Gathering → Structuring → Scoring → Compression）四步与四级记忆划分（工作 / 短期 / 长期 / 永久），作为对 cheap-first 与 selection/extraction/consolidation 的互补视角。
-- `references/mcp-patterns.md`：协议选择部分补充"MCP 之外还有 A2A（agent 直连）与 ANP（去中心化服务发现），按互操作性 / 灵活性 / 性能取舍"，并引用 Hello-Agents 第 10 章作为协议谱系的参考来源。
-- `references/testing-observability.md`：`Eval Strategy` 把 BFCL（工具调用准确率）与 GAIA（端到端通用任务）写成默认可参考的基准命名，提示"自建评测前先看是否已有可对齐的公开基准"。
-- `references/source-map.md`：补记 hello-agents 仓库与本地路径，并说明它在教学型来源中扮演"广覆盖、含训练侧（Agentic-RL）"的角色，与 learn-claude-code 的"窄而深、harness 机制穷举"形成互补。
+- `skills/design-ai-agent/SKILL.md`：`Workflow vs Agent` 小节强化"流程驱动平台（Coze/Dify/n8n）与 AI Native Agent 的差异"，并把"自建最小框架以理解原理"作为团队建立共同语言的一条可选路径。
+- `skills/design-agent-tools/SKILL.md`：`Compaction Strategy` 与 `Memory Pipeline` 末尾并列引用 Hello-Agents 的 GSSC（Gathering → Structuring → Scoring → Compression）四步与四级记忆划分（工作 / 短期 / 长期 / 永久），作为对 cheap-first 与 selection/extraction/consolidation 的互补视角。
+- `skills/build-mcp-capabilities/SKILL.md`：协议选择部分补充"MCP 之外还有 A2A（agent 直连）与 ANP（去中心化服务发现），按互操作性 / 灵活性 / 性能取舍"，并引用 Hello-Agents 第 10 章作为协议谱系的参考来源。
+- `skills/test-ai-agents/SKILL.md`：`Eval Strategy` 把 BFCL（工具调用准确率）与 GAIA（端到端通用任务）写成默认可参考的基准命名，提示"自建评测前先看是否已有可对齐的公开基准"。
+- `skills/build-ai-agents/references/source-map.md`：补记 hello-agents 仓库与本地路径，并说明它在教学型来源中扮演"广覆盖、含训练侧（Agentic-RL）"的角色，与 learn-claude-code 的"窄而深、harness 机制穷举"形成互补。
 
 ### 文档
 
@@ -98,11 +132,11 @@
 ### 变更（skill 优化）
 
 - `SKILL.md`：Architecture Rules 首条改写为"区分 agent 与 harness"——agent 的能力来自模型训练，工程师的工作是把 harness 建好；并把 harness 内含的工具/知识/上下文/权限/观测显式列出。
-- `references/agent-architecture.md`：新增 `Agent vs Harness Boundary` 小节，把 harness engineering 的工程职责（tools / knowledge / context / permissions / trajectory）作为 skill 的工程心智模型；`Loop Design` 增补 hook 扩展点（pre/post tool）作为不改主循环的扩展机制。
-- `references/context-and-tools.md`：`Compaction Strategy` 扩写为"cheap-first → expensive-last 多层管线"：snip → micro-replace → tool-result budget → 显式 LLM 摘要 → reactive 应急；`Long Document Handling` 加入 tool-result 持久化与句柄引用思路；新增 memory 三段流程（selection / extraction / consolidation）作为 memory 写入与回读的设计骨架。
-- `references/security-and-safety.md`：补充"按任务隔离工作目录（worktree / sandbox dir）"作为多 agent 并行执行与不可逆动作的隔离手段；补充"trajectory 是 PII/secrets 的扩散面，输出与日志按相同准则脱敏"。
-- `references/testing-observability.md`：补充长任务 / 后台执行 / cron 触发的观测要点（运行 id、注入回执、超时与重试上下限），并把"失败分级 + 退避 + fallback 模型"加入错误恢复模式。
-- `references/source-map.md`：补记 learn-claude-code 仓库与本地路径，并把"教学型来源（教学化简实现，可直读 200–1000 行）"与生产框架来源区分清楚。
+- `skills/design-ai-agent/SKILL.md`：新增 `Agent vs Harness Boundary` 小节，把 harness engineering 的工程职责（tools / knowledge / context / permissions / trajectory）作为 skill 的工程心智模型；`Loop Design` 增补 hook 扩展点（pre/post tool）作为不改主循环的扩展机制。
+- `skills/design-agent-tools/SKILL.md`：`Compaction Strategy` 扩写为"cheap-first → expensive-last 多层管线"：snip → micro-replace → tool-result budget → 显式 LLM 摘要 → reactive 应急；`Long Document Handling` 加入 tool-result 持久化与句柄引用思路；新增 memory 三段流程（selection / extraction / consolidation）作为 memory 写入与回读的设计骨架。
+- `skills/secure-ai-agents/SKILL.md`：补充"按任务隔离工作目录（worktree / sandbox dir）"作为多 agent 并行执行与不可逆动作的隔离手段；补充"trajectory 是 PII/secrets 的扩散面，输出与日志按相同准则脱敏"。
+- `skills/test-ai-agents/SKILL.md`：补充长任务 / 后台执行 / cron 触发的观测要点（运行 id、注入回执、超时与重试上下限），并把"失败分级 + 退避 + fallback 模型"加入错误恢复模式。
+- `skills/build-ai-agents/references/source-map.md`：补记 learn-claude-code 仓库与本地路径，并把"教学型来源（教学化简实现，可直读 200–1000 行）"与生产框架来源区分清楚。
 
 ### 文档
 
@@ -128,9 +162,9 @@
 ### 变更（skill 优化）
 
 - `SKILL.md`：`Build Workflow` 与 `Dual-Use Rubric` 强化“先建 eval 基线再扩工具/拆 agent”、工具风险分级、模型选择与 human intervention 触发条件。
-- `references/context-and-tools.md`：把 tool 设计从“schema/description”扩展为“面向 agent 的工具产品设计”：高价值工具选择、命名空间、响应格式、token 预算、错误响应与真实任务评测。
-- `references/agent-architecture.md`：补充用例筛选、单 agent 优先、何时拆分 multi-agent、manager vs handoff 的适用边界。
-- `references/security-and-safety.md`：补充 layered guardrails、tool risk rating、失败阈值与高风险动作的人类介入策略。
+- `skills/design-agent-tools/SKILL.md`：把 tool 设计从“schema/description”扩展为“面向 agent 的工具产品设计”：高价值工具选择、命名空间、响应格式、token 预算、错误响应与真实任务评测。
+- `skills/design-ai-agent/SKILL.md`：补充用例筛选、单 agent 优先、何时拆分 multi-agent、manager vs handoff 的适用边界。
+- `skills/secure-ai-agents/SKILL.md`：补充 layered guardrails、tool risk rating、失败阈值与高风险动作的人类介入策略。
 
 ### 文档
 
@@ -172,10 +206,10 @@
 ### 变更（skill 优化）
 
 - `SKILL.md`：`Architecture Rules` 增加“最简优先：deterministic > 单次调用 > workflow > 自治循环”判定；`Build Workflow` 强调能用固定 workflow 或单次调用就不要做自治 agent。
-- `references/agent-architecture.md`：新增 `Workflow vs Agent` 小节；决策表新增“开放式任务 / 步骤不可预测 / 工具可信 → 自治循环”行；`Loop Design` 增加 environment feedback 与显式停止条件。
-- `references/anti-patterns.md`：强化 `Over-Engineered Agent`，明确“在固定 workflow 更可靠 / 更透明时却做自治 agent”。
-- `references/context-and-tools.md`：Tool Description Rubric 增加 ACI 准则（把 agent-computer interface 当公共 API 一样设计）。
-- `references/source-map.md`：补充文章快照与抓取日期说明。
+- `skills/design-ai-agent/SKILL.md`：新增 `Workflow vs Agent` 小节；决策表新增“开放式任务 / 步骤不可预测 / 工具可信 → 自治循环”行；`Loop Design` 增加 environment feedback 与显式停止条件。
+- `skills/review-ai-agents/SKILL.md`：强化 `Over-Engineered Agent`，明确“在固定 workflow 更可靠 / 更透明时却做自治 agent”。
+- `skills/design-agent-tools/SKILL.md`：Tool Description Rubric 增加 ACI 准则（把 agent-computer interface 当公共 API 一样设计）。
+- `skills/build-ai-agents/references/source-map.md`：补充文章快照与抓取日期说明。
 
 ### 文档
 
