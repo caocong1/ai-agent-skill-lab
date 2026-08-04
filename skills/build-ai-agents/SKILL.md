@@ -2,7 +2,7 @@
 name: build-ai-agents
 description: Router and backward-compatible entrypoint for designing, implementing, reviewing, securing, testing, and optimizing AI agent features. Use for agent loops, ReAct/tool-use agents, workflows, subagents, memory, approvals, MCP, tool schemas, context engineering, retrieval, TypeScript or Java agent implementation, safety review, evals, observability, and agent skill optimization.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Route AI agent work to focused skills
 ---
 
