@@ -10,6 +10,39 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `metadata.version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [2.1.0] - 2026-08-04
+
+### 新增
+
+- 新增 OpenAI《Harness engineering: leveraging Codex in an agent-first world》分析 `analysis/14-openai-harness-engineering.md` 与结构化摘要 `raw/docs/openai-harness-engineering.md`，研究 repository-as-system-of-record、agent legibility、反馈闭环、架构约束和高吞吐下的维护策略。
+- 新增 Anthropic《Effective harnesses for long-running agents》与配套 `cwc-long-running-agents` 仓库联合分析 `analysis/15-anthropic-long-running-agent-harness.md`；文章摘要保存在 `raw/docs/anthropic-effective-harnesses-long-running-agents.md`，仓库以 shallow clone 固定到 commit `ad107a974bced5244f74dd283dbf2bfd3baee3a1`。
+- 新增 OpenAI Codex 生产级 coding-agent harness 分析 `analysis/16-openai-codex-harness.md`，仓库快照固定到 commit `9873cba8ce6d14e650e12cdc0dddd159ae6613d7`，覆盖 core loop、context/instruction loading、sandbox/approval、exec/runtime 与 rollout/eval 边界。
+- 新增 mini-swe-agent v2 极简 harness 分析 `analysis/17-mini-swe-agent.md`，仓库快照固定到 commit `a83fcae82d2a08f0ee0c688f9d137b3566c097f8`，研究 bash-only action interface、线性 trajectory、无状态命令执行和 benchmark-first baseline。
+
+### 变更
+
+- `skills/design-ai-agent/SKILL.md`：把 harness 从“五类组件清单”扩展为三层工程模型——单次运行时、跨 session continuity、仓库/组织反馈系统；增加 repository legibility、外部化进度、fresh-session 验证和 harness-vs-model 归因规则。
+- `skills/test-ai-agents/SKILL.md`：补充 fresh-session / clean-environment 长任务测试、trajectory 可重放性、harness ablation，以及模型与 harness 联合报告要求。
+- `skills/review-ai-agents/SKILL.md`：把 repository knowledge、可执行约束、环境自描述和垃圾回收纳入 coding-agent harness 审查面。
+- `skills/build-ai-agents/references/source-map.md`：登记新增文章、仓库、固定 commit 和高价值阅读文件。
+- `analysis/07-overall-agent-analysis.md`：把 harness 从“loop 外围机制”提升为覆盖运行时、连续性与组织反馈闭环的工程层，并纳入跨来源共识矩阵和形态选择光谱。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 3 个仓库、2 篇文章、4 个重点阅读块并更新 canonical metadata。
+- `docs/index.html`：来源表新增 OpenAI harness 文章、Anthropic 长任务 harness、OpenAI Codex、mini-swe-agent 四行，footer 更新到 skill suite v2.1.0；`<style>` 与 `<script>` 未改动。
+- `README.md`：当前资料集新增 harness 专题来源，并把版本说明更新到 2.1.0。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| OpenAI, Harness Engineering | article | 发布 2026-02-11 / 抓取 2026-08-04 | 1.0 | 2026-08-04 |
+| Anthropic, Effective Harnesses for Long-Running Agents | article | 发布 2025-11-26 / 抓取 2026-08-04 | 1.0 | 2026-08-04 |
+| Anthropic cwc-long-running-agents | repo | `ad107a974bced5244f74dd283dbf2bfd3baee3a1` | 1.0 | 2026-08-04 |
+| OpenAI Codex | repo | `9873cba8ce6d14e650e12cdc0dddd159ae6613d7` | 1.0 | 2026-08-04 |
+| mini-swe-agent | repo | `a83fcae82d2a08f0ee0c688f9d137b3566c097f8` | 1.0 | 2026-08-04 |
+
 ## [2.0.0] - 2026-06-14
 
 ### 新增
