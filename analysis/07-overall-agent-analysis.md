@@ -1,14 +1,17 @@
 # AI Agent 总体分析总结
 
-> 分析版本：2.0 ｜ 最后更新：2026-06-14 ｜ 覆盖来源：全部 10 个代码项目 + Anthropic Building Effective Agents / Anthropic Writing Effective Tools for Agents / OpenAI Practical Guide to Building Agents + 检索策略研究综述（向量 RAG vs Agentic，多来源）（版本见 `analysis/SOURCE_INDEX.md`）
+> 分析版本：2.1 ｜ 最后更新：2026-08-04 ｜ 覆盖来源：全部 13 个代码项目 + 5 篇权威文章/指南 + 检索策略研究综述（向量 RAG vs Agentic，多来源）（版本见 `analysis/SOURCE_INDEX.md`）
 
-这份报告把已分析的 10 个代码项目（Pi、OpenAI Agents JS、LangGraphJS、MCP TS SDK、Vercel AI SDK、Spring AI Examples、LangChain4j、Learn Claude Code、Hello-Agents、SkillOpt）和 3 篇权威文章/指南（Anthropic Building Effective Agents、Anthropic Writing Effective Tools for Agents、OpenAI Practical Guide to Building Agents）放在一起，回答一个问题：跨这些来源，关于"怎样做一个有效的 agent"，哪些结论是收敛的、哪些是有条件的。生产框架（Pi / OpenAI / LangGraph / Vercel / MCP / Spring AI / LangChain4j）回答"怎么实现"，权威文章回答"该不该做、做到什么程度、如何上线和优化"，教学型仓库（Learn Claude Code 窄而深 / Hello-Agents 宽而长）回答"把这些机制各自最小化或全栈编目给我看一遍"，SkillOpt 回答"如何把 skill/prompt 文档当作可验证优化对象持续改进"——四类拼起来才是完整的工程判断。它是 `analysis/01..06`、`08..13` 之上的一层归纳，`analysis/04` 仍专注早期 skill 设计取舍，本文件不替代它。
+这份报告把已分析的 13 个代码项目、5 篇权威文章/指南和 1 篇研究综述放在一起，回答一个问题：跨这些来源，关于“怎样做一个有效的 agent”，哪些结论是收敛的、哪些是有条件的。生产框架回答“怎么实现”，通用指南回答“该不该做”，教学仓库回答“最小骨架是什么”，SkillOpt 回答“如何验证式自我改进”；本次新增的 OpenAI Harness Engineering、Anthropic 长任务 harness、OpenAI Codex 与 mini-swe-agent 则共同回答“模型之外的工程环境到底包括哪些层、怎样证明额外 scaffold 有价值”。它是 `analysis/01..06`、`08..17` 之上的一层归纳，`analysis/04` 仍专注早期 skill 设计取舍，本文件不替代它。
 
 ## 综合结论
 
 - **形态选择先于框架选择**。所有来源都指向同一件事：先判断任务需要的最小形态，再选语言/框架去落地。Anthropic 文章把它讲成原则（最简优先），Pi / OpenAI Agents JS / LangGraph / Vercel 用不同实现验证了同一判断。
 - **agent 的本质是"模型 + 环境反馈 + 显式停止"的循环**。Pi 的 `agent-loop.ts`、OpenAI Agents JS 的 `runLoop`、Vercel 的 `ToolLoopAgent`、Learn Claude Code 各课不变的 `while stop_reason == "tool_use"` 循环、文章的 autonomous agent 定义完全一致：每步要拿 ground truth，循环必须有预算/停止条件。
 - **agency 来自模型训练，harness 来自工程**。Learn Claude Code 把这条立场化得最锋利：循环本身永远不变，新增能力是围绕循环挂载机制；harness 由 tools / knowledge / context / observation / permissions 五项组成，是工程师的工作面，与"训练 agent"严格区分。这与 Anthropic"框架只是起点"、OpenAI"agent = model + tools + instructions"是同一论点的不同强度表达。
+- **harness 至少有三层**。第一层是 turn/runtime（loop、tools、context、sandbox、approval）；第二层是跨 session continuity（rollout、progress、checkpoint、contract、resume）；第三层是 repository/organization feedback system（规格、架构地图、可启动环境、observability、lint、review 规则与持续垃圾回收）。只实现第一层不能自动获得长任务可靠性或组织级自治（见 `analysis/14..16`）。
+- **compaction 不等于 continuity，完成判定必须外部化**。长任务需要 default-FAIL contract、progress + git 双通道交接、fresh-session smoke test 和独立 evaluator；否则摘要再好也会出现半成品接力、过早完成和 builder 自评偏差（见 `analysis/15`）。
+- **复杂 harness 必须用消融证明价值**。mini-swe-agent 的 bash-only、linear-history、stateless execution 提供可解释基线；模型升级后应逐项移除专用工具、prompt 补丁或 hook，只有 eval 仍显示增益的机制才继续保留（见 `analysis/17`）。
 - **工具质量决定 agent 上限**。schema-first tool 只是起点；工具还要有清晰边界、可区分命名、模型友好的返回上下文、可修复错误、token 预算和真实任务 eval。Anthropic tool 文章把这点讲得最直接，MCP/TS/Java 项目提供实现证据。
 - **边界比循环更重要**。权限在工具执行边界、敏感上下文走 typed context 而不是 prompt、UI/model 消息分离、guardrails 分层部署、并行 agent 按任务隔离工作目录——这几条在 TS、Java、文章和教学版里反复出现，是最稳的可复用准则。
 - **复杂度要被需求拉动，不能被框架推动**。durable graph、subagent、MCP、vector memory 都只在需求出现时才引入；文章的"能用 workflow 就别上 agent"是这条的权威背书。
@@ -27,7 +30,10 @@
 | 单次模型调用 | 纯生成/分类/抽取/摘要，无外部动作 | 文章；LangChain4j AI Service | 为一次分类起 tool loop |
 | 结构化 workflow（chain/routing/parallel/orchestrator/evaluator） | 步骤基本可枚举、要可预测性 | Spring AI agentic-patterns；Anthropic 五模式；OpenAI 单 agent loop | 步骤已知却让模型自由发挥 |
 | tool loop（ReAct） | 模型要动态选少量工具，能在一轮请求内完成 | Pi、OpenAI Agents JS、Vercel ToolLoopAgent | 简单链式任务硬塞自治循环 |
+| 极简 benchmark harness | 需要可解释、跨模型/环境可比较的 coding-agent 基线 | mini-swe-agent（bash-only + linear trajectory） | 未建立 baseline 就堆 planner、memory、专用工具和多 agent |
 | durable graph/workflow | 需要 checkpoint、resume、长任务、跨进程审批 | LangGraphJS；Vercel WorkflowAgent | in-memory 够用却上 graph runtime |
+| long-running session harness | 任务跨多个 context/session，完成可拆成可验证 contract | Anthropic long-running harness（initializer/coding、progress + git、fresh evaluator） | 只循环同一个 prompt 或只依赖 compaction，未定义 clean handoff |
+| repository/organization harness | coding agent 覆盖复现、实现、E2E、review、CI 与持续维护 | OpenAI Harness Engineering；OpenAI Codex | 只有一份巨型 AGENTS.md，却无可启动环境、observability 和机械约束 |
 | subagent / multi-agent | 需要隔离上下文或工具权限、专业分工值回延迟；复杂条件或工具重叠已压垮单 agent | Pi subagent；OpenAI agent-as-tool / handoff | 单任务拆多 agent 徒增延迟和失败面 |
 | MCP 能力边界 | 能力要被多个 client/agent 复用，且能控制 tool overload | MCP TS SDK；Anthropic tool 文章 | 把业务 workflow 整个塞进 MCP tool，或一次暴露大量重叠工具 |
 | 教学型 harness 实现 | 想看清某个机制（compaction、memory 三段、错误恢复、mailbox）的最小骨架，或给团队建立 harness 设计共同语言 | Learn Claude Code 20 课 | 把教学版默认值（teammate 轮上限、bash 黑名单、文件邮箱）直接搬到生产 |
@@ -37,22 +43,24 @@
 
 ## 跨来源共识矩阵
 
-| 主题 | Anthropic Agent 文章 | Anthropic Tool 文章 | OpenAI 指南 | TS 项目（Pi/OpenAI/LangGraph/Vercel/MCP） | Java 项目（Spring AI/LC4j） | Learn Claude Code | Hello-Agents | 收敛结论 |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| 何时上 agent | 能 workflow 就别 agent，能单次就别 workflow | 工具应匹配真实任务而不是盲目扩面 | 复杂判断、难维护规则、非结构化数据才优先 agent | tool loop 只在需动态选工具时用 | AI Service 默认单次，agentic 才编排 | "prompt chain + if/else 不是 agent"；agent 是模型在循环里基于环境反馈决策 | "流程驱动 Agent（Coze/Dify/n8n）vs AI Native Agent"是方法论差异；前者本质是软件开发，后者才以模型判断为核心 | 形态按"步骤可不可预测 + 自动化摩擦"选，默认最简；prompt-plumbing 不是 agency |
-| 工具契约 | ACI 当公共 API 设计 | tool 名称、namespace、schema、响应、错误都为 agent 优化 | tools 分 data/action/orchestration，并需标准化定义 | schema-first（Zod）、description 写给模型 | `@Tool`/record/接口、typed executor | tool handler 字典 + 显式 input_schema，hook 在不改 loop 的前提下加策略 | 工具基类 + 注册机制 + 多源搜索 + 自定义工具开发模板 | 工具 schema 优先，描述面向模型，handler 面向系统，并用 eval 验证可用性 |
-| 停止/预算 | 显式停止条件防失控 | 记录 token、tool count、runtime、错误；截断要可继续 | run loop 有退出条件；失败阈值触发人工 | `stopWhen`/step limit/terminate 标记 | 链路有限步、显式终止 | `stop_reason != tool_use` 退出；teammate/loop 有显式轮数上限 | ReAct 章节明确写死循环防护与调用失败重试 | 任何循环都要有步数/成本/超时/checkpoint，并记录停止原因 |
-| 权限/审批 | 沙箱 + 护栏 + 人类检查点 | tool overload 需 allowlist/active tools 控制 | layered guardrails + tool risk rating + human intervention | beforeToolCall 拦截、toolApproval、HITL | DI 层做权限、函数回调边界 | `PermissionRule` 在 handler 前置；worktree 给每任务独立目录 | TerminalTool 内置沙箱与安全机制 | 权限放工具执行边界；高风险动作分级、审批或移交人；并行 agent 隔离工作目录 |
-| 状态边界 | transparency：规划步骤可见 | 工具返回高信号上下文，少暴露低层内部细节 | instructions/guardrails 与工具能力分层 | turn snapshot、runtimeContext/toolsContext、UI/model 分离 | session/record 分层 | section-based system prompt 拼装；tool_result 大对象落盘换句柄 | Message / Config / Agent 三件套分离；NoteTool 把结构化笔记当持久化层 | 域/运行时/模型/UI 消息要分开，避免泄漏；prompt 与上下文按 section/句柄按需注入 |
-| 渐进式披露 | 简单接口、按需暴露 | 少而高价值工具，concise/detailed 响应按需切换 | 单 agent 优先，工具过载再拆 agent | Pi skill 先给名称描述再读内容 | LC4j skills 同思路 | skill catalog 注入名称+一句话，`load_skill` 才注入全文 | GSSC 流水线（Gathering/Structuring/Scoring/Compression）按相关性评分再压缩 | skill/工具按任务暴露，别一次塞满上下文 |
-| 上下文压缩 | 简单接口、留好压缩空间 | 工具返回保持 token 节制 | run loop 内做压缩与截断 | LangGraph state、Pi `transformContext`、Vercel `prepareStep` | DI/session 内手工管理 | 四层 cheap-first：snip → micro-replace → tool-result budget → LLM 摘要 → reactive 应急 | GSSC 在"上下文组装时"前置压缩；cheap-first 在"上下文过载时"应急 | 上下文压缩要分层（廉价裁剪先于昂贵 LLM 摘要）+ 组装时的前置 GSSC + 应急回退 + 大输出落盘句柄 |
-| 记忆设计 | 简单 retrieval 起步 | 不在范围 | 长任务 / 跨会话才用 memory | retrieval、provider memory、 LangGraph store | 用 DI/session/外部存储 | 三段流程：selection（什么值得记）→ extraction（结构化抽取）→ consolidation（合并去重） | 四级容器：工作 / 短期 / 长期 / 永久 + MemoryTool + 高级 RAG（重排序 / 多跳 / 语义路由） | memory 是流程也是层次：三段流程决定"怎么写"，四级容器决定"放哪一层"，两者互补；并按租户隔离 |
-| 错误恢复 | 累积失败需护栏 | 错误应可被模型修正或可继续 | 失败阈值 → 人工 | OpenAI/Vercel：可中断 / 拒绝 / 重试 | service 层异常分类 | 三路径：max_tokens 升档+continuation；prompt_too_long → reactive compact；429/529 → 指数退避 + fallback 模型 | ReAct/PlanAndSolve 章节内含死循环防护与调用失败重试模板 | 错误按类型分路径恢复；退避要带 jitter；模型不可用要有 fallback；超阈值升给人 |
-| 评测与优化 | sandbox + 真实反馈 | 真实任务 eval、transcript 分析、held-out 测试 | 先强模型建 baseline，再降成本 | fake model tests、trace、replay | service/test 分层 | 每节课 standalone `code.py` 自带最小用例，可读可跑 | BFCL（工具调用准确率）+ GAIA（端到端通用助手）作为公开基准；评估闭环驱动 Agentic-RL 训练 | tool/prompt/model 变更要有可比较的 eval 或回放证据；建自定义 eval 前先看 BFCL / GAIA 等公开基准能否对齐 |
-| 协议选择 | 不在范围 | MCP 是接入外部能力的协议层 | MCP 作为 orchestration 工具的标准化通道 | MCP TS SDK：server / client / transport 完整实现 | Spring AI MCP annotations | 简化 MCP 客户端教学版（s19） | MCP / A2A / ANP 三档谱系，按互操作性 / 灵活性 / 性能取舍 | 按谱系选（互操作性 / 灵活性 / 性能），按场景升级而非平替；成熟度随时间变（截至 2026-06 源快照 MCP 采纳最广、可作默认，A2A 用于 agent 直连、ANP 用于去中心化服务发现——实现前复核当前成熟度） |
-| 训练侧 agency | 不在范围 | 不在范围 | 不在范围（focus 推理侧） | 不在范围 | 不在范围 | 不在范围 | Agentic-RL：GSM8K + LoRA SFT（学会思考）+ GRPO（无需 critic 的策略优化） + 评估闭环 | inference-time（prompt/工具/上下文/记忆）穷尽后再考虑训练侧；BFCL/GAIA 量化差距驱动 SFT/RL 决策 |
-| 文档检索策略 | 简单 retrieval 起步、留压缩空间 | targeted search 优于 list-all、返回高信号片段 | 数据类工具含 retrieval | retrieval / provider memory / LangGraph store | Spring AI / LC4j 含 RAG | grep/read agentic 检索、明确弃用向量索引 | 四级记忆 + 向量 RAG + 高级检索（重排 / 多跳 / 语义路由） | 按语料规模分层 + 查询类型路由：小语料 agentic grep/read 或全量上下文，大语料 / 语义查询才 hybrid 向量+重排（先 pgvector）；编号 / 条款 / 型号 / 否定词精确匹配兜底，自然语言查询先扩展；检索失败常静默（`analysis/12`） |
-| skill / prompt 自优化 | 不在范围 | 工具描述需真实任务 eval 与 transcript 分析 | prompt/tool/model 变更先建 baseline | skill 机制与运行时可承载 compact artifact | LC4j skills 提供文档形态参考 | session 经验与 memory 可产生长期规则 | 自进化章节提供宏观分类 | SkillOpt 给出可执行优化纪律：train 轨迹驱动 reflect，held-out validation gate，textual learning rate 控制 edit 幅度，最终只部署 compact skill（`analysis/13`） |
+| 主题 | Anthropic Agent 文章 | Anthropic Tool 文章 | OpenAI 指南 | TS 项目（Pi/OpenAI/LangGraph/Vercel/MCP） | Java 项目（Spring AI/LC4j） | Learn Claude Code | Hello-Agents | Harness 专题（OpenAI文章/Anthropic/Codex/mini） | 收敛结论 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| 何时上 agent | 能 workflow 就别 agent | 工具匹配真实任务 | 复杂判断、难维护规则、非结构化数据 | tool loop 只在需动态选工具时用 | AI Service 默认单次 | prompt chain 不是 agency | 流程驱动 vs AI Native | mini 提供最小 baseline；复杂 harness 要由需求和 eval 拉动 | 默认最简，prompt-plumbing 不是 agency |
+| harness 边界 | 框架只是起点 | ACI 是模型接口 | model/tools/instructions | loop/state/tool runtime | service/DI/session | tools/knowledge/context/observation/permissions | Message/Config/Agent | runtime + continuity + repository/organization feedback 三层 | harness 是模型之外让能力可执行、可持续、可验证的完整工程环境 |
+| 工具契约 | ACI 当公共 API | 名称/schema/响应/错误为 agent 优化 | data/action/orchestration | schema-first、动态 tools | typed executor | hook 不改 loop | 工具基类与注册 | Codex step snapshot 保证 advertised tools 与执行一致；mini 以 bash 消融专用 ACI | 工具接口要清晰且用 eval 证明价值，动态 surface 必须快照一致 |
+| 停止/预算 | 显式停止条件 | token/tool/runtime/error | 失败阈值触发人工 | stopWhen/step limit | 有限步 | 轮数上限 | 死循环防护 | Anthropic kill switch/无进展停止；mini step/cost/time；Codex stop hook | 每层 loop 都要有预算、停止原因和 operator control |
+| 权限/审批 | 沙箱 + 检查点 | active tool gating | layered guardrails | approval/HITL | DI 边界 | handler 前 permission + worktree | TerminalTool sandbox | Codex 集中 approval→sandbox→attempt→有条件 escalation；mini bash-only 扩大权限面 | 权限在执行边界；sandbox denial 不得静默提权 |
+| 状态边界 | 规划可见 | 高信号 tool context | instructions/guardrails 分层 | turn snapshot、UI/model 分离 | session/record | section prompt + 句柄 | Message/Config/Agent | Codex 分 turn/step/tool call；rollout 是兼容面；Anthropic progress+git | 域/运行时/模型/UI/trace 分离，并明确生命周期所有权 |
+| 长任务连续性 | 留停止与恢复空间 | 截断后可继续 | 跨会话才用 memory | checkpoint/resume | 外部存储 | compaction/memory/task graph | 四级记忆 | compaction 不够；default-FAIL contract、progress+git、fresh-session smoke test | continuity 依赖外部化 contract、checkpoint、证据和 clean handoff |
+| 渐进式披露 | 简单接口 | 少而高价值工具 | 单 agent 优先 | Pi skill 分层 | LC4j skills | catalog→load | GSSC | OpenAI 短 AGENTS.md 作地图、结构 docs 作 system of record；Codex 指令有 provenance/budget | 先给地图与能力目录，再按任务加载权威内容 |
+| 上下文压缩 | 留压缩空间 | 返回 token 节制 | loop 内截断 | transformContext/prepareStep | 手工管理 | cheap-first 多层 | GSSC | Codex 区分 pre/mid-turn compaction 并保留 continuation；Anthropic 强调摘要不能替代交接 | 压缩解决 token，continuity 解决跨 session 状态，二者不可混同 |
+| 评测与优化 | 真实反馈 | held-out tool eval | 强模型 baseline | fake model/trace/replay | service tests | 独立最小用例 | BFCL/GAIA | fresh-context evaluator、证据 gate、linear trajectory、model×harness 联合报告与 ablation | 变更要有可比较 eval；区分模型、harness、环境和评测贡献 |
+| 仓库可读性 | transparency | targeted context | instructions 分层 | repo tools | 项目约定 | system prompt sections | ContextBuilder | OpenAI repository-as-record + observability + mechanical invariants + garbage collection | coding-agent readiness 包括知识地图、可启动环境、可观察验收和机械边界 |
+| 错误恢复 | 累积失败需护栏 | 可修复错误 | 超阈值给人 | 中断/拒绝/重试 | 异常分类 | token/context/provider 三路径 | 调用重试 | Codex streaming retry、sandbox denial 分类、context rollover；Anthropic fresh session 先修坏交接 | 按错误类型恢复，恢复路径同样受权限、预算和 telemetry 约束 |
+| 协议选择 | 不在范围 | MCP 接外部能力 | MCP orchestration | MCP server/client | MCP annotations | 教学 MCP | MCP/A2A/ANP | Codex 按输入和环境动态准备 MCP/skills/plugins | 按互操作性/灵活性/性能选，并控制动态 tool overload |
+| 训练侧 agency | 不在范围 | 不在范围 | 不在范围 | 不在范围 | 不在范围 | 不在范围 | SFT + GRPO | mini 减少 scaffold 以观察模型；harness 文章聚焦 inference-time 环境 | 先消融并穷尽 harness，再用可量化差距决定是否训练 |
+| 文档检索策略 | 简单 retrieval | targeted search | retrieval tool | provider memory/store | RAG | grep/read | 向量 RAG | OpenAI repo 地图 + progressive docs；Codex 层级指令有 byte budget | 按规模/查询类型路由，并让权威来源、provenance、budget 可见 |
+| skill / prompt 自优化 | 不在范围 | transcript 分析 | 先 baseline | skill runtime | skills 形态 | session 经验 | 自进化分类 | OpenAI 把重复反馈编译成 docs/lint/skill；mini 要求模型升级后 re-simplify | SkillOpt gate 文本 edit；组织反馈按证据从说明升级到机械约束 |
 
 ## 分歧与取舍
 
@@ -63,20 +71,23 @@
 - **单 agent vs multi-agent**：Anthropic 和 Pi 都提醒 subagent 增加延迟与失败面；OpenAI 补充了更具体的触发条件：复杂分支、prompt 模板难维护、工具相似/重叠导致选择失败。只有这些收益大于复杂度时才拆。
 - **handoff vs agent-as-tool**：移交控制权用 handoff，委托子任务取结果用 agent-as-tool（OpenAI Agents JS 的明确区分），不要混用。
 - **工具合并 vs 工具拆分**：Anthropic tool 文章鼓励避免 endpoint sprawl，但工具也不能大到隐藏权限和失败边界。取舍标准是自然任务边界 + eval 表现 + 审计/审批清晰度。
+- **极简 vs 生产 harness**：mini-swe-agent 证明 bash-only + linear history 可以成为强基线；Codex 证明真实产品还要处理 step snapshot、dynamic tools、streaming、approval/sandbox、rollout 和多环境。取舍不是选阵营，而是先跑最小 baseline，再逐项用真实任务证明生产机制的增益。
+- **compaction vs 外部交接**：Pi/Learn Claude Code/Codex 都实现 context compaction；Anthropic 长任务研究显示 compaction 无法替代 feature contract、progress、git checkpoint 与 fresh-session 验证。前者解决单窗口 token，后者解决跨 session continuity。
+- **builder 自评 vs 独立 evaluator**：单 agent 自测更便宜；fresh-context evaluator 能减少实现意图造成的确认偏差。高价值或长任务应隔离 evaluator 上下文并收窄工具，短任务可以用确定性测试代替第二个 agent。
 
 ## 对 skill 的总体指导
 
-截至 2.0.0，上面的收敛结论沉淀进一个复合 skill suite：
+截至 2.1.0，上面的收敛结论沉淀进一个复合 skill suite：
 
 - `skills/build-ai-agents/SKILL.md` 从单体执行 skill 改成路由器，保留旧入口名，按任务只加载相关 child skill，避免每次 agent 任务都吞下全部参考资料。
-- `skills/design-ai-agent/` 承接形态选择、agent vs harness、workflow vs agent、loop/state/memory/approval 决策。
+- `skills/design-ai-agent/` 承接形态选择、agent vs harness、workflow vs agent、loop/state/memory/approval 决策；2.1.0 起用 runtime / session continuity / repository feedback 三层解释 harness，并加入 minimal baseline、fresh-session continuity 与 model-upgrade ablation。
 - `skills/design-agent-tools/` 承接 prompt/context、long-document handling、retrieval、compaction、memory pipeline、tool schema/description 和 ACI。
 - `skills/build-mcp-capabilities/` 承接 MCP server/client、resources/prompts/tools、transport、安全和 MCP/A2A/ANP 协议谱系。
 - `skills/implement-ts-agents/` 与 `skills/implement-java-agents/` 分别承接 TypeScript 与 Java/Spring/LangChain4j 框架落地模式。
-- `skills/review-ai-agents/`、`skills/secure-ai-agents/`、`skills/test-ai-agents/` 把审查、安全、测试/观测从 reference 变成可单独触发的 workflow skills。
+- `skills/review-ai-agents/`、`skills/secure-ai-agents/`、`skills/test-ai-agents/` 把审查、安全、测试/观测从 reference 变成可单独触发的 workflow skills；2.1.0 增加 repository legibility、clean handoff、fresh-context evaluator、step snapshot、sandbox escalation 与 harness ablation。
 - `skills/optimize-agent-skills/` 吸收 SkillOpt：skill/prompt 迭代要有 rollout evidence、bounded edit、train/val/test、validation gate、strong optimizer vs frozen target、staged adoption。
 - `skills/build-ai-agents/references/source-map.md` 作为唯一保留的共享 source map，记录本地快照、commit、官方链接和高价值文件。
-- `SKILL.md` frontmatter 版本迁移为 `metadata.version`，让通用 skill validator 通过；suite 当前版本为 2.0.0。
+- `SKILL.md` frontmatter 使用 `metadata.version`；suite 当前版本为 2.1.0。
 
 ## 后续可分析方向
 
@@ -84,6 +95,8 @@
 
 - Claude Code 官方文档：与 Learn Claude Code 教学版互参，能把"教学化简实现"对回"产品化的 harness 形态"。
 - Anthropic Agent SDK / Claude Agent SDK 文档：harness 工程的 SDK 级抽象，可补充与本仓库已有 TS/Java agent SDK 的对照。
+- Anthropic《Harness Design for Long-Running Application Development》：配套仓库已引用的 2026-03 后续文章，可补 planner/sprint contract/rubric 与本次长任务联合分析之间的版本演进。
+- OpenAI Codex 官方安全与 AGENTS.md 文档：把本次源码事实对回稳定的产品契约，补充不同平台 sandbox、权限 profile 与 instruction precedence 的用户侧语义。
 - Google Agent Development Kit docs：另一套工程化 agent 框架的形态与边界设计。
 - ReAct：经典 tool-use / reasoning-action 论文，可为 tool loop 形态补充原始理论来源（Hello-Agents 第 4 章只是工程实现，原论文仍值得单独分析）。
 - Reflexion：失败反馈、语言化记忆和自我改进循环，可补充 eval/optimizer 与 memory 风险边界。
