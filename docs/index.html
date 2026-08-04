@@ -733,6 +733,26 @@
               <td>rollout → reflect → aggregate → select → update → gate、textual learning rate、train/val/test split、strong optimizer vs frozen target、slow/meta update、SkillOpt-Sleep staged adoption。</td>
             </tr>
             <tr>
+              <td>OpenAI：Harness Engineering</td>
+              <td>OpenAI 基于真实 agent-first 产品开发总结的组织级 harness 工程经验，把仓库、环境、可观测性和反馈闭环视为 agent 能力的一部分。</td>
+              <td>repository-as-system-of-record、agent legibility、可启动 worktree、机械架构约束、反馈规则升级与持续垃圾回收。</td>
+            </tr>
+            <tr>
+              <td>Anthropic：长任务 Agent Harness</td>
+              <td>Anthropic 的长任务工程文章及配套 hooks/evaluator 仓库，研究 agent 如何跨 context window 和 session 稳定推进。</td>
+              <td>initializer/coding 阶段、default-FAIL contract、progress + git 双通道交接、fresh-context evaluator、证据 gate、kill switch 与 steering。</td>
+            </tr>
+            <tr>
+              <td>OpenAI Codex</td>
+              <td>OpenAI 开源的生产级 coding-agent runtime，展示模型采样、动态工具、上下文、权限、沙箱和事件持久化如何组合。</td>
+              <td>turn/step/tool-call 生命周期、step-consistent snapshot、AGENTS.md provenance、compaction、approval/sandbox/retry 与 rollout。</td>
+            </tr>
+            <tr>
+              <td>mini-swe-agent v2</td>
+              <td>SWE-bench / SWE-agent 团队维护的极简 coding-agent baseline，用很小的 scaffold 保持跨模型、跨环境可比较。</td>
+              <td>bash-only action、linear trajectory、stateless execution、可替换 sandbox environment、benchmark-first harness ablation。</td>
+            </tr>
+            <tr>
               <td>检索策略研究综述（向量 vs Agentic）</td>
               <td>2024–2026 多来源 web 研究综合（约 55 源 + 对抗式核验），回答 agent 文档检索该用向量 RAG、agentic 工具检索还是长上下文。</td>
               <td>按语料规模分层 + 查询类型路由、检索失败的静默性、查询扩展 + 精确匹配兜底、混合+重排为生产标准、grep 工具层（ripgrep/ast-grep/rga）盘点。</td>
@@ -796,7 +816,7 @@ secure-ai-agents、test-ai-agents、optimize-agent-skills
     </main>
 
     <footer>
-      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.0.0 ｜
+      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.1.0 ｜
       <a
         href="https://github.com/caocong1/ai-agent-skill-lab/blob/main/CHANGELOG.md"
         target="_blank"
