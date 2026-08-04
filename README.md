@@ -28,12 +28,19 @@
 - `learn-claude-code`（教学型仓库，shareAI-lab）：20 课渐进式 harness 编目，把 agent loop、hooks、permission、skill 加载、cheap-first 多层 context compaction、selection/extraction/consolidation 三段 memory、模型层错误恢复三路径、task graph、background/cron、mailbox-based agent team、worktree 隔离、MCP 接入各自做成独立的最小可运行 `code.py`，强调 agency 来自模型训练、harness 来自工程的本体论区分。
 - `hello-agents`（教学型仓库，Datawhale）：16 章 / 5 部分系统化中文教程，覆盖智能体基础理论、经典范式（ReAct / Plan-and-Solve / Reflection）、低代码平台（Coze / Dify / n8n）、主流框架（AutoGen / AgentScope / CAMEL / LangGraph）、自建 HelloAgents 框架（Message / Config / Agent 三件套）、记忆与 RAG、上下文工程 GSSC 流水线、智能体通信协议谱系（MCP / A2A / ANP）、Agentic-RL（SFT + GRPO 训练通路）、智能体性能评估（BFCL / GAIA）以及三个综合案例（旅行助手 / TODO 驱动深度研究 / 赛博小镇）。与 `learn-claude-code` 形成互补："窄而深 + harness 机制穷举" vs "广覆盖 + 含训练侧"。
 - `skillopt`（Microsoft）：把 skill/prompt 文档当作 frozen agent 的可训练外部状态，通过 rollout → reflect → aggregate → select → update → gate 的文本空间优化循环产出 compact `best_skill.md`，并提供 SkillOpt-Sleep 的离线 session replay / held-out gate / staged adoption 形态。本仓库吸收其思想用于 `optimize-agent-skills`，不把它作为其他项目 agent runtime 的默认依赖。
+- `cwc-long-running-agents`（Anthropic）：长任务 harness 的可读 hooks/evaluator 配套仓库，把 default-FAIL contract、fresh-context evaluator、evidence gate、progress + git 交接、kill switch 与 operator steering 做成最小原语；与 Anthropic 长任务文章联合分析。
+- `openai-codex`：生产级 coding-agent harness，重点研究 turn/step/tool-call 生命周期、step-consistent context/tool snapshot、层级 AGENTS.md provenance、compaction、动态工具、approval/sandbox/retry 集中编排与 rollout。
+- `mini-swe-agent` v2（SWE-agent）：bash-only action、linear trajectory、stateless command execution 与可替换 environment 组成的极简 benchmark baseline，用于验证复杂 agent scaffold 是否真的带来增益。
 
 除代码项目外，还分析了权威文章：
 
 - Anthropic, Building Effective Agents：workflow 与 agent 的判定框架、五种 workflow 模式、自治 agent 循环和工具接口（ACI）设计。分析见 `analysis/06-anthropic-building-effective-agents.md`，原文快照见 `raw/docs/anthropic-building-effective-agents.md`，跨来源综合见 `analysis/07-overall-agent-analysis.md`。
 - Anthropic, Writing Effective Tools for Agents：agent tool 选择、命名空间、返回上下文、token 效率、tool description/spec 和真实任务评测。分析见 `analysis/08-anthropic-writing-effective-tools.md`，摘要快照见 `raw/docs/anthropic-writing-effective-tools.md`。
 - OpenAI, A Practical Guide to Building Agents：agent 适用性、model/tools/instructions、单 agent 优先、多 agent 编排、guardrails 和人类介入。分析见 `analysis/09-openai-practical-guide-building-agents.md`，摘要快照见 `raw/docs/openai-practical-guide-building-agents.md`。
+- OpenAI, Harness Engineering：把 harness 从单次 tool loop 扩展到 repository-as-system-of-record、agent legibility、可启动/可观测环境、机械架构约束、反馈编译和持续垃圾回收。分析见 `analysis/14-openai-harness-engineering.md`，摘要快照见 `raw/docs/openai-harness-engineering.md`。
+- Anthropic, Effective Harnesses for Long-Running Agents：说明 compaction 不能替代跨 session 连续性，以 initializer/coding 阶段、default-FAIL feature contract、progress + git 与 fresh-session E2E 验证稳定推进长任务。与配套仓库的联合分析见 `analysis/15-anthropic-long-running-agent-harness.md`，摘要快照见 `raw/docs/anthropic-effective-harnesses-long-running-agents.md`。
+
+这组 harness 专题把当前工程概念收敛成三层：**turn/runtime**（loop、tools、context、sandbox、approval）、**session continuity**（contract、rollout、checkpoint、handoff）与 **repository/organization feedback**（规格、架构地图、可观测性、机械约束、review 和持续维护）。任何新增 scaffold 都应先对照 mini-swe-agent 式最小 baseline，用真实 eval 或消融证明收益。
 
 此外还纳入了一篇**多来源研究综述**（区别于单一仓库 / 文章）：
 
@@ -41,7 +48,7 @@
 
 ## 版本与变更
 
-skill 版本记录在各 `SKILL.md` frontmatter 的 `metadata.version` 字段（`build-ai-agents` suite 当前 2.0.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+skill 版本记录在各 `SKILL.md` frontmatter 的 `metadata.version` 字段（`build-ai-agents` suite 当前 2.1.0），遵循语义化版本。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
 
 本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.0.2）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
 
@@ -80,7 +87,7 @@ ln -sfn "<repo-path>/skills/iterate-skill-lab" "$HOME/.codex/skills/iterate-skil
 
 ### 使用 `build-ai-agents`
 
-`build-ai-agents` 用于在其他项目里设计、实现、扩展或审查 AI agent 能力。2.0.0 起它是 suite 入口，会按任务路由到 focused child skills。它支持四种模式：
+`build-ai-agents` 用于在其他项目里设计、实现、扩展或审查 AI agent 能力。2.0.0 起它是 suite 入口；2.1.0 增加三层 harness、跨 session continuity、repository legibility 与 harness ablation 指导。它会按任务路由到 focused child skills，支持四种模式：
 
 - `build`: 从零设计并实现一个新的 agent 功能。
 - `extend`: 在已有 agent 上增加工具、记忆、审批、MCP、检索或其他能力。
