@@ -1,6 +1,6 @@
 # Source Index
 
-更新时间：2026-06-14（新增 Microsoft SkillOpt 来源，并将 `build-ai-agents` 重构为复合 skill suite；2026-06-05 执行 SEED-001 来源新鲜度审查，详见下方 `## 新鲜度审查`）。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
+更新时间：2026-08-04（新增 harness engineering 专题：OpenAI 工程文章、Anthropic 长任务文章与配套仓库、OpenAI Codex、mini-swe-agent；2026-06-05 执行 SEED-001 来源新鲜度审查，详见下方 `## 新鲜度审查`）。所有仓库均以 shallow clone 方式保存在 `raw/repos/`。
 
 逐来源的 `来源版本 / 分析版本 / 最后更新` 在下方表格维护；再分析某来源新版本时，更新该来源所在行 + 对应分析文件头部元数据块 + `CHANGELOG.md`。`来源版本` 对仓库是 commit，对文章是发布/抓取日期。`分析版本` 是本仓库对该来源的分析报告版本，与 skill 版本独立。
 
@@ -18,6 +18,9 @@
 | Learn Claude Code | `raw/repos/learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` | 1.0 | 2026-05-21 | harness vs agent 区分、20 课渐进式编目、cheap-first 多层 compaction、memory 三段流程、错误恢复三路径、worktree 隔离、mailbox + claim-from-board 多 agent |
 | Hello-Agents (Datawhale) | `raw/repos/hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` | 1.0 | 2026-05-22 | 流程驱动 vs AI Native Agent、16 章全栈编目、自建 HelloAgents 框架（Message/Config/Agent）、四级记忆 + RAG、GSSC 上下文工程、协议谱系（MCP/A2A/ANP）、Agentic-RL（SFT + GRPO）、BFCL/GAIA 评估、TODO 驱动深度研究、赛博小镇 |
 | SkillOpt (Microsoft) | `raw/repos/skillopt` | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` | 1.0 | 2026-06-14 | skill 文档作为可训练外部状态、rollout/reflect/aggregate/select/update/gate、textual learning rate、held-out validation、slow/meta update、SkillOpt-Sleep 离线巩固、staged adoption |
+| Anthropic cwc-long-running-agents | `raw/repos/cwc-long-running-agents` | `ad107a974bced5244f74dd283dbf2bfd3baee3a1` | 1.0 | 2026-08-04 | default-FAIL contract、fresh-context evaluator、evidence gate、agent-maintained handoff、kill switch、operator steering |
+| OpenAI Codex | `raw/repos/openai-codex` | `9873cba8ce6d14e650e12cdc0dddd159ae6613d7` | 1.0 | 2026-08-04 | turn/step/tool-call 生命周期、step snapshot、dynamic tools、AGENTS.md provenance、compaction、approval/sandbox/retry、rollout |
+| mini-swe-agent | `raw/repos/mini-swe-agent` | `a83fcae82d2a08f0ee0c688f9d137b3566c097f8` | 1.0 | 2026-08-04 | bash-only action、linear trajectory、stateless execution、environment adapter、benchmark-first minimal harness |
 
 ## Articles and Papers
 
@@ -28,6 +31,8 @@
 | Anthropic, Building Effective Agents | `raw/docs/anthropic-building-effective-agents.md` | 发布 2024-12-19 / 抓取 2026-05-19 | 1.0 | 2026-05-19 | workflow 与 agent 判定、五种 workflow 模式、自治 agent 循环、simplicity/transparency/ACI |
 | Anthropic, Writing Effective Tools for Agents | `raw/docs/anthropic-writing-effective-tools.md` | 发布 2025-09-11 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | tool 选择、命名空间、返回上下文、token 效率、tool description/spec、工具评测 |
 | OpenAI, A Practical Guide to Building Agents | `raw/docs/openai-practical-guide-building-agents.md` | 发布未标注 / 抓取 2026-05-20 | 1.0 | 2026-05-20 | agent 适用性、model/tools/instructions、单 agent 优先、多 agent 编排、guardrails、人类介入 |
+| OpenAI, Harness Engineering | `raw/docs/openai-harness-engineering.md` | 发布 2026-02-11 / 抓取 2026-08-04 | 1.0 | 2026-08-04 | repository-as-system-of-record、agent legibility、可观测环境、机械架构约束、反馈编译、持续垃圾回收 |
+| Anthropic, Effective Harnesses for Long-Running Agents | `raw/docs/anthropic-effective-harnesses-long-running-agents.md` | 发布 2025-11-26 / 抓取 2026-08-04 | 1.0 | 2026-08-04 | initializer/coding session、外部化连续性、default-FAIL feature contract、progress + git、fresh-session E2E 验证 |
 
 ## Research Syntheses
 
@@ -92,6 +97,11 @@ Canonical link list for the reusable skill lives in `skills/build-ai-agents/refe
 - SkillOpt (Microsoft): https://github.com/microsoft/SkillOpt
 - SkillOpt project page: https://microsoft.github.io/SkillOpt/
 - SkillOpt arXiv paper: https://arxiv.org/abs/2605.23904
+- OpenAI, Harness Engineering: https://openai.com/index/harness-engineering/
+- Anthropic, Effective Harnesses for Long-Running Agents: https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
+- Anthropic cwc-long-running-agents: https://github.com/anthropics/cwc-long-running-agents
+- OpenAI Codex: https://github.com/openai/codex
+- mini-swe-agent: https://github.com/SWE-agent/mini-swe-agent
 - Claude Code docs: https://docs.claude.com/claude-code
 - Anthropic Agent SDK docs: https://docs.claude.com/agent-sdk
 - 检索策略综述关键源 — Anthropic Contextual Retrieval: https://www.anthropic.com/news/contextual-retrieval
@@ -255,3 +265,43 @@ SkillOpt (Microsoft)（skill/prompt 文本空间优化；仓库 + 论文 + Codex
 - `raw/repos/skillopt/docs/sleep/CONTROLLABLE_DREAMING.md`（train/val/test、multi-rollout、budget、slow update）
 - `raw/repos/skillopt/plugins/codex/skills/skillopt-sleep/SKILL.md`（Codex sleep cycle skill）
 - `analysis/13-skillopt.md`（分析报告）
+
+OpenAI Harness Engineering（组织级 coding-agent harness 经验）:
+
+- `raw/docs/openai-harness-engineering.md`（官方文章结构化摘要）
+- `analysis/14-openai-harness-engineering.md`（分析报告）
+
+Anthropic 长任务 Agent Harness（官方文章 + hooks/evaluator 配套仓库）:
+
+- `raw/docs/anthropic-effective-harnesses-long-running-agents.md`（官方文章结构化摘要）
+- `raw/repos/cwc-long-running-agents/README.md`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/CLAUDE.md`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/agents/evaluator.md`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/hooks/track-read.sh`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/hooks/verify-gate.sh`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/hooks/commit-on-stop.sh`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/hooks/kill-switch.sh`
+- `raw/repos/cwc-long-running-agents/claude-code-config/.claude/hooks/steer.sh`
+- `analysis/15-anthropic-long-running-agent-harness.md`（联合分析报告）
+
+OpenAI Codex（生产级 coding-agent harness）:
+
+- `raw/repos/openai-codex/codex-rs/core/src/session/turn.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/session/step_context.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/tools/orchestrator.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/tools/approvals.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/tools/sandboxing.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/agents_md.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/compact.rs`
+- `raw/repos/openai-codex/codex-rs/core/src/rollout.rs`
+- `analysis/16-openai-codex-harness.md`（分析报告）
+
+mini-swe-agent v2（极简、benchmark-first coding harness）:
+
+- `raw/repos/mini-swe-agent/README.md`
+- `raw/repos/mini-swe-agent/src/minisweagent/agents/default.py`
+- `raw/repos/mini-swe-agent/src/minisweagent/environments/local.py`
+- `raw/repos/mini-swe-agent/src/minisweagent/config/default.yaml`
+- `raw/repos/mini-swe-agent/docs/advanced/control_flow.md`
+- `raw/repos/mini-swe-agent/tests/agents/test_default.py`
+- `analysis/17-mini-swe-agent.md`（分析报告）
