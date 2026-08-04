@@ -44,4 +44,3 @@
 - 单个通用 coding agent 与测试、QA、清理等专门 agent 的相对收益仍需实证。
 - 结论主要来自全栈 Web 应用，迁移到科研、金融建模或其他长任务时需要重新定义 contract、证据和 clean-state 条件。
 - 配套仓库在文章之后继续演进，增加 fresh-context evaluator、证据 gate、operator steering 与 kill switch；这些属于后续实现证据，不应倒灌成原文章当时已经验证的结论。
-

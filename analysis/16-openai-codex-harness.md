@@ -72,4 +72,3 @@ model stream、reasoning、tool item、turn diff、warning、token 与 lifecycle
 - `skills/review-ai-agents/SKILL.md`：审查 approval/sandbox/retry 是否集中且无静默提权，状态是否按生命周期分层。
 - `skills/build-ai-agents/references/source-map.md`：登记 Codex commit 与 `session/turn.rs`、`tools/orchestrator.rs`、`agents_md.rs`、`compact.rs` 等核心文件。
 - `analysis/07-overall-agent-analysis.md`：把 step snapshot、集中 policy orchestration 与 rollout 兼容面纳入生产 harness 共识。
-

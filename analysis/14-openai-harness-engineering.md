@@ -65,4 +65,3 @@ agent 会高速复制仓库现有模式，因此坏模式传播速度也被放�
 - `skills/test-ai-agents/SKILL.md`：新增 harness ablation 与 model-vs-harness 归因要求，避免把所有成功率变化归给模型。
 - `skills/build-ai-agents/references/source-map.md`：登记文章 URL、摘要与本分析路径。
 - `analysis/07-overall-agent-analysis.md`：将 harness 共识从运行时组件提升为运行时、连续性、组织反馈三层系统。
-

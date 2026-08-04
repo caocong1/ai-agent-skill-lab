@@ -65,4 +65,3 @@ initializer 把模糊目标展开成 feature contract、启动脚本、进度文
 - `skills/review-ai-agents/SKILL.md`：检查完成状态是否默认失败、是否可被旁路篡改，以及 evaluator 是否真正隔离。
 - `skills/build-ai-agents/references/source-map.md`：登记文章、配套仓库、commit 与核心 hook/evaluator 文件。
 - `analysis/07-overall-agent-analysis.md`：把“compaction 不等于 continuity”和“完成判定外部化”加入跨来源共识。
-

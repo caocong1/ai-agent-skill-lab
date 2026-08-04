@@ -65,4 +65,3 @@ agent、model、environment 与 benchmark runner 分开，trajectory 保存模�
 - `skills/review-ai-agents/SKILL.md`：提醒 bash-only 简化能力接口但扩大安全面，并检查隐藏 context transformation 是否可重建。
 - `skills/build-ai-agents/references/source-map.md`：登记 mini-swe-agent commit 与核心 agent/environment/config/control-flow 文件。
 - `analysis/07-overall-agent-analysis.md`：在形态光谱加入“极简 benchmark harness”，并把 harness ablation 纳入共识。
-
