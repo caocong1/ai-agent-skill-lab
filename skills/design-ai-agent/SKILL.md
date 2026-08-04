@@ -2,7 +2,7 @@
 name: design-ai-agent
 description: Choose and specify AI agent architecture before implementation. Use for deciding whether an agent is needed, selecting deterministic code vs single model call vs structured workflow vs ReAct/tool loop vs durable graph vs subagents, and designing loop, state, memory, approval, and harness boundaries.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Choose the right agent architecture
 ---
 
@@ -32,7 +32,20 @@ Agency is produced by model training, not by code orchestration. The engineering
 work is harness engineering: shaping the environment where a capable model
 operates.
 
-A harness has five jobs:
+A harness has three nested engineering layers. Design only the layers the task
+needs:
+
+1. **Turn/runtime**: the loop, tools, context, observations, permissions,
+   sandbox, approvals, events, and budgets for one active run.
+2. **Session continuity**: rollout/history, checkpoints, progress and decision
+   records, completion contracts, resume/fork, and clean handoff across context
+   windows or processes.
+3. **Repository/organization feedback**: discoverable specifications,
+   architecture maps, reproducible environments, observability, executable
+   invariants, review feedback, and recurring maintenance that improve future
+   runs.
+
+The runtime layer has five core jobs:
 
 - **Tools**: actions the model can take. Keep them atomic, composable, and
   clearly described.
@@ -47,6 +60,13 @@ A harness has five jobs:
 If a feature appears to require rewriting the loop, first check whether it
 belongs in tools, knowledge selection, context management, observations,
 permissions, or state.
+
+For coding agents, optimize for **agent legibility**: the agent must be able to
+discover authoritative knowledge, start the application, observe user-visible
+behavior and telemetry, and receive actionable failures from mechanical checks.
+Use a short `AGENTS.md` as a map into structured repository-local sources of
+truth instead of a monolithic manual. Keep sensitive data outside git and expose
+only the necessary scoped view. See `analysis/14-openai-harness-engineering.md`.
 
 ## Workflow vs Agent
 
@@ -65,6 +85,13 @@ Default to the least powerful shape:
 
 Choose an autonomous agent only when steps are genuinely unpredictable, the path
 cannot be hard-coded, and the tool environment is trustworthy.
+
+Before adding planners, memory, specialist tools, or multiple agents, establish
+a minimal harness baseline: one loop, the smallest action surface, linear
+trajectory, explicit limits, and a replaceable execution environment. Add each
+mechanism only when a realistic eval shows improvement. On model upgrades,
+ablate old prompt rules and scaffold one at a time; remove what is no longer
+load-bearing. See `analysis/17-mini-swe-agent.md`.
 
 Workflow-driven platforms such as Coze, Dify, and n8n treat the LLM as a
 component inside engineer-authored flow. AI-native agents put model judgment at
@@ -123,6 +150,12 @@ A robust tool loop:
 8. Returns tool results to the model or finishes.
 9. Emits events and persists state after safe checkpoints.
 
+Treat turn, sampling step, and tool call as separate lifecycles. Capture one
+step-consistent snapshot so the context and tool specs advertised to the model
+match the permissions, working directory, and registry used for execution.
+Persist enough provenance to reconstruct what the model actually saw. See
+`analysis/16-openai-codex-harness.md`.
+
 Every iteration must consume real environment/tool feedback, and every loop must
 stop on task completion, step/cost/token budget, timeout, or human checkpoint.
 
@@ -149,6 +182,14 @@ to the model as a structured tool result.
 Use memory only when the agent needs information across turns or sessions.
 Memory needs scoped permissions, provenance, tenant/user isolation, and a
 forgetting policy.
+
+For work spanning multiple context windows, compaction is not continuity. Keep
+an externalized default-FAIL completion contract, semantic progress/decision
+notes, a versioned checkpoint such as git, a reproducible startup/smoke-test
+path, and evidence for completed items. A fresh session must be able to orient,
+verify the inherited state, choose one bounded next item, and leave a clean
+handoff. Long unattended runs also need a kill switch, steering channel, budget,
+and no-progress stop. See `analysis/15-anthropic-long-running-agent-harness.md`.
 
 ## Handoff
 

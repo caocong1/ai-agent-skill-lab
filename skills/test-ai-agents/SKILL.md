@@ -2,7 +2,7 @@
 name: test-ai-agents
 description: Add or plan tests, evals, observability, replay, and production guardrails for AI agents. Use for fake model orchestration tests, tool unit tests, persistence and resume tests, public or internal eval baselines, golden task snapshots, approval tests, traces, cost metrics, background work, scheduled triggers, and production monitoring.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Plan tests, evals, traces, guardrails
 ---
 
@@ -34,6 +34,15 @@ Prefer many deterministic tests and a small number of real-model tests.
    - model behavior rubric;
    - cost and latency thresholds;
    - tool safety cases.
+5. Harness and continuity tests:
+   - fresh session can orient from repository artifacts alone;
+   - inherited workspace passes a smoke test before new work starts;
+   - completion status cannot change without criterion-linked evidence;
+   - compaction preserves initial constraints and pending tool continuation;
+   - model-visible context/tools match the execution snapshot;
+   - sandbox denial cannot silently broaden permissions;
+   - rollout can reconstruct the messages, injected instructions, tools and
+     environment visible to the model.
 
 ## Public Eval Baselines
 
@@ -48,6 +57,11 @@ covers part of the capability:
 Most production agents need both: a public comparable number plus an internal
 golden set matching user task distribution. Run them together before merging
 tool, prompt, model, or memory changes.
+
+Report model and harness together: model/version, instructions, tool surface,
+execution environment, sandbox/approval policy, context/compaction settings,
+and evaluator version. A score without this harness configuration is not a
+reproducible agent result.
 
 Training-side work such as SFT/RL is a last resort after instructions, tools,
 context, retrieval, memory, and evals stop improving a quantified gap.
@@ -117,6 +131,36 @@ Background tools and scheduled runs need:
 - concurrency and queue-depth caps;
 - durable scheduler state;
 - fake clock and fake runner tests.
+
+Also test session rollover with a genuinely fresh context:
+
+- initializer creates a default-FAIL contract, startup path, progress record,
+  and first versioned checkpoint;
+- successor reads progress and history, runs a smoke test, selects one bounded
+  unfinished item, and does not trust an unverified completion claim;
+- builder leaves a clean working state plus evidence and a usable next step;
+- a separate evaluator sees only the specification, diff, runtime evidence and
+  narrow read-only tools;
+- kill switch, steering, no-progress detection and budget termination work
+  while the agent is active.
+
+Compaction tests and continuity tests are distinct. Compaction protects a token
+window; continuity proves another session can safely take over. See
+`analysis/15-anthropic-long-running-agent-harness.md`.
+
+## Harness Ablation and Attribution
+
+Keep a minimal baseline such as one loop, a narrow or bash-only action surface,
+linear trajectory and replaceable environment. When adding a planner, memory,
+specialized tool, evaluator or multi-agent split, compare against that baseline
+on the same task set.
+
+On model upgrades, remove one harness mechanism at a time and re-run the eval.
+Classify regressions by model, prompt/context, tool interface, execution
+environment, permissions/sandbox, persistence/continuity, or evaluator. Do not
+credit the model for a harness improvement or preserve obsolete scaffold by
+default. See `analysis/14-openai-harness-engineering.md`,
+`analysis/16-openai-codex-harness.md`, and `analysis/17-mini-swe-agent.md`.
 
 ## Observability Events
 

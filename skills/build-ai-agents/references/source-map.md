@@ -2,7 +2,7 @@
 
 Local source root: `raw/repos`
 
-When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 (production frameworks), 2026-05-21 (teaching repo `learn-claude-code`), 2026-05-22 (teaching repo `hello-agents`), and 2026-06-10 (SkillOpt); article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
+When this skill is installed outside the lab, for example under `~/.codex/skills/`, `raw/repos/` may be unavailable. Use the upstream links below in that case. Treat local paths as lab-only evidence. Commits were pinned on 2026-05-18 (initial production frameworks), 2026-05-21/22 (teaching repositories), 2026-06-10 (SkillOpt), and 2026-08-04 (harness engineering repositories); article snapshots were captured in `raw/docs/` on the dates listed in `analysis/SOURCE_INDEX.md`. Verify APIs against the host project's installed framework version before applying version-specific code.
 
 Distinguish two source kinds when citing:
 
@@ -11,6 +11,12 @@ Distinguish two source kinds when citing:
   - `learn-claude-code`: narrow but deep, exhausts harness mechanisms (20 lessons, one mechanism each, 200–2000-line Python per lesson).
   - `hello-agents`: broad and long, covers the full stack (theory → paradigms → frameworks → memory/RAG → context engineering → protocols → Agentic-RL → eval → case studies → capstone, 16 chapters).
 - **Skill optimization source** (SkillOpt) treats skill text as an optimizable external state for a frozen agent. Cite it for validation-gated skill/prompt evolution, not as a default runtime dependency for application agents.
+- **Harness engineering sources** serve three distinct levels: OpenAI Codex for
+  production runtime boundaries; Anthropic `cwc-long-running-agents` for
+  cross-session contract/evaluator/handoff primitives; OpenAI Harness
+  Engineering for repository/organization feedback systems. mini-swe-agent is
+  the minimal benchmark baseline used to challenge whether extra scaffold is
+  still necessary.
 
 ## Local Repositories
 
@@ -26,6 +32,9 @@ Distinguish two source kinds when citing:
 | Learn Claude Code (shareAI-lab, teaching) | `learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` |
 | Hello-Agents (Datawhale, teaching) | `hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` |
 | SkillOpt (Microsoft) | `skillopt` | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` |
+| Anthropic cwc-long-running-agents | `cwc-long-running-agents` | `ad107a974bced5244f74dd283dbf2bfd3baee3a1` |
+| OpenAI Codex | `openai-codex` | `9873cba8ce6d14e650e12cdc0dddd159ae6613d7` |
+| mini-swe-agent | `mini-swe-agent` | `a83fcae82d2a08f0ee0c688f9d137b3566c097f8` |
 
 ## Upstream Links
 
@@ -55,6 +64,11 @@ Distinguish two source kinds when citing:
 - SkillOpt (Microsoft): https://github.com/microsoft/SkillOpt
 - SkillOpt project page: https://microsoft.github.io/SkillOpt/
 - SkillOpt arXiv paper: https://arxiv.org/abs/2605.23904
+- OpenAI, Harness Engineering: https://openai.com/index/harness-engineering/
+- Anthropic, Effective Harnesses for Long-Running Agents: https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents
+- Anthropic cwc-long-running-agents: https://github.com/anthropics/cwc-long-running-agents
+- OpenAI Codex: https://github.com/openai/codex
+- mini-swe-agent: https://github.com/SWE-agent/mini-swe-agent
 
 ## High-Value Source Files
 
@@ -95,6 +109,8 @@ Articles and guides:
 - `raw/docs/anthropic-building-effective-agents.md` -> `analysis/06-anthropic-building-effective-agents.md`
 - `raw/docs/anthropic-writing-effective-tools.md` -> `analysis/08-anthropic-writing-effective-tools.md`
 - `raw/docs/openai-practical-guide-building-agents.md` -> `analysis/09-openai-practical-guide-building-agents.md`
+- `raw/docs/openai-harness-engineering.md` -> `analysis/14-openai-harness-engineering.md`
+- `raw/docs/anthropic-effective-harnesses-long-running-agents.md` -> `analysis/15-anthropic-long-running-agent-harness.md`
 
 Learn Claude Code (cite when looking for the minimal skeleton of one harness mechanism):
 
@@ -146,6 +162,40 @@ SkillOpt (cite when improving skill/prompt artifacts from trajectory evidence):
 - `skillopt/docs/sleep/CONTROLLABLE_DREAMING.md`
 - `skillopt/plugins/codex/skills/skillopt-sleep/SKILL.md`
 - `analysis/13-skillopt.md`
+
+Anthropic long-running harness (cite for cross-session continuity and independent completion gates):
+
+- `cwc-long-running-agents/README.md`
+- `cwc-long-running-agents/claude-code-config/.claude/CLAUDE.md`
+- `cwc-long-running-agents/claude-code-config/.claude/agents/evaluator.md`
+- `cwc-long-running-agents/claude-code-config/.claude/hooks/track-read.sh`
+- `cwc-long-running-agents/claude-code-config/.claude/hooks/verify-gate.sh`
+- `cwc-long-running-agents/claude-code-config/.claude/hooks/commit-on-stop.sh`
+- `cwc-long-running-agents/claude-code-config/.claude/hooks/kill-switch.sh`
+- `cwc-long-running-agents/claude-code-config/.claude/hooks/steer.sh`
+- `analysis/15-anthropic-long-running-agent-harness.md`
+
+OpenAI Codex (cite for production turn/step/tool-call lifecycle and policy enforcement):
+
+- `openai-codex/codex-rs/core/src/session/turn.rs`
+- `openai-codex/codex-rs/core/src/session/step_context.rs`
+- `openai-codex/codex-rs/core/src/tools/orchestrator.rs`
+- `openai-codex/codex-rs/core/src/tools/approvals.rs`
+- `openai-codex/codex-rs/core/src/tools/sandboxing.rs`
+- `openai-codex/codex-rs/core/src/agents_md.rs`
+- `openai-codex/codex-rs/core/src/compact.rs`
+- `openai-codex/codex-rs/core/src/rollout.rs`
+- `analysis/16-openai-codex-harness.md`
+
+mini-swe-agent v2 (cite for minimal harness baselines and scaffold ablation):
+
+- `mini-swe-agent/README.md`
+- `mini-swe-agent/src/minisweagent/agents/default.py`
+- `mini-swe-agent/src/minisweagent/environments/local.py`
+- `mini-swe-agent/src/minisweagent/config/default.yaml`
+- `mini-swe-agent/docs/advanced/control_flow.md`
+- `mini-swe-agent/tests/agents/test_default.py`
+- `analysis/17-mini-swe-agent.md`
 
 Java:
 

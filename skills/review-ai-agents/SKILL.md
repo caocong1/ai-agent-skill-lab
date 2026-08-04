@@ -2,7 +2,7 @@
 name: review-ai-agents
 description: Review existing AI agent codebases for correctness, safety, cost, reliability, and maintainability. Use for locating agent constructs, auditing tool schemas, permissions, prompt/context assembly, memory, loop bounds, MCP exposure, tests, observability, anti-patterns, and producing a Chinese findings table plus prioritized remediation plan.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Audit agent correctness and risk
 ---
 
@@ -51,7 +51,13 @@ Raw SDK or other languages:
 4. State and memory: persistence, tenant isolation, replay/resume, poisoning.
 5. Loop control: stop condition, timeout, cost budget, retry policy.
 6. Safety: approval, prompt injection, data exfiltration, SSRF, audit/redaction.
-7. Tests and observability: fake model tests, eval snapshots, traces, metrics.
+7. Harness lifecycle: turn/step/tool-call ownership, consistent tool/context
+   snapshots, rollout compatibility, clean handoff, resume and fork.
+8. Repository legibility: authoritative knowledge map, reproducible startup,
+   user-visible and telemetry observations, executable architecture rules,
+   feedback capture and recurring cleanup.
+9. Tests and observability: fake model tests, eval snapshots, traces, metrics,
+   fresh-session recovery and harness ablation.
 
 ## Anti-Patterns to Check
 
@@ -68,6 +74,17 @@ Raw SDK or other languages:
 - Swallowed or vague tool errors.
 - No agent tests.
 - Non-deterministic tool result ordering.
+- Monolithic instruction file with no discoverable source-of-truth structure.
+- Compaction treated as the only cross-session handoff.
+- Completion state defaults to pass or can be changed without linked evidence.
+- Builder grades its own long-running work with no fresh-context or
+  deterministic evaluator.
+- Model-visible tools/context come from a different snapshot than execution.
+- Sandbox denial silently retries with broader permissions.
+- Bash-only action surface described as "simple" without a real sandbox.
+- Hidden context transformations cannot be reconstructed from the rollout.
+- Agent feedback and repeated review findings never become docs, tests, lints,
+  skills, or maintenance tasks.
 
 ## Severity Rubric
 
@@ -136,3 +153,7 @@ Translate labels:
 - No tests -> fake-model harness before behavior refactor.
 - Prompt bloat -> retrieval/compaction with source attribution.
 - Vague tool errors -> structured model-correctable errors.
+- Long-task drift -> default-FAIL contract, progress + versioned checkpoint,
+  fresh-session smoke test, evidence-bound completion, clean handoff.
+- Repeated coding-agent mistakes -> promote evidence-backed guidance from docs
+  to executable invariants, then run scoped recurring cleanup.
