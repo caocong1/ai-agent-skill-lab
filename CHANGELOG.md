@@ -10,6 +10,47 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `metadata.version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [2.2.0] - 2026-08-23
+
+### 新增
+
+- 新增 DeepSeek Harness（`deepseek-ai/deepseek-harness`）源码分析 `analysis/18-deepseek-harness.md`，仓库快照固定到 commit `b150a551b8d465e31e418e1b2eaf5e79bbb7d28e`（`dsh` 0.1.1-rc.2，developer preview）。它是本仓库目前唯一一个把 agent harness 完整做成 **micro-kernel + 插件树**、并且逐子系统写出可核验契约的生产级来源，覆盖 capability seam 三角色、event-sourced session log、`model-visible ⟺ logged` 不变量、turn/step/round 三级循环、agent scope 与 tool restriction、monotonic tool guard、per-call sandbox policy、Code Mode、spill、goal 域、Ralph fresh-agent 循环、agent teams、self-referential 插件工具集，以及 **Model Experience（token / KV-cache 效应）README 契约**。
+- 新增 Anthropic《Harness design for long-running application development》（2026-03-24）分析 `analysis/19-anthropic-harness-design-long-running-apps.md` 与结构化摘要 `raw/docs/anthropic-harness-design-long-running-apps.md`，覆盖 GAN 式 generator/evaluator 分离、planner/generator/evaluator 三角色、sprint contract、可评分的主观质量 rubric 与 few-shot 校准、context anxiety 与 context reset vs compaction，以及 **"harness 组件是有保质期的模型能力假设"** 这一核心结论。
+- 新增 MCP 2026-07-28 规范修订分析 `analysis/20-mcp-2026-07-28-revision.md` 与结构化摘要 `raw/docs/mcp-2026-07-28-specification.md`，覆盖 stateless core（移除 `initialize` 与 `Mcp-Session-Id`）、`server/discover`、MRTR（`InputRequiredResult` / `inputRequests` / `inputResponses`）、`resultType`、`subscriptions/listen`、Tasks 扩展、Extensions 框架、`CacheableResult`（`ttlMs` / `cacheScope`）与确定性 tool 排序、授权收紧，以及 Roots / Sampling / Logging 的弃用。
+- 新增本仓库自身设计再审视 `analysis/21-lab-design-rethink-2026-08.md`：复核"agent = model + harness""最小复杂度优先""来源驱动的 skill 沉淀"三条根基假设在 2026-08 是否仍成立，指出需要补强的四个盲区（durable execution、KV-cache 经济学、harness 假设的保质期、来源新鲜度自动化），并给出后续演进方向。
+- 新增来源新鲜度审查 `.planning/freshness-reviews/2026-08-23-source-freshness-review.md`（SEED-001 第二次执行），逐来源核验 14 个来源的上游漂移与实质性判定。
+
+### 变更
+
+- `skills/design-ai-agent/SKILL.md`：新增 **durable execution**（三存储模型、durable program counter、intent → effect → settlement 的 effect sandwich、per-tool replay policy、synthetic interrupted result）、turn/step/round 三级循环、goal gate 与 turn 结束的区分、generator/evaluator 分离与自评不可信、capability seam 扩展形状、`model-visible ⟺ logged` 不变量、scoped 注册与 visibility≠authority，以及"harness 组件是有保质期假设、每次模型升级重做消融"的规则。
+- `skills/design-agent-tools/SKILL.md`：新增 KV-cache / prefix 稳定性作为 prompt 与 tool catalog 的一级约束、Model Experience 文档契约（模型看到什么 / token 效应 / KV-cache 效应）、spill（大输出落盘 + 不透明 locator + retrieval hint）、compaction 前的 tool-result pruning、Code Mode 作为可选工具传输层、`deferContext` / `concludeTurn` 语义，以及带显式上限的 structured handoff。
+- `skills/build-mcp-capabilities/SKILL.md`：按 MCP 2026-07-28 全面更新——stateless 核心与 `server/discover`、每请求 `_meta` 版本与能力、MRTR 取代 server-initiated 请求、`resultType`、`subscriptions/listen`、Tasks 扩展、Extensions 框架、缓存字段与确定性排序、授权收紧、Roots/Sampling/Logging 弃用与迁移建议，并补充按协议修订选型与兼容探测的规则。
+- `skills/secure-ai-agents/SKILL.md`：新增 monotonic guard（只能收紧、不能放开）、fail-closed 审批结果四元组、per-call sandbox policy 与 `full`/`partial` 执行完整性、runner-failure 与 denial 的区分、spawned 进程环境擦除与私有临时目录、link-shaped 路径删除、permission preset 与派生 `custom`、self-modification 工具集的信任立场，以及 MCP 2026-07-28 的授权硬化项。
+- `skills/test-ai-agents/SKILL.md`：新增 real-composition 测试（走真实配置与入口，而非手搭 mock）、assembled transcript 的 keyless snapshot 门禁、runtime invariant（断言权威事件流/可变数据而非服务存在）、scripted model / sandbox 测试替身、registry 处置（HMR）测试、evaluator rubric 的 few-shot 校准与 score drift 控制，并把 harness 消融扩展为"模型升级后逐个移除机制"。
+- `skills/optimize-agent-skills/SKILL.md`：吸收 SkillOpt v0.2 的多目标奖励（准确率 / token / 延迟）、train/val/test 三分与 `gate_mode`、多 rollout 对比式反思的预算约束、slow-update 长期记忆域，以及跨工具 backend 的可移植性要求。
+- `skills/implement-ts-agents/SKILL.md`：更新 Pi v4 lane-based harness（entry tree / registers / usage ledger、lanes、durable program counter、effect sandwich、replay policy）、Vercel AI SDK v7 稳定线与 v6 并行线（`onFinish` → `onEnd`）、OpenAI Agents JS 的 sandbox 与 `@openai/agents/testing` 确定性测试工具、Standard Schema、模型调用超时与 guardrail replay 脱敏，以及 MCP TypeScript SDK v2 的包拆分。
+- `skills/review-ai-agents/SKILL.md`：审查面增加 durable execution 与崩溃恢复、KV-cache 破坏、guard 单调性、logged-vs-model-visible 一致性、goal/turn 混淆与 evaluator 缺失。
+- `skills/build-ai-agents/SKILL.md`：路由表增加 durable execution / 崩溃恢复与 harness 消融的入口指引，并在 Core Rules 补充"harness 假设有保质期"。
+- `analysis/07-overall-agent-analysis.md`：共识矩阵新增 DeepSeek Harness 与两篇 2026 文章列，新增"durable execution"与"KV-cache 经济学"两个共识维度，形态光谱加入 plugin-tree harness，并更新后续可分析方向。
+- `analysis/10-learn-claude-code.md`：随上游重构刷新到分析版本 1.1——课程从 20 节调整为 17 节并重新编号，新增 `s16_workflow_runtime` 与 `s17_goal_loop`，README 定位改为 "Harness Engineering for Real Agents"。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 1 个仓库来源、2 个文章/规范来源与对应重点阅读块；刷新 Pi、learn-claude-code、MCP TS SDK、Vercel AI SDK、SkillOpt、OpenAI Agents JS、mini-swe-agent 等来源版本；追加 2026-08-23 新鲜度审查小节；修正 Pi 与 learn-claude-code 已失效的文件路径。
+- `skills/build-ai-agents/references/source-map.md`：登记 DeepSeek Harness 本地路径与 commit、两篇新文章/规范映射、刷新的 commit 引脚与高价值阅读文件，并修正上游重命名导致的失效路径。
+- `docs/index.html`：来源表新增 DeepSeek Harness、Anthropic harness design、MCP 2026-07-28 三行，footer 更新到 skill suite v2.2.0；`<style>` 与 `<script>` 未改动。
+- `README.md`：当前资料集新增三个来源、说明版本更新到 2.2.0，并补充设计再审视文档的入口。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| DeepSeek Harness | repo | `b150a551b8d465e31e418e1b2eaf5e79bbb7d28e` | 1.0 | 2026-08-23 |
+| Anthropic, Harness Design for Long-Running Application Development | article | 发布 2026-03-24 / 抓取 2026-08-23 | 1.0 | 2026-08-23 |
+| MCP Specification 2026-07-28 | spec | 发布 2026-07-28 / 抓取 2026-08-23 | 1.0 | 2026-08-23 |
+| Pi | repo | `a69bef789bc95abf0acee16f7b4660b70b650bb9` | 1.1 | 2026-08-23 |
+| Learn Claude Code | repo | `f9e8b280` 系列重构后快照 | 1.1 | 2026-08-23 |
+
 ## [2.1.0] - 2026-08-04
 
 ### 新增
