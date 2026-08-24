@@ -2,7 +2,7 @@
 name: iterate-skill-lab
 description: Iterate this ai-agent-skill-lab repository when there is new AI agent research, framework, paper, article, or technique to absorb. Use to add a brand-new source analysis, refresh an existing source against a newer upstream version, or apply a skill-only optimization. Codifies versioning, CHANGELOG, SOURCE_INDEX metadata, analysis-file format, synthesis update, build-ai-agents optimization, docs/README updates, commit cadence, and PR flow.
 metadata:
-  version: 1.0.2
+  version: 1.1.0
   short-description: Iterate the agent skill lab
 ---
 
@@ -49,6 +49,8 @@ Everything else (mode, version, synthesis impact) is a proposed default the user
 - PATCH: wording fix, snapshot refresh with no guidance change, broken-link repair.
 
 Per-source `分析版本` is **independent** of the skill version. Bump `分析版本` 1.0 → 1.1 on minor re-analysis, 1.0 → 2.0 on full rewrite. Bump the skill version only if guidance actually changed.
+
+**Nothing in the contract is removed without first being deprecated.** Before a MAJOR removal, the mode / deliverable / reference must appear in `CHANGELOG.md` under a `弃用登记` heading, naming its replacement and the earliest release that may remove it, and stay there for at least two MINOR releases. SemVer says whether *this* release breaks; the deprecation registry is what tells consumers where the *next* one will.
 
 ## Per-Source Metadata (canonical schema)
 
@@ -132,7 +134,9 @@ Before marking the iteration complete:
 - `docs/index.html`: new `<tr>` has exactly three `<td>`; `git diff` shows zero changes in `<style>` and `<script>` ranges; tag balance (`tr/td/table/section/tbody/thead/footer`) is preserved.
 - `README.md`: new source listed; `## 版本与变更` version reflects current `SKILL.md`.
 
-If a `quick_validate.py` (or equivalent) exists at the repo root, run it as a final check.
+**Run `scripts/check-lab-invariants.sh` and get a clean exit before opening the PR.** It mechanically checks the analysis metadata blockquote format, version agreement across `SKILL.md` / `README.md` / `docs/index.html` / `CHANGELOG.md`, the existence of every lab-owned path referenced in backticks, the three-`<td>` rule in `docs/index.html`, and that `SOURCE_INDEX.md` 更新时间 is not older than the newest 最后更新 it records. Its `raw/repos` path check can only warn, because most entries are gitlinks with no local checkout.
+
+Fix violations rather than relaxing the check. If a check is wrong, fix the check in the same PR and say so — a gate that gets loosened to pass is worse than no gate.
 
 ## Lab-Specific Anti-Patterns
 
@@ -143,6 +147,10 @@ If a `quick_validate.py` (or equivalent) exists at the repo root, run it as a fi
 - **Adding new monolithic reference files inside `build-ai-agents/references/` for a MINOR bump.** Keep that directory limited to `source-map.md`; put reusable guidance in the focused child skill that owns the topic.
 - **Overwriting `analysis/04-distilled-skill-design.md` or `analysis/05-claude-review-and-applied-changes.md`**. They have historical roles (skill-design rationale and prior review record). New synthesis content goes in `07` or a new file.
 - **Listing skill edits in `## 对最终 skill 的影响` that don't match what was actually committed.** That section is a contract with the reader; keep it truthful.
+- **Checking repository drift without checking whether the paths we cite still exist.** Upstream renames and renumbering leave dangling references while the repo itself looks healthy. Verify every `重点阅读文件` entry against the current upstream tree.
+- **Judging a monorepo's release line from git tags.** Use the package registry's dist-tags; per-package tags and pre-release tags routinely misrepresent what actually shipped.
+- **Relying on an upstream specification without giving it a `来源版本` row.** A source with no version row is invisible to drift detection entirely.
+- **Recording un-verified drift as clean.** If a source's change cannot be judged at reasonable cost, record it as 待核验 and defer; do not assume it is non-substantive.
 - **Stale `更新时间` in `SOURCE_INDEX.md`.** This is the canonical registry; a wrong date here misleads future iterations and any tooling that reads it.
 
 ## Deliverables
