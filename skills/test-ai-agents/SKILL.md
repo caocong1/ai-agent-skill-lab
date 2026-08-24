@@ -2,7 +2,7 @@
 name: test-ai-agents
 description: Add or plan tests, evals, observability, replay, and production guardrails for AI agents. Use for fake model orchestration tests, tool unit tests, persistence and resume tests, public or internal eval baselines, golden task snapshots, approval tests, traces, cost metrics, background work, scheduled triggers, and production monitoring.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Plan tests, evals, traces, guardrails
 ---
 
@@ -96,6 +96,14 @@ Use a fake model that can return:
 
 This makes loop behavior testable without live model randomness.
 
+Check whether the framework already ships one. Some agent SDKs now provide
+first-party deterministic testing entry points — a scripted model, a scripted
+sandbox session, a scripted realtime transport — that let you drive the runner,
+sandbox, and streaming paths with no live model, container, or socket. Prefer
+those over a hand-rolled fake, and treat "does it ship a scripted model?" as a
+real selection criterion when choosing a framework. See
+`analysis/02-agent-framework-patterns.md`.
+
 ## Error Strategy
 
 Classify tool errors:
@@ -148,12 +156,81 @@ Compaction tests and continuity tests are distinct. Compaction protects a token
 window; continuity proves another session can safely take over. See
 `analysis/15-anthropic-long-running-agent-harness.md`.
 
+## Judging Subjective Quality
+
+When the deliverable's quality is subjective — visual design, prose, report
+structure, interaction feel — it can still be graded, but only if you build the
+grader deliberately.
+
+- **Separate the grader from the producer.** An agent asked to evaluate its own
+  output will confidently praise mediocre work. This is the single most reliable
+  finding in this area.
+- **Name the criteria.** Decompose "good" into a small set of named dimensions
+  and score each separately. A single overall score cannot be argued with or
+  improved against.
+- **Calibrate with few-shot examples that include the score breakdown**, not
+  just the score. Without calibration, the same grader drifts across iterations
+  of a long pipeline and the scores stop being comparable to each other.
+- **Grade the running thing, not the diff.** Drive the real application, take
+  screenshots, exercise the user-visible path. Findings should be granular and
+  actionable ("the fill tool only placed tiles at the drag start and end — FAIL")
+  rather than a paragraph of impressions.
+- **Tune the grader by reading divergences.** Read the grader's logs, find the
+  cases where its judgment differs from a human's, and update its prompt to
+  resolve those cases. The divergences are its training set — the grader is
+  itself a skill under optimization, so gate its changes the same way.
+- **Know that the rubric steers the output.** Wording like "the best designs are
+  museum quality" pushes the generator toward a particular convergence. A rubric
+  is simultaneously a measurement instrument and a prompt; write it knowing it
+  does both.
+- **Keep every iteration and be able to revert.** Scores generally improve
+  across iterations but not monotonically, and a middle version is often the
+  best one. Do not assume the last run wins.
+- **Decide whether the grader pays for itself.** Its value depends on task
+  difficulty relative to model capability: inside the model's comfortable range
+  it is pure cost; at the edge of capability it catches the last-mile missing
+  features and edge cases. Measure the producer's solo pass rate first, then
+  decide. Budget explicitly — a full multi-role harness run costs orders of
+  magnitude more than a single-agent run.
+
+See `analysis/19-anthropic-harness-design-long-running-apps.md`.
+
+## Testing Completion Gates and Durable Execution
+
+If the system has a completion gate, test the gate and not only the loop:
+
+- a goal that is met is accepted, with the evidence present in the record;
+- a goal that is not met is rejected with a reason that names what is missing;
+- a goal that is impossible returns the impossible outcome rather than looping;
+- a completion claim with no supporting evidence in the record is rejected;
+- the main loop's turn budget still terminates the run when the gate keeps
+  saying "not yet".
+
+If the system claims crash recovery, test the recovery path directly:
+
+- kill the process between committing an effect's intent and its settlement,
+  then verify recovery can determine whether the effect happened;
+- verify a non-replayable tool produces a synthesized interrupted result on
+  resume, so the call/result pairing the model sees stays well-formed;
+- verify approvals and credentials are re-obtained rather than restored;
+- verify a resume with an ambiguous pending output fails closed;
+- for a journaled orchestration script, verify the resume cache keys are stable
+  across runs with different concurrent completion orders.
+
 ## Harness Ablation and Attribution
 
 Keep a minimal baseline such as one loop, a narrow or bash-only action surface,
 linear trajectory and replaceable environment. When adding a planner, memory,
 specialized tool, evaluator or multi-agent split, compare against that baseline
 on the same task set.
+
+Keep a register of dated assumptions to ablate against. Each harness component
+should have a one-line entry: "we added X because the model at version M could
+not do Y." On a model upgrade that register *is* the ablation list — without it,
+ablation is a guessing game over the whole harness. Components that govern
+authority, evidence, side effects, or cost do not belong on that list; they are
+not compensating for a model limitation and should not be ablated on a model
+schedule.
 
 On model upgrades, remove one harness mechanism at a time and re-run the eval.
 Classify regressions by model, prompt/context, tool interface, execution
