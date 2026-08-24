@@ -1,6 +1,8 @@
 # Learn Claude Code (shareAI-lab) 分析
 
-> 分析版本：1.0 ｜ 最后更新：2026-05-21 ｜ 来源：Learn Claude Code（commit `1baf1ac`，详见 `analysis/SOURCE_INDEX.md`）
+> 分析版本：1.1 ｜ 最后更新：2026-08-23 ｜ 来源：Learn Claude Code（commit `f9e8b280`，详见 `analysis/SOURCE_INDEX.md`）
+>
+> 1.1 变更：上游从 **20 课重构为 17 课并整体重编号**，`s10_system_prompt` / `s11_error_recovery` / `s17_autonomous_agents` / `s18_worktree_isolation` / `s19_mcp_plugin` / `s20_comprehensive` 均已不存在，其内容被并入其他课。新增 `## 17 课重构后的编目`、`## 三课新增内容` 两节。原有的核心抽象与工程启发核对后仍成立。
 
 这是本仓库分析的第 8 个代码项目，性质和之前 7 个有明显差异：它不是一个被实际部署的 agent SDK，而是一份 20 课渐进式教学仓库，把 Claude Code 风格 harness 的每一个机制独立成一节课、每节课配一个可单独运行的 `code.py`。前 7 个项目（Pi、OpenAI Agents JS、LangGraphJS、MCP TS SDK、Vercel AI SDK、Spring AI Examples、LangChain4j）侧重"生产级框架的设计抽象"；本仓库则相反——把所有抽象拆掉，每节课只用 200–2000 行 Python 直白复述一个 harness 机制，到 `s20_comprehensive` 才把所有机制串到一个循环里。
 
@@ -61,6 +63,87 @@
 - **MCP 章节是简化版本**：未覆盖 transport 完整生命周期、OAuth、资源订阅与轮询——生产实现请回到 `analysis/02-agent-framework-patterns.md` 与 MCP TS SDK。
 - **作者的"agency 来自训练"立场不要被误读成"工具不重要"**。本仓库强调的恰恰相反：因为工具/上下文/边界决定了模型能不能把训练得来的能力发挥出来，harness 工程的价值才被抬高。
 
+## 17 课重构后的编目
+
+1.0 分析基于 20 课编目。上游现为 17 课，且不是简单删减而是**重编号 + 重新分层**：
+
+| 现编号 | 主题 | 相对 1.0 |
+| --- | --- | --- |
+| s01–s09 | agent loop / tool use / permission / hooks / todo_write / subagent / skill loading / context compact / memory | 编号未变 |
+| s10 | task system | 原 s12 |
+| s11 | background tasks | 原 s13 |
+| s12 | cron scheduler | 原 s14 |
+| s13 | agent teams | 原 s15（并入 worktree 隔离）|
+| s14 | MCP plugin | 原 s19 |
+| **s15** | **integrated harness** | 新（取代原 s20 comprehensive，内容显著扩写）|
+| **s16** | **workflow runtime** | 新 |
+| **s17** | **goal loop** | 新（取代原 s17 autonomous agents）|
+
+已消失的 `s10_system_prompt` 与 `s11_error_recovery` 不是被删掉，而是**从独立课降为集成 harness 里的一个位置**——system prompt 组装与错误恢复现在出现在 s15 的循环位点表里。这个重构方向本身是一条信息：**这两件事不是可以单独学的机制，而是循环里的固定工位**。
+
+> 引用本仓库时请注意：`SOURCE_INDEX.md` 与 `source-map.md` 中曾指向旧编号的路径已在本轮修正。
+
+## 三课新增内容
+
+### s15 集成 harness：一张"组件在循环里的位置表"
+
+s15 的价值不在于引入新机制，而在于它给出了**每个机制从循环的哪个位点进入**的完整对照表：用户输入前后的 `UserPromptSubmit` hooks、LLM 前的 cron 队列 / 后台通知注入 / 压缩管线 / memory+skills+MCP 组装、模型调用处的错误恢复、工具执行前的 `PreToolUse` + 权限、工具分发处的动态工具池组装、执行后的 `PostToolUse`、以及本轮无 `tool_use` 时的 `Stop` hooks。
+
+本仓库此前的 harness 描述是分散的能力清单，这张表提供的是**装配顺序**。它带来四条此前没有写清的判断：
+
+- **权限是一个 hook，不是工具执行行里的 if**。permission、日志、审计挂在同一个 `PreToolUse` 点上，lead / 一次性 subagent / 队友的调用都走这一个点。
+- **不要把 MCP server 自己写的 description 当授权依据**。宿主维护一份**精确的已知只读工具名单**，名单外的 MCP 工具一律询问用户。这是一条很硬的安全判断：工具的自述来自不可信方，不能用来决定它需不需要审批。
+- **只有前台用户轮次可以弹交互确认；异步轮次直接拒绝需要确认的操作**，不与主 CLI 争抢输入。这解决了一个很常见的实现 bug——后台任务弹出一个没人看得见的确认框然后卡死。
+- **worktree 只改变工具的默认工作目录，不是安全沙箱**；`remove_worktree()` 保留在宿主侧、模型不可调用，破坏性移除需要另行取得用户确认。
+
+另有三条机制细节值得记：
+
+- **两层计划共存**：`todo_write` 是会话内的整表替换清单，task graph 是跨会话、有稳定 ID、按单条记录更新生命周期的任务文件。两者目标相近但**替换语义不同**，不能混用一套实现。
+- **两种委派共存**：一次性 `task` subagent 解决上下文隔离（独立 `messages[]`，中间过程丢弃，只回摘要）；持久队友解决长期并行协作（`WORK → result → IDLE`）。队友**每次调用模型前先读收件箱**，因此直接消息与关机请求不会被连续的 tool-use 轮次饿死——这是把控制信令与工作循环解耦的具体做法。没有 assignment 的队友不能使用文件或 Shell 工具。
+- **认领或释放 task 会改变 assignment version，使旧的 plan approval 失效**。这与 `analysis/18-deepseek-harness.md` 的 revisioned CAS 是同一条：授权绑定在版本上，状态一变授权自动作废。
+- **cron 的一次性任务是至少一次交付**：先持久化为 `pending_delivery` 再入队，保留到包含该 prompt 的模型调用成功为止；失败放回队列，重启后重新入队。明写交付语义（at-least-once）而不是含糊其辞，是可靠性设计的基本礼貌。
+- **后台命令在独立进程组中运行**，退出或 `SIGTERM` 时停掉整个组；但**另建 session 的进程可以逃逸**——这条限制被明写出来，与"worktree 不是沙箱"是同一种诚实。
+
+### s16 workflow runtime：模型决定单步，脚本决定编排
+
+s16 在 s15 的工具池里加了一个 `Workflow` 工具，一次 `tool_use` 跑完一整套编排。它与 `analysis/18-deepseek-harness.md` 的 workflow engine 是**同一个抽象的第二次独立出现**：在模型循环之上再加一层脚本编排，并用 journal 支持续跑。
+
+两者在同一个安全点上也做了相同选择：**模型不提交可执行代码或元数据**。s16 的模型可见 schema 只接受 `name` / `args` / `resume_from_run_id`，脚本与元数据来自宿主管理的 registry，并在执行脚本前完成校验（DeepSeek 的说法是"`meta`/`args` 在任何脚本文本被求值之前先按纯 JSON 校验"）。
+
+除此之外有四条独立于 DeepSeek 的贡献：
+
+- **`parallel` 与 `pipeline` 的语义差别被说清了**：`parallel` 是**等齐屏障**（下一步需要上一阶段的全部结果时用），`pipeline` 是**每个 item 独立分阶段推进、不等齐**（item A 到第 3 阶段时 item B 可能还在第 1 阶段）。这是一个很容易被实现者混为一谈的区别。
+- **稳定调用键必须来自内容哈希，不能来自完成计数器**。因为并发完成顺序不确定，用"第几个完成"当 key，两次运行的缓存就会错位。key 由 `kind|label|prompt|schema` 算稳定哈希。**这是全篇最锋利的一条**——它是任何"并发 + 可续跑"系统都会踩的坑。
+- **子 agent 的输出也不可信**：`agent({schema})` 要求返回匹配 schema 的 JSON，运行时解析校验，不合法**重试一次**，仍不合法则报错。课程原文把它点成 s05"工具参数不可全信"的对偶——输入输出两侧都要校验。
+- **中间结果留在变量里，不进对话历史**。这是 workflow 相对"让模型一轮轮凑"的核心成本优势，也解释了为什么它与 Code Mode / Programmatic Tool Calling（`analysis/02-agent-framework-patterns.md`）是同一族解法。
+
+存储侧：快照 + journal + lock 三件套，新运行用**排他式文件创建**预留 runId，run lock 在整个执行与最终持久化期间持有，另一个进程无法并发 resume 同一次运行。`meta.name` 被要求是 1–64 字符的安全 slug，因为它会进入本地产物文件名——**凡是进入路径的字符串都要按路径安全校验**。
+
+### s17 goal loop：轮次结束 ≠ 目标达成
+
+s17 给出了本仓库长期缺失的那块拼图的最小实现：**模型不再调用工具，只代表这一轮想停；目标是否完成，交给一个独立判断器**。
+
+实现形状是一个**会话级 Stop hook**，而不是主循环之外的第二条退出路径：
+
+- 有 `tool_results` 就继续下一轮（与 s01 相同）；
+- 没有时先跑 `evaluate_after_turn(messages)`；判定为 `block` 就把**理由作为一条 user 消息追加回同一份 `messages[]`**，继续下一轮；
+- 没有活跃目标时 hook 直接放行，退出条件退化成 s01。
+
+判断器的约束设计得很克制，也很值得抄：
+
+- 判断器是**另一次独立的模型调用**，与干活的模型分开；
+- 判断器**没有工具**，不能读文件、不能重跑测试，只能依据对话中已经出现的内容；
+- 返回一个闭合三元组 `{ok, reason, impossible}`——`impossible` 给了"目标无法达成"一条独立出口，而不是让它伪装成"还没完成"从而无限循环；
+- 送给判断器的内容保留最近的完整消息，单条过长时只保留首尾，避免一条工具结果占满整次判断请求。
+
+由此推出一条对主模型的**提示词义务**：system prompt 必须要求主模型"运行验证命令后，把命令和结果明确写进对话"。判断器只能看见对话，所以**证据必须被显式写入对话才存在**。这与 `analysis/15-anthropic-long-running-agent-harness.md` 的 evidence gate 是同一条，但这里给出了它在提示词层的落地方式。
+
+课程自己划的边界同样重要：**"Goal Loop 不是测试框架"**——它判断的是"验证结果是否已经出现在工作记录中"，不是"验证结果是否为真"。真正的验证仍由工具执行。
+
+最后一条工程判断：**轮次预算属于主循环的全局限制，不要给 Goal 偷偷加一个固定预算**。预算应该只有一处，否则两个上限会互相掩盖。
+
+与另外两个来源合看，这构成本轮最强的一条跨来源共识：DeepSeek Harness 的 goal domain（持久 phase + revisioned CAS + `GoalActivation` 故意不持久化）、learn-claude-code 的 s17、以及 Anthropic 的 evaluator（`analysis/19-anthropic-harness-design-long-running-apps.md`）**互不相干地得出同一个结论：完成判定必须由执行方之外的东西给出**。
+
 ## 对最终 skill 的影响
 
 本文件推动 1.3.0 的具体改动（与 `analysis/07` 综合报告、`CHANGELOG.md` 1.3.0 一致）：
@@ -83,3 +166,12 @@
   - 新增 learn-claude-code 仓库行（commit + 本地路径）与"教学型来源 vs 生产框架来源"的简短说明，并补上几个核心 `s0x/code.py` 文件路径。
 - `analysis/07-overall-agent-analysis.md`：
   - 跨来源共识矩阵新增 learn-claude-code 列；形态选择光谱新增"教学型 harness 实现作为学习/原型脚手架"；`后续可分析方向` 移除已落地候选并新增 Claude Code 官方文档、Anthropic Agents SDK、ReAct/Reflexion 论文。
+
+1.1 追加：
+
+- **轮次结束 ≠ 目标达成**：需要"做到某个可验证状态"的任务，应在轮末加一个独立完成闸（会话级 Stop hook），判定器无工具、只读对话、返回 `{ok, reason, impossible}`。
+- 证据必须被显式写进对话，否则独立判定器看不见——这要落到主模型的 system prompt 里。
+- 权限应挂在 `PreToolUse` 这一个点上；不要把外部工具的自述当授权依据；异步轮次不得弹交互确认。
+- 固定流程用脚本编排 + journal 续跑；模型只提供名称与参数，不提供可执行代码或元数据。
+- 并发 + 可续跑的缓存键必须来自调用内容的稳定哈希，不能来自完成顺序计数器。
+- `parallel`（等齐屏障）与 `pipeline`（不等齐、逐 item 推进）要分清并各自命名。
