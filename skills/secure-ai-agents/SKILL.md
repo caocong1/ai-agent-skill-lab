@@ -89,6 +89,50 @@ application owns. A guardrail whose coverage is unstated will be assumed total.
 - A batch of checks all settle before a failure is surfaced, so one early
   tripwire does not discard the other diagnostics.
 
+## Sandbox and Subprocess Hygiene
+
+**Sandbox policy is per call, not per session.** Resolve the policy at the point
+of execution from the tool, the arguments, and the current approval state.
+A session-level "sandbox mode" cannot express "this one command needs more" and
+invites a global relaxation to unblock a single case.
+
+**A denied action and a broken runner are different outcomes.** Distinguish
+"the sandbox refused this" from "the sandbox itself failed to run", and never
+let either fall back to unsandboxed execution. A denial is a result the model
+should see and adapt to; a runner failure is an operational error for the
+operator. Collapsing them produces the worst pattern in this area: a sandbox
+failure silently retried without the sandbox.
+
+**Report orthogonal outcomes independently.** A command can time out *and* exit
+zero. Wall-clock outcome, exit status, and completeness of captured output are
+separate facts; encoding them as one enum loses information the caller needs.
+Say explicitly whether captured output is complete or truncated rather than
+letting the caller infer it from length.
+
+**Scrub the environment for spawned commands.** Build the child environment from
+an explicit allowlist rather than inheriting the parent's. Agent processes
+routinely hold provider keys, cloud credentials, and tokens that no tool
+subprocess needs.
+
+**Own the files you create.** Put agent-written artifacts in a private directory
+created with restrictive permissions, and create files with an exclusive-create
+flag and restrictive mode so an existing file — including one an attacker
+planted — is never silently written through.
+
+**Unlink link-shaped paths; do not follow them.** When cleaning up a path the
+agent believes it created, check whether it is a symlink or hard link and remove
+the link itself. Following it deletes something else.
+
+**Permission presets are named, and customization derives from a preset.** Offer
+a small set of named levels and let a project derive a custom profile from one
+of them, so the diff from a known baseline is reviewable. A free-form permission
+blob has no baseline to review against.
+
+**A toolset that can modify the running agent is bash-equivalent.** If tools can
+define, run, or unload code inside the agent process, treat granting them as
+granting shell access, regardless of any language-level sandbox in between. Say
+so plainly in the tool description and gate them accordingly.
+
 ## Context and Memory Checklist
 
 - Prompt builders exclude credentials and broad private data.

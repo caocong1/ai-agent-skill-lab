@@ -48,6 +48,24 @@ that adds to the prompt. "It only adds 200 tokens" is an incomplete answer if
 those 200 tokens move every turn. See `analysis/20-mcp-2026-07-28-revision.md`
 and `analysis/18-deepseek-harness.md`.
 
+## Document What the Model Sees
+
+Give every capability that touches the prompt a written, three-part answer, and
+keep it next to the code rather than in a design doc:
+
+- **What the model sees** under each condition — enabled, disabled, degraded,
+  error. Conditions matter: a capability that is invisible when idle and verbose
+  when active has two different answers.
+- **Token effect** — roughly what it adds, and whether that scales with the
+  workspace, the conversation, or neither.
+- **Prompt-cache effect** — whether it sits in the stable prefix, and whether
+  its content or ordering can change between turns.
+
+This is worth mechanizing. A format that is merely conventional drifts; a format
+that a check enforces stays accurate. Pair it with a "known limitations and
+deferred work" section, so what the capability does *not* do is written down
+where a reader will actually find it.
+
 ## Context Management
 
 Prefer deliberate context assembly over unbounded message growth:
@@ -122,6 +140,22 @@ drop/compress low-score records before the model call.
 
 Good compaction preserves goal, constraints, decisions, open tasks, exact file
 paths, commands, error messages, source anchors, and read/modified file lists.
+
+Run tool-result pruning **before** choosing the range to compact, not after.
+Pruning changes what is worth summarizing, so selecting the range first wastes
+the summary budget on payloads that were about to be replaced by handles anyway.
+
+Bracket the whole compaction operation with a lock that covers replacement as
+well as summarization, and release it last. If the process dies mid-operation,
+an orphaned lock is detectable and recoverable; a half-replaced history is not.
+Express the result as an explicit surface operation — replace this index range
+with this content — rather than mutating history in place, so the change is
+auditable and reversible.
+
+Bound any structured handoff you produce. A handoff artifact with no size limit
+becomes the next context problem; give it an explicit character or token cap and
+truncate deliberately rather than letting it grow to whatever the summarizer
+felt like writing.
 
 ## Memory Pipeline
 

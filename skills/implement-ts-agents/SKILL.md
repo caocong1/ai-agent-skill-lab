@@ -66,6 +66,31 @@ replay the message array:
 Write the non-goals down next to the capabilities. See
 `analysis/01-pi-source-analysis.md`.
 
+## Plugin-Tree Runtime
+
+An alternative skeleton for a custom TypeScript runtime: a small kernel plus a
+tree of plugins, where a product profile composes bundles of plugins into one
+configuration. Worth considering when the same capabilities must ship as several
+products (a CLI, a server, a headless worker) rather than one.
+
+What it buys:
+
+- capabilities become individually loadable, replaceable, and testable;
+- the effective configuration for a profile is dumpable, so "what is actually
+  enabled here" is answerable without reading code;
+- ordering and lifecycle are the kernel's problem, not each feature's.
+
+What it costs, and when to skip it:
+
+- with two or three deployment shapes the indirection costs more than it saves;
+- a plugin that is both the definition of a capability and its only provider
+  produces an untestable, unreplaceable seam — keep contract, provider, and
+  consumer distinct;
+- disposal becomes a real obligation: unloading must reach quiescence, or hot
+  reload leaks timers and listeners.
+
+See `analysis/18-deepseek-harness.md`.
+
 ## OpenAI Agents JS
 
 Use when the project already uses or can adopt OpenAI Agents JS.

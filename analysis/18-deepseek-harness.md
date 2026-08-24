@@ -182,11 +182,13 @@ tools/pre-execute (waterfall，可重排：hooks / permission / sandbox)
 
 ## 对最终 skill 的影响
 
-- `skills/design-ai-agent/SKILL.md`：新增 capability seam（三角色）作为扩展形状规则、`model-visible ⟺ logged` 不变量、turn/step/round 三级循环、goal gate 与 turn 结束的区分、scoped 注册与"可见性 ≠ 权限"（被过滤掉的全局工具既不在 prompt 里也拒绝执行）、以及"插件而非改 loop"的判断顺序。
-- `skills/design-agent-tools/SKILL.md`：新增 KV-cache / prefix 稳定性作为一级约束、Model Experience 文档契约（模型看到什么 / token 效应 / KV-cache 效应）、spill 模式、compaction 前的 tool-result pruning、Code Mode 作为可选工具传输层、`deferContext` 与 `concludeTurn` 语义、以及带显式上限的 structured handoff。
-- `skills/secure-ai-agents/SKILL.md`：新增 monotonic guard（无 allow 返回值）、fail-closed 审批四元组、per-call sandbox policy 与 `full`/`partial` 执行完整性、runner-failure 与 denial 的区分、spawned 进程环境擦除与私有 0700/`wx` 临时文件、link 形状路径的删除规则、permission preset 与派生 `custom`、self-modification 工具集的信任立场。
-- `skills/test-ai-agents/SKILL.md`：新增 runtime invariant（只断言权威事件流/可变数据）、real-composition 测试（走真实配置与入口）、assembled transcript 的 keyless snapshot 门禁、registry 处置（HMR）测试。
-- `skills/review-ai-agents/SKILL.md`：审查面增加 guard 单调性、logged-vs-model-visible 一致性、KV-cache 破坏、goal/turn 混淆。
-- `skills/implement-ts-agents/SKILL.md`：把插件树 / 接缝形态列为自研 TS runtime 的一种可选骨架，并记录其取舍。
+> 下列条目已在 `CHANGELOG.md` [2.2.0] 对应的提交中落地。
+
+- `skills/design-ai-agent/SKILL.md`：新增 capability seam（定义/提供/消费三角色）与"可见性 ≠ 权限"、`model-visible ⟺ logged` 不变量、turn/step/round 三级循环及各自的预算、工具层直接结束当前轮与延后上下文的能力（`concludeTurn` / `deferContext` 的形态）、goal gate 与轮次结束的区分（含持久 phase + revisioned CAS、激活态不持久化）、脚本编排层"模型只给名称与参数、元数据先按纯数据校验"。
+- `skills/design-agent-tools/SKILL.md`：新增 `## Prompt Prefix Economics`（确定性工具排序与前缀清单）、`## Document What the Model Sees`（模型看到什么 / token 效应 / prompt-cache 效应 + 已知限制，并建议机械化检查）、spill 到不透明 locator（best-effort，失败不得把成功变成错误）、compaction 前先做 tool-result pruning、用锁包住整个 compaction 操作并以显式 surface 操作表达替换、structured handoff 必须有显式上限，以及 Code Mode 作为可选的工具传输层（与原生 tool loop 互斥、`isolation` 不是安全承诺）。
+- `skills/secure-ai-agents/SKILL.md`：新增 `## Authority Boundary Design`（单调 guard——类型上无 allow 返回值；闭合审批四元组且 unavailable ≠ allowed；授权不从序列化状态继承）与 `## Sandbox and Subprocess Hygiene`（按调用解析沙箱策略、denial 与 runner failure 分离且都不得回退到无沙箱、正交结果独立上报、spawn 时按白名单构造环境、私有目录 + 排他创建、link 形状路径按链接删除、命名 preset 与派生 custom、可自我修改的工具集按 bash 等价对待）。
+- `skills/test-ai-agents/SKILL.md`：新增 `## Composition and Invariant Tests`——走真实配置与入口的 real-composition 测试、runtime invariant 只断言权威事件流/可变数据（不断言服务存在，且空实现必须说明理由）、assembled transcript 的稳定键快照、disposal / 热重载必须到达静默态。
+- `skills/review-ai-agents/SKILL.md`：审查面增加 guard 可被重排打开、授权从序列化状态恢复、工具列表顺序不稳定导致 prompt cache 失效、轮次结束被当作目标达成、code mode 与原生工具调用同时开启、沙箱 `isolation` 标签被当作安全边界。
+- `skills/implement-ts-agents/SKILL.md`：新增 `## Plugin-Tree Runtime`，把插件树 / 接缝形态列为自研 TS runtime 的一种可选骨架，并写明它的代价与不适用条件。
 - `skills/build-ai-agents/references/source-map.md`：登记 DeepSeek Harness commit 与高价值文档/包路径。
-- `analysis/07-overall-agent-analysis.md`：共识矩阵新增该来源，新增"durable execution"与"KV-cache 经济学"两个维度，形态光谱加入 plugin-tree harness。
+- `analysis/07-overall-agent-analysis.md`：共识矩阵新增 2026-08 刷新列与四行新维度（KV cache 前缀经济学、持久化执行与副作用治理、完成判定归属、契约演进政策），形态光谱加入插件树 harness 与 Code Mode。

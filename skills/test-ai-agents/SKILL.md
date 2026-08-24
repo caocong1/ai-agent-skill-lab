@@ -104,6 +104,37 @@ those over a hand-rolled fake, and treat "does it ship a scripted model?" as a
 real selection criterion when choosing a framework. See
 `analysis/02-agent-framework-patterns.md`.
 
+## Composition and Invariant Tests
+
+Two gaps that unit tests and fake-model loop tests both miss:
+
+**Test the real composition, not a hand-assembled one.** Build the system
+through its actual configuration and entry point, then assert on behavior. A
+test that wires the pieces together by hand proves the pieces work and says
+nothing about whether the shipped composition wires them the same way — which is
+exactly where plugin ordering, registration, and default-profile bugs live.
+
+**Assert runtime invariants against authoritative state.** A runtime invariant
+should check an authoritative event stream or mutable data — "everything the
+model saw is in the log", "no two active handles share an id", "the lock is
+released last". It should *not* assert that a service or method exists; that is
+a type-system job, and an invariant that only checks presence passes forever
+while the real property rots. If a component genuinely has no invariant to
+assert, say so explicitly and explain why, rather than leaving an empty hook
+that reads as untested.
+
+Two more worth adding where they apply:
+
+- **Snapshot the assembled transcript**, keyed on nothing volatile. Render what
+  the model would actually receive and diff it. This catches prompt-prefix
+  churn, duplicated policy blocks, and ordering changes that no individual unit
+  test sees. Strip or normalize timestamps, ids, and paths so the snapshot fails
+  only on real changes.
+- **Test disposal and hot reload.** If components can be unloaded or replaced at
+  runtime, assert that disposal reaches quiescence: listeners removed, timers
+  cleared, in-flight work settled, no writes after teardown. A component that
+  unloads but keeps a timer alive fails only under load, much later.
+
 ## Error Strategy
 
 Classify tool errors:
