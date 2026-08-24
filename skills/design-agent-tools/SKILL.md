@@ -2,7 +2,7 @@
 name: design-agent-tools
 description: Design and optimize AI agent tools, tool schemas, model-facing descriptions, context assembly, retrieval, long-document handling, compaction, memory pipelines, and token or cost behavior. Use when building or reviewing the agent-computer interface rather than the whole agent architecture.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Design tools, context, retrieval, memory
 ---
 
@@ -24,6 +24,29 @@ Keep prompts layered:
 
 Avoid mixing transient UI state, raw private records, secrets, or full logs into
 the system prompt.
+
+## Prompt Prefix Economics
+
+Whatever sits at the front of the prompt is a cache prefix. Change it and every
+token after it loses its cached state, so prefix instability has a direct
+latency and cost price — it is a budget item, not a style preference.
+
+Keep an explicit list of everything that enters the prefix: the tool set, the
+skill catalog, environment snapshots, timestamps, retrieved boilerplate. For
+each item, decide one of two things:
+
+- **Fix its order.** Serve tool lists in a deterministic order. A tool registry
+  backed by a hash map or by concurrent registration will reorder between runs
+  and quietly halve the cache hit rate. This is now a protocol-level `SHOULD`
+  in MCP, with prompt-cache hit rate given as the reason.
+- **Move it after the prefix.** Anything that legitimately changes every turn
+  (current time, live counters, per-turn status) belongs behind the stable
+  region, not inside it.
+
+State the cache effect alongside the token cost when documenting any capability
+that adds to the prompt. "It only adds 200 tokens" is an incomplete answer if
+those 200 tokens move every turn. See `analysis/20-mcp-2026-07-28-revision.md`
+and `analysis/18-deepseek-harness.md`.
 
 ## Context Management
 
@@ -147,6 +170,47 @@ For large inventories or MCP servers:
 - prefer targeted search/filter over list/read-all;
 - expose `concise` vs `detailed` response modes when useful;
 - include pagination, range selection, truncation notices, and next-step hints.
+
+When one task routinely chains many tools whose intermediate results are large
+and uninteresting, consider letting the model write a short program that calls
+the tools instead — the round trips collapse to one and the intermediates stay
+in the runtime rather than the context. Two constraints make this safe: it is
+**mutually exclusive** with native tool calling in the same turn (reject direct
+calls while in program mode, or the model oscillates between the two paths), and
+any "isolation" label on the runtime is a diagnostic descriptor, not a security
+boundary. See `analysis/02-agent-framework-patterns.md` and
+`analysis/18-deepseek-harness.md`.
+
+### State, Retries, and Large Results
+
+**Cross-call state travels as an explicit handle.** When a tool needs continuity
+between calls, mint a handle server-side and pass it as an ordinary parameter.
+Do not rely on a transport session, a connection, or process memory to remember
+anything for you. Design the handle's lifetime, authorization, and reclamation
+at the same time — that complexity does not disappear when you make it implicit,
+it just becomes invisible.
+
+**Ask for missing input by returning a gap, not by blocking.** When a tool needs
+something it does not have, return a structured description of what is missing
+and let the caller retry with the answer supplied. That is far easier to route,
+replay, and test than calling back into the caller mid-execution.
+
+**Retry-safe means side effects come last.** Once a caller may legitimately
+retry the same logical operation, a tool that writes before it asks will write
+twice. Gather everything you need first, then act — or deduplicate on a
+server-minted key.
+
+**Spill large results instead of inlining them.** Above a threshold, write the
+payload out and return a locator plus a short retrieval hint. Two rules keep
+this honest: the locator is opaque to the model (never a raw path it can
+manipulate), and spilling is best-effort — a failed spill returns the inline
+result, and must never turn a successful call into an error.
+
+**Constrain generation with the schema, not just validation.** Where the
+provider supports it, a tool can require strict schema-constrained sampling
+rather than validating afterwards. Gate it on model capability metadata so an
+unsupported combination fails up front instead of producing invalid output and
+reporting it late.
 
 ## Tool Schema Rubric
 
