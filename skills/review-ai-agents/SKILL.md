@@ -2,7 +2,7 @@
 name: review-ai-agents
 description: Review existing AI agent codebases for correctness, safety, cost, reliability, and maintainability. Use for locating agent constructs, auditing tool schemas, permissions, prompt/context assembly, memory, loop bounds, MCP exposure, tests, observability, anti-patterns, and producing a Chinese findings table plus prioritized remediation plan.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Audit agent correctness and risk
 ---
 
@@ -19,6 +19,15 @@ TypeScript and Node:
   `StateGraph`, `ToolNode`, `createAgent`, `createReactAgent`, `stopWhen`,
   `prepareStep`, `runtimeContext`, `toolsContext`, `toolApproval`,
   `tool_calls`, `function_call`, `system`, `instructions`.
+- For MCP code, search for constructs the 2026-07-28 revision deprecated or
+  removed: `initialize`, `Mcp-Session-Id`, `roots/list`, `sampling/createMessage`,
+  `elicitation/create`, `resources/subscribe`, `logging/setLevel`, `ping`,
+  `Last-Event-ID`, `tasks/list`, `elicitationId`. Also check whether imports
+  come from the retired monolithic SDK package rather than the current scoped
+  packages.
+- For resume and replay paths, search for deserialization of approvals,
+  credentials, mount authority, or an "armed"/"enabled" flag on a long-running
+  goal.
 - Locate route handlers or server actions converting UI messages to model
   messages.
 - Locate prompt builders, context loaders, memory stores, approval handlers, and
@@ -58,6 +67,10 @@ Raw SDK or other languages:
    feedback capture and recurring cleanup.
 9. Tests and observability: fake model tests, eval snapshots, traces, metrics,
    fresh-session recovery and harness ablation.
+10. Completion ownership: who decides the work is done, and on what evidence.
+11. Component justification: does each harness component still have a live
+    reason to exist, or is it compensating for a model limitation that no longer
+    applies?
 
 ## Anti-Patterns to Check
 
@@ -85,6 +98,26 @@ Raw SDK or other languages:
 - Hidden context transformations cannot be reconstructed from the rollout.
 - Agent feedback and repeated review findings never become docs, tests, lints,
   skills, or maintenance tasks.
+- Turn end treated as goal completion for a task whose goal is a verifiable end
+  state.
+- Approval, credentials, or an autonomous-continuation flag restored from
+  serialized state on resume or fork.
+- An approval path where "unavailable" or "timed out" behaves as allowed, or a
+  guard type that can express "allow" and therefore be reordered open.
+- A background or asynchronous turn that opens an interactive confirmation.
+- An external tool's own description used as evidence that it is read-only.
+- Side effects produced before all required input is gathered, on a path where
+  the caller may retry the same logical operation.
+- Tool list assembled from a hash map or concurrent registration, so its order
+  changes between runs and invalidates the prompt cache.
+- Large tool results inlined into context with no spill-to-locator path.
+- Resume cache keys derived from completion order rather than call content.
+- Code mode and native tool calling both enabled in the same turn.
+- A sandbox "isolation" label or a per-task worktree presented as a security
+  boundary.
+- A harness component with no recorded reason for existing, so nobody can tell
+  whether a model upgrade made it obsolete.
+- An outward-facing contract with SemVer but no deprecation window or registry.
 
 ## Severity Rubric
 
