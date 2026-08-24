@@ -753,6 +753,21 @@
               <td>bash-only action、linear trajectory、stateless execution、可替换 sandbox environment、benchmark-first harness ablation。</td>
             </tr>
             <tr>
+              <td>DeepSeek Harness</td>
+              <td>DeepSeek 开源的编码 agent harness，用插件树 micro-kernel 把能力按 profile 组装成不同产品形态。</td>
+              <td>capability seam 三角色、事件溯源 session log 与投影、turn/step/round 三级循环、单调 ToolGuard 与闭合审批结果、Code Mode、spill seam、goal domain 与 revisioned CAS、workflow engine、被机械 gate 的 Model Experience README 契约。</td>
+            </tr>
+            <tr>
+              <td>Anthropic：长任务应用开发 Harness 设计</td>
+              <td>Anthropic 2026-03 的续作文章，讲多角色分工如何产出高质量成果，并正面回答完成度由谁认定。</td>
+              <td>GAN 式 generator/evaluator 分离（自评不可信）、planner/generator/evaluator 三角色、协商式 sprint contract、context reset vs compaction 按模型代际选择、可评分的主观 rubric 与 few-shot 分数校准、harness 组件是有保质期的假设。</td>
+            </tr>
+            <tr>
+              <td>MCP 规范 2026-07-28 修订</td>
+              <td>Model Context Protocol 的一次改变协议形状的修订：从有会话、可反向调用的双工协议改为无状态请求-响应协议。</td>
+              <td>无状态核心与 server/discover、MRTR 取代服务端反向请求、必填 resultType、subscriptions/listen、tasks 转扩展、CacheableResult 与 tools/list 确定性排序（prompt cache）、错误码分区、OAuth 收紧、Roots/Sampling/Logging 弃用与 12 个月弃用窗口。</td>
+            </tr>
+            <tr>
               <td>检索策略研究综述（向量 vs Agentic）</td>
               <td>2024–2026 多来源 web 研究综合（约 55 源 + 对抗式核验），回答 agent 文档检索该用向量 RAG、agentic 工具检索还是长上下文。</td>
               <td>按语料规模分层 + 查询类型路由、检索失败的静默性、查询扩展 + 精确匹配兜底、混合+重排为生产标准、grep 工具层（ripgrep/ast-grep/rga）盘点。</td>
@@ -816,7 +831,7 @@ secure-ai-agents、test-ai-agents、optimize-agent-skills
     </main>
 
     <footer>
-      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.1.0 ｜
+      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.2.0 ｜
       <a
         href="https://github.com/caocong1/ai-agent-skill-lab/blob/main/CHANGELOG.md"
         target="_blank"
