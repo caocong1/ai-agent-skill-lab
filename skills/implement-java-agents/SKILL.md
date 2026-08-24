@@ -2,7 +2,7 @@
 name: implement-java-agents
 description: Implement AI agent features in Java, Spring AI, LangChain4j, service-layer applications, annotation-based tools, MCP providers, DI-heavy projects, and typed workflow services. Use for ChatClient, AiServices, AgenticServices, @Tool, @McpTool, FunctionToolCallback, ToolProvider, ToolExecutor, ChatMemory, and AgenticScope patterns.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Implement Java and Spring agents
 ---
 
@@ -86,6 +86,39 @@ Tool executor guidance:
 - convert object results to JSON or structured content;
 - return model-correctable tool errors as tool results;
 - throw/log system errors through normal application error handling.
+
+## Version Reality Check
+
+Read the versions actually on the classpath before writing code. Two facts as of
+the 2026-08 source snapshot:
+
+- The Spring AI example corpus this guidance was distilled from has been aligned
+  to **Spring AI 2.0**. The patterns below still hold at the shape level, but
+  annotation names, package paths, and configuration properties must be checked
+  against the 2.0 reference rather than copied from older material.
+- LangChain4j 1.19.0 ships an MCP client implementing the **2026-07-28**
+  revision. Design new MCP integrations against that baseline directly — see
+  `../build-mcp-capabilities/SKILL.md` — rather than writing the old handshake
+  and migrating later.
+
+## Compensating Side Effects
+
+The JVM ecosystem already has the vocabulary for the third part of side-effect
+governance, and LangChain4j now exposes it at the agentic level: register a
+**compensating action** for a completed tool action so an upper-level failure
+can roll it back rather than leave half-finished state.
+
+Retry, approval, and compensation solve three different problems and none
+substitutes for another:
+
+- retry assumes the operation can safely be repeated;
+- approval intercepts before execution;
+- compensation undoes what already executed.
+
+If an agentic flow mutates external systems, decide explicitly which of the
+three each mutation gets. Saga and TCC semantics transfer directly here — this
+is a real advantage of the JVM side over the TypeScript side, and worth raising
+during platform selection. See `analysis/03-java-agent-patterns.md`.
 
 ## Java Tests
 

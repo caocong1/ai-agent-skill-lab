@@ -2,7 +2,7 @@
 name: optimize-agent-skills
 description: Improve agent skills, prompts, instructions, or operating guides using SkillOpt-inspired evidence loops. Use for trajectory-driven skill iteration, rollout and eval design, validation-gated edits, bounded add/delete/replace patches, train/validation/test splits, strong optimizer vs frozen target separation, slow or meta updates, staged adoption, and no-inference-overhead deployment artifacts.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Improve skills with validation gates
 ---
 
@@ -21,6 +21,28 @@ artifact and add zero inference-time optimizer calls.
 Use a strong optimizer/reviewer model when possible and keep the target/runtime
 fixed while measuring candidate skills. A weaker target can execute tasks; a
 stronger optimizer should propose edits.
+
+## Shelf Life
+
+Before optimizing a skill's wording, ask whether the rule should still exist at
+all. Every instruction that compensates for something the model cannot do
+encodes a dated assumption, and those assumptions expire as models improve.
+
+Split the document's rules into two lists and treat them differently:
+
+- **Perishable** — compensates for a model weakness. Record it as "we added this
+  because the model at version M could not do Y." On a model upgrade, this list
+  is the deletion candidate list: try removing each rule and re-run the eval.
+  Removing an obsolete rule is a real improvement, not a regression — it costs
+  tokens and constrains a model that no longer needs constraining.
+- **Durable** — governs authority, evidence, side effects, or cost. Do not
+  ablate these on a model schedule; their value rises as the model gets more
+  capable.
+
+Add "a new model generation shipped" to the triggers that start an optimization
+cycle, alongside "the eval regressed" and "a failure mode recurs". See
+`analysis/19-anthropic-harness-design-long-running-apps.md` and
+`analysis/21-lab-design-rethink-2026-08.md`.
 
 ## Evidence Loop
 
@@ -99,6 +121,13 @@ For local coding agents, an offline "sleep" cycle can harvest sessions, mine
 recurring tasks, replay them under budget, consolidate lessons, gate on held-out
 real tasks, and stage a proposal. Do not let such a cycle silently edit live
 skills without user review.
+
+An evaluator or grader is itself a skill under optimization, and the same loop
+applies to it. Its evidence is different, though: read its logs, collect the
+cases where its judgment diverged from a human's, and update its prompt to
+resolve those specific cases. The divergences are its training set. Without this,
+a grader drifts across a long pipeline and its scores stop being comparable to
+each other.
 
 ## Deliverables
 
