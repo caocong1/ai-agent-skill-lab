@@ -1,8 +1,8 @@
 ---
 name: secure-ai-agents
-description: Threat-model, harden, or review AI agent safety boundaries. Use for prompt injection, excessive agency, mutating tools, data exfiltration, secrets, multi-tenant isolation, MCP or HTTP SSRF, tool-result poisoning, replay bugs, approvals, audit logs, redaction, guardrails, and human intervention triggers.
+description: Threat-model, harden, or review AI agent safety boundaries. Use for prompt injection, excessive agency, mutating tools, data exfiltration, secrets, multi-tenant isolation, MCP or HTTP SSRF, tool-result poisoning, replay and resume authority, approval outcomes, OAuth issuer binding, cache scope, audit logs, redaction, guardrails, and human intervention triggers.
 metadata:
-  version: 2.0.0
+  version: 2.1.0
   short-description: Harden agent safety boundaries
 ---
 
@@ -29,6 +29,49 @@ Review these threats for any production agent:
 - trajectory leakage: action sequences are user-visible behavior, audit log
   material, and possible training data.
 
+## Authority Boundary Design
+
+Three design rules decide whether an authority boundary actually holds.
+
+**Denial must be monotonic.** Give the guard type no way to express "allow". If
+a guard can return an approval, then listener ordering, a later plugin, or a
+misconfigured priority can reopen a denial that an earlier guard closed. When
+the only expressible outcomes are "no opinion" and "deny", ordering stops
+mattering and the boundary cannot be argued out of.
+
+**Approval outcomes are a closed set, and the default is deny.** Enumerate them
+explicitly — allowed-once, rejected, cancelled, unavailable — and make every one
+distinguishable to the caller. "Unavailable" in particular must not collapse
+into "allowed": an approval channel that is missing, timed out, or running in a
+non-interactive context is a denial, not a pass. Only a foreground, interactive
+turn may prompt a human; an asynchronous or background turn must deny anything
+that needs confirmation rather than compete for the user's attention or block
+forever on a prompt nobody can see.
+
+**Authorization is never inherited from serialized state.** State can be
+restored; permission cannot. On resume, fork, or replay:
+
+- do not trust serialized credentials or mount authority;
+- do not treat a previously granted approval as still granted;
+- require re-authorization for autonomous continuation, which means the "armed"
+  flag on a long-running goal should deliberately *not* be persisted;
+- if you cannot prove which request owns a pending output, fail closed rather
+  than guess;
+- invalidate stale approvals when the thing they were granted against changes —
+  version the assignment or resource and compare on use.
+
+Two labels that are commonly mistaken for security boundaries and are not:
+
+- a runtime "isolation" flag on a code sandbox is a diagnostic descriptor, not
+  a containment claim;
+- a per-task worktree or working directory changes where tools default to
+  writing; it does not confine a process. Destructive removal stays a host-side
+  operation the model cannot invoke.
+
+Any mechanism that redacts, withholds, or sanitizes should state what it does
+*not* cover — typically external side effects already performed and copies the
+application owns. A guardrail whose coverage is unstated will be assumed total.
+
 ## Tool Execution Checklist
 
 - Each mutating tool checks user, tenant, role, and policy in code.
@@ -39,6 +82,12 @@ Review these threats for any production agent:
 - Side-effect tools are idempotent or have a compensation plan.
 - Parallel tasks use isolated working directories, worktrees, sandboxes, or
   containers bound to task id.
+- Sensitive model and tool data is **off** by default in logs and traces, with
+  an explicit opt-in to enable it.
+- Cancellation reaches into function and remote tools, and stream completion
+  waits for background work and cleanup to settle before resolving.
+- A batch of checks all settle before a failure is surfaced, so one early
+  tripwire does not discard the other diagnostics.
 
 ## Context and Memory Checklist
 
@@ -58,6 +107,21 @@ Review these threats for any production agent:
 - Audit logs include tool name, user, tenant, status, and redacted input
   summary.
 - HTTP tools enforce SSRF protections and destination allowlists where possible.
+- **A tool's own description is not authorization evidence.** It comes from the
+  server, which is the untrusted party. Maintain a host-side allowlist of
+  exactly which external tools are known read-only; everything else asks.
+- Validate the `iss` parameter against the recorded issuer before redeeming an
+  authorization code, and key persisted credentials by issuer — never reuse
+  them against a different authorization server.
+- Prefer Client ID Metadata Documents over Dynamic Client Registration; when
+  DCR is unavoidable, specify `application_type` to avoid redirect-URI
+  conflicts.
+- Mark per-user or per-tenant results `cacheScope: "private"`. A wrong cache
+  scope hands one tenant's data to another through a shared intermediary.
+- Allowlist any tool parameter that can reach an HTTP header; model-controlled
+  values landing in headers is a classic injection shape.
+- Treat server-minted state handles as capability tokens: scope, expire, and
+  re-authorize them on every use.
 
 ## Guardrails and Human Fallback
 
@@ -94,7 +158,9 @@ continued autonomous retries.
 - `critical`: cross-tenant access, command execution without enforcement,
   secrets sent to model/logs.
 - `high`: mutating tool without permission check, unapproved irreversible
-  action, remote MCP without auth.
+  action, remote MCP without auth, approval or credentials inherited from
+  serialized state on resume, an approval path where "unavailable" behaves as
+  "allowed".
 - `medium`: weak redaction, missing audit trail, broad allowlist.
 - `low`: unclear safety documentation or naming.
 
