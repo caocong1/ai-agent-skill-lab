@@ -27,6 +27,7 @@ Read only the child skill(s) needed for the current task:
 | Add tests, fake model harnesses, evals, replay, traces, production guardrails, or monitoring | `../test-ai-agents/SKILL.md` |
 | Improve a skill/prompt/instruction artifact from trajectories with validation-gated edits inspired by SkillOpt | `../optimize-agent-skills/SKILL.md` |
 | Need source evidence, upstream links, local repo paths, or commit pins | `references/source-map.md` |
+| Judge whether a harness component still deserves to exist after a model upgrade | `../design-ai-agent/SKILL.md` and `../optimize-agent-skills/SKILL.md` |
 
 For substantial build work, usually read `design-ai-agent` first, then one
 implementation skill and one supporting skill (`design-agent-tools`,
@@ -77,6 +78,42 @@ implementation skill and one supporting skill (`design-agent-tools`,
   application's agent runtime.
 - Exhaust inference-time levers (instructions, tools, context, retrieval,
   memory, evals) before considering model fine-tuning.
+- Answer two questions per capability, not one: **what the model sees** (with
+  its token and prompt-cache cost) and **who has authority** to make it happen.
+  Visibility is not authority.
+- A turn ending is not a goal being met. For any task whose goal is a verifiable
+  end state, put the completion decision outside the agent doing the work.
+- Authorization is never inherited from serialized state. State can be restored;
+  approvals and credentials must be re-obtained on resume, fork, or replay.
+- Side effects need all three of: knowing whether they happened, not repeating
+  them on retry, and being able to undo them. Retry and approval cover two.
+- Keep the prompt prefix stable. A tool list whose order changes between runs
+  quietly discards the prompt cache.
+- Every component compensating for a model limitation is a dated assumption.
+  Record why it exists, and re-run the ablation on each model generation.
+  Components governing authority, evidence, side effects, and cost are not on
+  that list.
+- Publish a non-goals list beside the capability list, with equal prominence.
+
+## Contract Stability
+
+This suite's contract is its **modes**, its **deliverables**, and its
+**reference paths**. Changes to that contract follow semantic versioning:
+MAJOR removes or renames one of them, MINOR adds guidance or a newly analyzed
+source, PATCH refreshes wording or a snapshot.
+
+SemVer alone only answers "does this release break?". Consumers also need to
+know where the *next* one will break, so removals go through three states:
+
+- **active** — supported, no scheduled change;
+- **deprecated** — still functional, listed in `CHANGELOG.md` under a
+  `弃用登记` heading with its replacement and its earliest removal release, and
+  kept for at least two MINOR releases;
+- **removed** — only in a MAJOR release, and only after a deprecation period.
+
+Nothing in the contract is removed without first appearing as deprecated. See
+`analysis/20-mcp-2026-07-28-revision.md` for where this policy comes from and
+`analysis/21-lab-design-rethink-2026-08.md` for why this suite adopted it.
 
 ## Deliverables
 
