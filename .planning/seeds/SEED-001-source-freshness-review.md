@@ -3,7 +3,7 @@ id: SEED-001
 status: dormant
 planted: 2026-06-05
 planted_during: ai-agent-skill-lab provider API discussion
-trigger_when: when starting a new milestone, adding provider API integration guidance, or when source snapshots are older than one quarter
+trigger_when: when starting a new milestone, adding provider API integration guidance, when source snapshots are older than one quarter, when an upstream specification the lab depends on publishes a revision, or when a new model generation ships
 scope: small
 last_reviewed: 2026-08-23
 ---
@@ -16,7 +16,9 @@ The lab's analysis depends on fast-moving upstream material: agent SDKs, provide
 
 ## When to Surface
 
-**Trigger:** when starting a new milestone, adding provider API integration guidance, or when source snapshots are older than one quarter.
+**Trigger:** when starting a new milestone, adding provider API integration guidance, when source snapshots are older than one quarter, when an upstream specification the lab depends on publishes a revision, or when a new model generation ships.
+
+The last two triggers were added on 2026-08-23. A **spec revision** is a cause that fans out: the MCP 2026-07-28 revision drove material change in three downstream sources within three weeks, and the time-based trigger caught it only by luck. A **new model generation** matters for a different reason — it is the moment to re-run the ablation on guidance that compensates for a model limitation, per `analysis/21-lab-design-rethink-2026-08.md`.
 
 Before relying on older source analysis, review `analysis/SOURCE_INDEX.md` for:
 

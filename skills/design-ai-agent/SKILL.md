@@ -295,7 +295,10 @@ continuation. See `analysis/10-learn-claude-code.md` and
 
 For subjective quality goals, separate generation from evaluation into different
 agents, and negotiate the deliverables and success criteria between them before
-the work starts rather than handing down a spec one way. Whether an evaluator
+the work starts rather than handing down a spec one way. If a planning role
+exists, scope it to product context and high-level technical direction only —
+pushing implementation detail into the spec makes a single spec-level mistake
+cascade through everything downstream. Whether an evaluator
 pays for itself depends on task difficulty relative to model capability: inside
 the model's comfortable range it is pure overhead; at the edge it catches the
 last-mile gaps. Measure the generator's solo pass rate first, then decide. See
