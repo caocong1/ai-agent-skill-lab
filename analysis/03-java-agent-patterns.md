@@ -1,6 +1,8 @@
 # Java Agent Patterns
 
-> 分析版本：1.0 ｜ 最后更新：2026-05-18 ｜ 覆盖来源：Spring AI Examples / LangChain4j（版本见 `analysis/SOURCE_INDEX.md`）
+> 分析版本：1.1 ｜ 最后更新：2026-08-23 ｜ 覆盖来源：Spring AI Examples / LangChain4j（版本见 `analysis/SOURCE_INDEX.md`）
+>
+> 1.1 变更：新增 `## 2026 年中的版本事实`。原有模式描述核对后仍成立，但基线版本已移动——Spring AI 示例仓整体对齐到 **Spring AI 2.0**，LangChain4j 走到 **1.19.0** 并引入两条命中已分析表面的能力。
 
 Java 侧的资料主要来自 Spring AI examples 和 LangChain4j。它们的共同点是：不要照搬 Python/TS 的动态风格，而是利用 Java 的类型、接口、注解、DI、record 和 builder，把 agent 能力做成可测试的应用服务。
 
@@ -147,6 +149,32 @@ LangChain4j 的价值在于 Java-native 设计：接口、注解、POJO、builde
 - progressive disclosure 仍然适用：先列 skill 名称和描述，再由模型激活具体 skill。
 - skill scoped tools 是一种很好的权限收敛方式。
 
+## 2026 年中的版本事实
+
+> 本节记录 2026-08-23 新鲜度审查核验到的版本面移动。**按上游 release 正文与 commit 标题分析，未刷新本地快照**；实现前以宿主项目实际依赖版本为准。
+
+### Spring AI 示例仓已整体对齐 Spring AI 2.0
+
+记录快照（`2a6088db`）之后的 11 个 commit **全部**是 Spring AI 2.0 对齐工作：MCP 样例整体对齐、文档更新、冗余项目清理。
+
+含义很直接：本文 `## Spring AI Examples` 一节的模式描述建立在 1.x 上。**模式层（function callback、agentic pattern、MCP annotation 的角色划分）没有失效**，但具体注解名、包路径与配置属性必须按 2.0 文档核对，不能照抄本文。这也是 `skills/build-ai-agents/references/source-map.md` 那条"按宿主项目已安装版本核对 API"存在的原因。
+
+### LangChain4j 1.19.0：MCP 2026-07-28 客户端
+
+1.19.0（2026-08-14）加入了按 **MCP 2026-07-28** 规范实现的客户端。协议侧的完整变更见 `analysis/20-mcp-2026-07-28-revision.md`；对 Java 侧的落地含义是：无状态核心、`server/discover`、MRTR、必填 `resultType` 这套新形状在 JVM 生态里也已落地，Java 项目接 MCP 时应直接按新基线设计，而不是先按旧的 `initialize` 握手写再迁移。
+
+### LangChain4j 1.19.0：agentic system 级别的 tool action compensation
+
+同版本引入了**为已执行的工具动作登记补偿动作**的机制（PR 5823）：当上层 agentic 流程失败时，已经产生的副作用可以被回滚，而不是留下半成品状态。
+
+这是本仓库此前没有覆盖的形状，值得单独记一笔——它既不是重试（重试假设操作可重复），也不是审批（审批在执行前拦截），而是**执行后的可撤销性**。它与另外两个来源指向同一个问题域：
+
+- Pi 的 effect sandwich（`analysis/01-pi-source-analysis.md`）解决"崩溃后如何知道副作用做没做"；
+- MCP MRTR 的幂等要求（`analysis/20-mcp-2026-07-28-revision.md`）解决"重试时如何不重复做"；
+- LangChain4j 的 compensation 解决"做完之后如何撤销"。
+
+三者合起来才是完整的副作用治理，任何一个单独都不够。Java 生态天然熟悉这套语义（Saga / TCC），把它接到 agent 上是很自然的一步——**这也是 JVM 侧相对 TypeScript 侧的一个真实优势**，值得在选型讨论里提。
+
 ## Java 项目落地建议
 
 - Spring 项目优先把 agent 作为 service 层能力，不要塞进 controller。
@@ -155,4 +183,5 @@ LangChain4j 的价值在于 Java-native 设计：接口、注解、POJO、builde
 - 为危险工具增加应用权限校验和审批状态。
 - 对 chain/router/evaluator/orchestrator 写单元测试，用 fake chat model 固定输出。
 - 对真实模型调用写少量 integration/eval，不把所有行为都压到端到端测试。
-
+- 有外部副作用的 agentic 流程，除重试与审批外还要设计**补偿动作**；Java 侧可直接复用 Saga/TCC 的既有语义。
+- 接 MCP 时按 2026-07-28 基线设计（见 `analysis/20-mcp-2026-07-28-revision.md`），不要先写旧握手再迁移。
