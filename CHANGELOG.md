@@ -10,6 +10,94 @@
 
 各 skill 的当前版本记录在对应 `SKILL.md` frontmatter 的 `metadata.version` 字段；逐来源的分析版本与最后更新时间记录在 `analysis/SOURCE_INDEX.md`。再分析某个来源的新版本时：更新该来源在 `SOURCE_INDEX.md` 的行、对应分析文件头部的元数据块，并在本文件追加一条记录；仅当指导内容变化时才提升 skill 版本。
 
+## [2.3.0] - 2026-10-26
+
+本轮由 SEED-001 第三次来源新鲜度审查驱动，它同时触发了"快照过季"与"新模型代际"两个条件。范围在本轮写定：**本仓库只覆盖自研、本地运行的 agent harness，云托管 agent 服务不在范围**，云产品只取能迁移到本地 harness 的设计（见 `README.md` 非目标清单）。共 11 个仓库实质变更、7 篇新分析（22–28，其中 22–24 是 2026-09 中断迭代留下的草稿，复核更正后入库）、10 篇分析版本推进、11 个 skill 更新，并新增两项机械检查。
+
+### 新增
+
+- **Harness 组件保质期研究综述** `analysis/25-harness-shelf-life-research.md` 与证据汇编 `raw/docs/harness-shelf-life-research.md`（33 篇 arXiv 论文 + 20 项厂商一手记录，按 A/B/C 分级，数字回到原文表格逐条核对）。结论：易腐 / 耐久这条轴方向成立、形状不成立——补偿组件的价值是模型档位的函数，常不单调，还会从准确率价值换成成本价值；固定模型时多数 harness 改动的通过率效应落在噪声内（单次运行可摆动 2.2–6.0pp），成本效应却一贯很大；厂商在新代际删易腐、留耐久；精选 skill 有益而自生成 skill 与 LLM 生成的上下文文件无益；同预算基线、留出集与复评方差下，多数自动 harness / skill 优化的增益消失。
+- **耐久规则生产证据汇编** `analysis/26-durable-rules-production-evidence.md` 与 `raw/docs/durable-rules-production-evidence.md`（15 份 2026 年厂商报告、事故报告与对照研究）：完成判定剔除执行方自述、完成标准先于实现、"可能已执行"是一等结果、恢复前先确认授权对象仍有效、压缩文本有损且不可信、审批请求是攻击面、先环境层后模型层。
+- **Google ADK（Python）本地 runtime 分析** `analysis/27-google-adk.md`，gitlink 固定到 `d68ca857d5e3bab8e968d4e5f98ef028eb37dc87`（v2.13.0）：事件日志是唯一持久记录、resume 即至少一次重放、调用完整性校验、按未完成义务切分压缩窗口、插件链短路、用户与环境模拟评测；云端会话与部署不在范围。
+- **Claude Agent SDK 本地 harness 分析** `analysis/28-claude-agent-sdk.md` 与官方文档摘要 `raw/docs/claude-agent-sdk.md`，gitlink 固定到 `0e89b298e771259378a6cd3734e00d323dff5703`（v0.2.174，捆绑 CLI 2.1.310）：固定的权限求值序与谁都批不了的地板、resume 时重新推导授权、`SessionStore` 一致性套件、压缩后按来源的生存类别、按模型 ID 退役补偿组件；托管的 Managed Agents 不在范围。
+- **三篇文章分析**（2026-09-04 中断迭代的草稿，本轮逐条复核后入库）：`analysis/22-anthropic-managed-agents.md`（只取对本地 harness 可迁移的部分；更正 3 处超出原文的措辞）、`analysis/23-claude-code-auto-mode.md`（机械边界之上的模型审批层；更正 1 处把失败模式读成设计规则的误读）、`analysis/24-openai-codex-as-a-platform.md`（内嵌开源 harness 的三层本地接入；更正日期与 ARC-AGI-3 提升的归因）。
+- **机械检查** `scripts/check-lab-invariants.sh` 新增 C7（gitlink、`SOURCE_INDEX.md`、`source-map.md` 三处 commit 记录一致，新增即拦下 learn-claude-code 的三方不一致与 DeepSeek Harness 的漏登记）与 C8（每个 `SKILL.md` 遵守 Agent Skills 规范：`name` 格式与目录名一致、`description` 长度、少于 500 行，正文超过约 5000 tokens 告警）。
+- **来源新鲜度审查** `.planning/freshness-reviews/2026-10-25-source-freshness-review.md`（SEED-001 第三次执行）。
+
+### 变更（skill）
+
+- `skills/build-ai-agents/SKILL.md` 2.2.0 → **2.3.0**：Core Rules 新增"写 loop 之前先看能否在本地内嵌一个维护中的开源 harness""判官看不到执行方的成功自述""约束、批准与待办指令不经过有损摘要""只相信越过噪声底线的改动"，并把"前缀稳定"改写为"上下文拼装只追加"；路由表新增 Python 一行。
+- `skills/design-ai-agent/SKILL.md` 2.2.0 → **2.3.0**：2.2.0 为 398 行；吸收本轮证据的草稿一度涨到 447 行、超出规范建议的正文体积，以替换与压缩为主改写后为 358 行（正文约 4980 tokens）。内容上——模型可见 ⟹ 已记录（单向）；易腐组件的价值随档位不单调、按部署档位越过噪声底线再消融、按模型门控且回落方向按种类定；`AGENTS.md` 写指令不写概览；先考虑内嵌本地开源 harness；单 agent + 渐进披露优先、一次迁移一个 subagent 并看翻转；花费上限覆盖整棵子 agent 树；判官不看自述、完成标准先于实现、续跑上限；intent 携带幂等键、"可能已执行"、超时不等于已停止（租约 + 单写者）、两种持久形状、不推进检查点的步骤即故障、重放默认不安全且只能否决、步骤内不等待、重启上限、故障域分离、"resumable"即至少一次。
+- `skills/design-agent-tools/SKILL.md` 2.1.0 → **2.2.0**：`## Prompt Prefix Economics` 改为"上下文拼装只追加"（只追加的存储不等于稳定的请求前缀；厂商返回的输出项原样回放）；压缩次序固定为"先落盘、剪枝带存档、只在超预算时替换、摘要最后"，约束单独存放、按来源的生存类别、摘要按不可信输入对待、不在未完成义务处切分；每工具声明调用方并在执行时强制；动作接口按模型选并实测；错误文本是否给模型按错误类型决定；新增 `## Skills and Context Files`。
+- `skills/secure-ai-agents/SKILL.md` 2.1.0 → **2.2.0**：拒绝对每个能给出 allow 的主体单调、必检逻辑放在求值序最前、配置只能收紧、策略引擎"无规则命中"即拒绝；授权绑定 turn 与工件版本、恢复前重载授权对象并用比较交换解决批准与停止的竞争、运行状态留在服务端、签名不等于新鲜、一次性批准与 intent 同一提交内标记已用、已存调用加完整性戳；新增 `## Approval Automation Layering`；沙箱侧凭据不可达、先环境层、信任之前只加载收紧型配置、出站白名单是能力授予、校验前先解析链接、持久状态是注入面。
+- `skills/test-ai-agents/SKILL.md` 2.2.0 → **2.3.0**：新增 `## Comparing Variants Under Noise`（多次 trial、按任务配对、先 A/A、同预算基线、留出任务、固定并记录资源配置与完整 harness 规格、pass@k 与 pass^k 分报）；按部署档位消融；不变量是两个能各自失败的观测；一致性套件覆盖投递语义；钉住 SDK、捆绑的 harness 二进制与模型；环境模拟未匹配即失败；错误泄漏测试。
+- `skills/review-ai-agents/SKILL.md` 2.2.0 → **2.3.0**：新增搜索种子（客户端传入的运行状态、不安全重放开关、调用方声明、会话中途改 system prompt 或 tools）与 Java 风险设置；评估顺序加入噪声底线；新增十余条反模式。
+- `skills/implement-ts-agents/SKILL.md` 2.1.0 → **2.2.0**：2026-10 版本核对（Pi 1.x 的 pi-durable、Agents JS 运行状态留在服务端、Vercel 的审批语义 / 签名 / 策略默认值 / 调用方声明 / `@ai-sdk/harness`、LangGraphJS 1.4.21 的 `isCommand` 与 1.5 升级步骤）。
+- `skills/implement-java-agents/SKILL.md` 2.1.0 → **2.2.0**：2026-10 版本核对（Spring AI 2.1 RC 的事件溯源 session 与无状态工具调用确认、钉住的 MCP Java SDK 未实现 2026-07-28、LangChain4j 1.22 按异常类型决定错误可见性、1.19.1 为误发布）。
+- `skills/build-mcp-capabilities/SKILL.md` 2.1.0 → **2.2.0**：规范复核仍为 2026-07-28；SDK 现状（scoped 2.4、`server-legacy` 是冻结的 v1 垫片、`server/discover` 超时不等于不支持、无状态模式每请求一个 server 实例、JVM 侧状态）；Skills 扩展的摘要未签名、不是信任边界；分页上限；按工具的 scope challenge 与 issuer / audience 绑定；客户端保留 `isError` 对模型可见。
+- `skills/optimize-agent-skills/SKILL.md` 2.1.0 → **2.2.0**：`## Shelf Life` 补入厂商删除证据与"删除是一等编辑"；证据循环三条规则（产物不学校验器、给 proposer 完整轨迹、不收割优化器自己的会话）与"把模型能力花在执行者上"；带血缘的暴露记录、检查优化器默认值、参考答案不进反思；同预算基线、按任务配对、按任务不回退闸门、证明每个预算真能停。
+- `skills/iterate-skill-lab/SKILL.md` 1.1.0 → **1.2.0**：Kickoff 第 0 步先找中断的迭代；候选限定在本地 harness 范围；re-snapshot 的 commit 同时写进三处并给出移动 gitlink 的命令；吸收证据先替换与压缩、遵守 C8；新增六条反模式。
+- `skills/build-ai-agents/references/source-map.md`：全部仓库于 2026-10-25 重新钉住；2026-08 的漂移块换成 2026-10 的版本事实；新增"本地 harness 库"与"证据汇编"两种来源类型；迁移官方链接并替换失效的高价值文件路径。
+
+### 变更（分析）
+
+- `analysis/01-pi-source-analysis.md` 1.1 → **2.0**：Pi 1.0 把持久化执行移出 `pi-agent-core`，成为实验包 `pi-durable`；重写 harness / 持久化执行两节；更正 1.1 对"预铸 id"的解读（那只是 Pi 自己的记录槽位，幂等键由任务作者写进 intent）。
+- `analysis/02-agent-framework-patterns.md` 1.1 → **1.2**：OpenAI Agents JS 0.21、Vercel AI SDK 7.0.153、LangGraphJS 1.5.2、MCP TS SDK 2.4 的增量；OpenAI Agents JS、Vercel 与 Claude API 收敛到按工具声明调用方。
+- `analysis/03-java-agent-patterns.md` 1.1 → **1.2**：Spring AI 2.1 RC（事件溯源 session、工具调用确认）与 LangChain4j 1.22；Spring AI 框架单独建版本行。
+- `analysis/07-overall-agent-analysis.md` 2.2 → **2.3**：新增五条 2026-10 收敛结论、"内嵌开源 harness"形态、两行共识矩阵与三条取舍、第三种恢复模型；原地更正"预铸 id"、`model-visible ⟺ logged` 的方向、DeepSeek goal domain 被当作独立判定、"code mode 摇摆"的理由与"Codex release 正文为空"。
+- `analysis/10-learn-claude-code.md` 1.1 → **1.2**：s08 压缩顺序更正（先落盘、超限才替换、无恢复路径不做有损替换）；三处 commit 记录统一（gitlink 此前一直停在 `1baf1aca`）。
+- `analysis/13-skillopt.md` 1.0 → **1.1**：Sleep 周期的反馈边界、成对 A/B 评测套件与夜间 token 预算；替换已删除的 `CONTROLLABLE_DREAMING.md`。
+- `analysis/16-openai-codex-harness.md` 1.0 → **1.1**：消费上轮"待核验"，re-snapshot 至 `970111f6`；补记已发布的 Guardian 模型审批层、step 设置快照、授权绑定 turn、工具目录只追加、每段上下文带 provenance、续跑无进展上限。
+- `analysis/18-deepseek-harness.md` 1.0 → **1.1**：0.2 删掉运行时不变量层、Teams 持久信箱与自修改工具集；Code Mode 改名 PTC；新增实验性 Auto review；更正 guard 与审批的顺序以及不变量的方向。
+- `analysis/20-mcp-2026-07-28-revision.md` 1.0 → **1.1**：新增 2026-10-25 复核段；更正对 Pi"预铸 id"的引用。
+- `analysis/21-lab-design-rethink-2026-08.md` 1.0 → **1.1**：新增第八节，第一次检验五条可证伪条件（条件一未触发但轴细化为非单调、条件二第 1/3 轮、条件三仍无法检验但风险被外部证据证实、条件四已触发、条件五未触发且加强）。
+- `analysis/26-durable-rules-production-evidence.md`：噪声底线一处引用对齐已核验的原文措辞（不升版本）。
+
+### 弃用登记
+
+无。本版本未弃用任何 mode、deliverable 或 reference path。
+
+### 文档
+
+- `analysis/SOURCE_INDEX.md`：新增 Spring AI 框架、Google ADK、Claude Agent SDK、三篇文章、Agent Skills 规范与两份研究综述的行；追加 2026-10-25 新鲜度审查小节（含本仓库自身的错误与方法改进）；迁移官方链接（`/engineering/` → `/research/`、code.claude.com、adk.dev、docs.langchain.com）；替换失效的重点阅读路径。
+- `.planning/seeds/SEED-001-source-freshness-review.md`：`last_reviewed` 推进至 2026-10-25，追加第三次审查的 Review Log。
+- `README.md`：新增"不覆盖云托管 agent 服务"非目标；资料集新增 7 个来源并更新 Pi 与 DeepSeek 条目；记录可证伪条件的第一次检验；版本更新到 2.3.0，`iterate-skill-lab` 到 1.2.0。
+- `docs/index.html`：来源表新增 7 行并写明本地优先的范围，footer 更新到 v2.3.0；`<style>` 与 `<script>` 零改动。
+
+### 来源版本与最后更新
+
+| 来源 | 类型 | 来源版本 | 分析版本 | 最后更新 |
+| --- | --- | --- | --- | --- |
+| Pi | repo | `d5b3de22d0e24a3e9c38a9410d3329b099717283`（v1.4.x）| 2.0 | 2026-10-25 |
+| OpenAI Agents JS | repo | `be4f1f9aa4ad4f03cc5db5fdd57d0d0136923570`（0.21.0）| 1.2 | 2026-10-25 |
+| Vercel AI SDK | repo | `6147ecd94b16c0cd14580e9725517fabff4cbdf4`（`ai@7.0.153`）| 1.2 | 2026-10-25 |
+| LangGraphJS | repo | `c6675bf03f353ff32fb2ee0a82adb3541c0aee40`（1.5.2）| 1.2 | 2026-10-25 |
+| MCP TypeScript SDK | repo | `951fe5603a7ec0b2dcb6a0b95d92cd86f93ad9e5`（scoped 2.4.0）| 1.2 | 2026-10-25 |
+| Spring AI Examples | repo | `e499007e2b4074561c015b057b31c026d1f02f14` | 1.2 | 2026-10-25 |
+| Spring AI 框架 | release | `v2.0.2` GA / `v2.1.0-RC1` | 1.2 | 2026-10-25 |
+| LangChain4j | repo | `7948fba82672cdff5ec4219b0600693221ad855d`（1.22.0）| 1.2 | 2026-10-25 |
+| Learn Claude Code | repo | `ce8f9f186058939da54c9d6fead78dfb5d0fd6c3` | 1.2 | 2026-10-25 |
+| SkillOpt (Microsoft) | repo | `84b36cd5564e8893569e50e37f02a81d10b55e27` | 1.1 | 2026-10-25 |
+| OpenAI Codex | repo | `970111f6cb62cc02fe36a82ea7d71b37a2889c97`（稳定版 rust-v0.164.0）| 1.1 | 2026-10-25 |
+| DeepSeek Harness | repo | `1f81c047fc48fa190a683e469daa699857e9afe8`（`dsh-v0.2.1-rc.3`）| 1.1 | 2026-10-25 |
+| Google ADK（Python） | repo | `d68ca857d5e3bab8e968d4e5f98ef028eb37dc87`（v2.13.0）| 1.0 | 2026-10-25 |
+| Claude Agent SDK（Python） | repo | `0e89b298e771259378a6cd3734e00d323dff5703`（v0.2.174）| 1.0 | 2026-10-25 |
+| Anthropic, Scaling Managed Agents | article | 发布 2026-04-08 / 抓取 2026-09-04，2026-10-25 复核 | 1.0 | 2026-10-25 |
+| Anthropic, How We Built Claude Code Auto Mode | article | 发布 2026-03-25 / 抓取 2026-09-04，2026-10-25 复核 | 1.0 | 2026-10-25 |
+| OpenAI, Codex as a Platform | article | 发布 2026-08-19 / 抓取 2026-09-04，2026-10-25 复核 | 1.0 | 2026-10-25 |
+| MCP Specification | spec | 修订 2026-07-28（2026-10-25 复核仍为最新）| 1.1 | 2026-10-25 |
+| Agent Skills Specification | spec | `69ef37e9424c0a7ea9dd2293b559e43ec8176379`（2026-08-09）| — | 2026-10-25 |
+| Harness 组件保质期研究综述 | synthesis | 综合 2025-06 ~ 2026-10 / 抓取 2026-10-25 | 1.0 | 2026-10-26 |
+| 耐久规则生产证据汇编 | synthesis | 2026-05 ~ 2026-10 / 抓取 2026-10-25 | 1.0 | 2026-10-25 |
+
+### 待办（未在本版本落地）
+
+- **对着记录的上游 commit 机械核对全部引用路径的脚本**：`analysis/21` 可证伪条件四已触发，C6 只能核对有本地检出的仓库，结构性修法只落地一半。
+- **建立 skill 变更的最小验证集**：本轮的 skill 改动全部是"按外部证据调整"，本仓库仍无法自己测出它们是否让下游变好（`analysis/21` 违反一，优先级上调）。
+- **复核**：Spring AI 2.1 GA、MCP TS SDK v3 与 MCP Java SDK 对 2026-07-28 的实现；Cognition《Multi-Agents: What's Actually Working》正文与 `analysis/25` 中其余待核验项。
+- `raw/repos/google-adk-python` 的嵌套检出缺 `tests/` 下 796 个文件（抓取时网络中断；gitlink 只需 HEAD，分析未依赖测试），网络恢复后可补齐。
+- **候选来源**（发现阶段的线索，未核验）：deepagents 的按模型 harness profile、Strands harness SDK、Microsoft Agent Framework、Pydantic AI harness、OpenHands software-agent-sdk、Harbor / Terminal-Bench 评测基础设施。
+
 ## [2.2.0] - 2026-08-23
 
 本轮由一个上游因驱动：**MCP 规范 2026-07-28 修订**在三周内同时落地到 MCP TS SDK、OpenAI Agents JS 与 LangChain4j，连带把本仓库拖进一次比往常更宽的刷新。共 3 个新来源、5 篇分析版本推进、10 个 skill 更新，并第一次给本仓库自身的约定装上机械闸。
