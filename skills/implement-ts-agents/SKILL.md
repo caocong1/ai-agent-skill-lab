@@ -2,7 +2,7 @@
 name: implement-ts-agents
 description: Implement AI agent features in TypeScript, Node, Next.js, OpenAI Agents JS, Vercel AI SDK, LangGraphJS, or Pi-inspired custom runtimes. Use for tool-calling loops, runtimeContext/toolsContext, prepareStep, stopWhen, toolApproval, streaming UI boundaries, graph persistence, handoffs, and subagent patterns.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Implement TypeScript agent patterns
 ---
 
@@ -15,20 +15,28 @@ the existing one can support the required shape.
 ## Version Reality Check
 
 The TypeScript agent ecosystem moves faster than any written guidance. Before
-writing code, read the versions actually installed in the host project and check
-their current docs. Two traps as of the 2026-08 source snapshot:
+writing code, read the versions actually installed in the host project and its
+release notes — not just the version number: patch releases ship features, and
+packages get mis-published. Traps as of the 2026-10 source snapshot:
 
-- **Vercel AI SDK v7 is stable and breaking.** `stepCountIs` became
-  `isStepCount`; all packages are **ESM-only** with CommonJS exports removed;
-  `ToolCallOptions` is gone in favor of `ToolExecutionOptions`;
-  `experimental_customProvider` was removed; telemetry graduated out of
-  `experimental_` and `*TelemetryIntegration` became `*Telemetry`; callback event
-  data was reworked; `StepResult` response messages narrowed to messages created
-  in that step.
-- **MCP TypeScript SDK v2 is a package rename, not a version bump.** The v2 line
-  ships as new scoped packages (`@modelcontextprotocol/core`, `/client`,
-  `/server`, and friends); the old monolithic `@modelcontextprotocol/sdk` stays
-  on its 1.x line and does not advance to 2.x. Migration changes import sources.
+- **Vercel AI SDK v7 is stable and breaking**, and its 7.0.x patches keep adding
+  behavior. Since 7.0: `stepCountIs` → `isStepCount`; **ESM-only**;
+  `ToolCallOptions` → `ToolExecutionOptions`; telemetry out of `experimental_`;
+  reworked callback events; step-scoped response messages. Later patches added
+  an `interrupted` finish reason (breaks exhaustive switches), a warning when
+  `ToolLoopAgent`'s default `isStepCount(20)` stops a loop, and a 20-step default
+  for durable non-streaming runs while the streaming one has none — set
+  `stopWhen` explicitly. `WorkflowAgent` comes from `@ai-sdk/workflow`, which is
+  versioned separately; stale `beta`/`canary` npm tags point at pre-GA v7 builds.
+- **MCP TypeScript SDK v2 is a package rename, not a version bump.** Use the
+  scoped packages (`@modelcontextprotocol/core`, `/client`, `/server`); the
+  monolithic `@modelcontextprotocol/sdk` 1.x line is maintenance-only and will
+  not implement 2026-07-28, and `server-legacy` is a frozen v1 copy slated for
+  removal.
+- **Pi 1.x moved durable execution out of its core.** `pi-agent-core` now holds
+  the agent and loop only; durable sessions live in the experimental `pi-durable`
+  package, with new vocabulary (see below). Code written against the 0.8x harness
+  exports does not compile against 1.x.
 
 Never rely on a framework's default model. Defaults change between minor
 versions; specify the model explicitly in production code.
@@ -49,19 +57,22 @@ Keep structural operations such as prompt switch, skill load, compaction, and
 history navigation outside the active loop or guarded by an idle lock.
 
 If the runtime must survive a crash, add a durable layer rather than trying to
-replay the message array:
+replay the message array. Pi's 1.x durable package is the current reference
+shape (experimental, and deliberately outside the core):
 
-- three stores with distinct roles — a write-once history, mutable named
-  registers for current state, an append-only usage ledger;
-- a durable program counter: after each step, overwrite one register with the
-  *total* current state, so recovery reads one value and switches instead of
-  replaying;
-- an effect sandwich around uncertain side effects — commit the intent with
-  pre-minted output ids, do the effect, commit the settlement;
-- a per-tool replay policy, where a non-replayable tool yields a synthesized
-  "interrupted" result on resume so the call/result pairing stays well-formed;
-- named cursors ("lanes") into the shared history for threads, subagents, and
-  parallel work, instead of a separate history per concurrent unit.
+- stores with distinct roles — immutable entries, full task records, and
+  separately tracked documents such as usage;
+- a whole-task checkpoint per phase, so recovery reads current state and
+  switches instead of replaying (the 0.8x "durable program counter");
+- an effect sandwich around uncertain side effects — commit the intent, do the
+  effect, commit the outcome;
+- a per-tool replay policy defaulting to unsafe, where a tool reruns only if both
+  its recorded and its current declaration say safe, and a non-replayable tool
+  yields a synthesized "interrupted" result;
+- conversations, forks and task-owned subagent conversations instead of the
+  0.8x "lanes";
+- durable sleeps as their own phase boundary, and a restart limit that parks a
+  task which keeps crashing on resume.
 
 Write the non-goals down next to the capabilities. See
 `analysis/01-pi-source-analysis.md`.
@@ -130,9 +141,14 @@ Recent capabilities worth knowing before hand-rolling equivalents:
 - **Resume is fail-closed by design.** Serialized output-bearing approval
   checkpoints error rather than guess when ownership of a pending terminal tool
   output cannot be proven; non-streaming replay needs an explicit unsafe-replay
-  opt-in; serialized credentials and mount authority are not trusted on resume.
-  Do not paper over these with a blanket catch — continue from live state or
-  restart from safe input.
+  opt-in; serialized credentials and mount authority are not trusted on resume;
+  conditional approvals are bound to the normalized input, and current policies
+  are re-evaluated on a durable resume. Do not paper over these with a blanket
+  catch — continue from live state or restart from safe input.
+- **Keep run state on the server.** A serialized `RunState` is executable
+  authority and parsing it does not authenticate it: hold snapshots server-side
+  and check-and-consume each pending approval atomically. Model calls made after
+  an approval resume count toward `maxTurns`.
 - **Sensitive model and tool data logging is off by default.** Enable it
   explicitly and only where the trace store is appropriately protected.
 - Local MCP connections negotiate the current protocol with fallback for older
@@ -174,6 +190,17 @@ const agent = new ToolLoopAgent({
 Use `WorkflowAgent` when tool calls must survive restarts, retries, workflow step
 boundaries, or delayed approval.
 
+Approval semantics worth relying on rather than rebuilding: approvals can be
+signed so only the signature is persisted, only the first response to a call
+counts, and an approval superseded by a later user message is ignored. A
+signature proves the approval was not altered, not that it is fresh — keep
+replay protection on the server. Check a policy-engine adapter's default: one
+treats "no rule matched" as allow. For code
+mode, declare per tool which callers may invoke it. To put several existing
+local harnesses (Claude Code, Codex, Pi and others) behind one stream interface,
+the experimental `@ai-sdk/harness` adapter layer exists — evaluate it before
+writing your own bridge. See `analysis/02-agent-framework-patterns.md`.
+
 ## LangGraphJS
 
 Use LangGraphJS when the process is better modeled as a graph than a simple
@@ -190,7 +217,13 @@ Typical graph:
 Use graph persistence for thread state, checkpoint history, replay, fork, or
 resume. For multi-agent systems, choose supervisor routing or dynamic swarm
 handoff deliberately. A handoff tool should return a command/goto rather than
-only text.
+only text — and never let JSON-shaped input be interpreted as a command: since
+1.4.21 plain objects are treated as state, not control. Validate resume payloads
+with a response schema on `interrupt` (Zod schemas are validated). Parallel
+writes replay in logical task order since 1.5, so checkpoint savers must honor
+the new ordering contract; before upgrading, finish interrupted supersteps on
+the old runtime and run the Postgres saver's setup once. Current docs live at
+docs.langchain.com, not in the repository.
 
 ## Subagents
 
@@ -215,5 +248,7 @@ failure modes.
   settlement, and assert recovery can tell whether the effect happened.
 - Resume tests asserting approvals and credentials are re-obtained, not
   restored, and that an ambiguous pending output fails closed.
+- Resume-payload validation tests, and replay-determinism tests with parallel
+  writers in a different completion order.
 
 Read `../test-ai-agents/SKILL.md` for the full test/eval strategy.
