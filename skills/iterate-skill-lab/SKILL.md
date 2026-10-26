@@ -2,7 +2,7 @@
 name: iterate-skill-lab
 description: Iterate this ai-agent-skill-lab repository when there is new AI agent research, framework, paper, article, or technique to absorb. Use to add a brand-new source analysis, refresh an existing source against a newer upstream version, or apply a skill-only optimization. Codifies versioning, CHANGELOG, SOURCE_INDEX metadata, analysis-file format, synthesis update, build-ai-agents optimization, docs/README updates, commit cadence, and PR flow.
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   short-description: Iterate the agent skill lab
 ---
 
@@ -28,8 +28,9 @@ Pick the mode before anything else:
 
 The user often invokes this skill with a short prompt like "iterate the lab" or "找一个新的 agent 论文来分析" rather than a fully specified request. **Do not block the conversation by listing required inputs.** Take initiative, then confirm.
 
+0. **Look for an interrupted iteration first.** Run `git status`. Untracked `analysis/` or `raw/docs/` files and modified skills left by an earlier session are drafts, not results: re-verify every factual claim against its source before landing them, and record the corrections in the freshness review. (The 2026-10 round found three factual errors in drafts left uncommitted for seven weeks.)
 1. **Survey what's already known.** Read `analysis/SOURCE_INDEX.md` (both tables + the `## Official Links` list) and `analysis/07-overall-agent-analysis.md` `## 后续可分析方向`. These already encode pre-curated candidates the lab considered worth analyzing later.
-2. **Propose 2–4 candidates** with one-line reasoning each: name, type (`repo` / `article` / `paper`), whether it is already referenced but not yet analyzed standalone, why it is authoritative, and what gap in the current coverage it fills. Mark one as the recommendation. Typical strong defaults: Anthropic/OpenAI/Google engineering articles already in `Official Links`, foundational arXiv papers (ReAct, Reflexion, Toolformer, agent surveys), or a major version bump of an already-analyzed repo.
+2. **Propose 2–4 candidates** within the lab's scope — self-built, local agent harnesses; cloud-hosted agent services are a non-goal (see `README.md`), and a cloud product's design is analyzed only for what transfers to a local harness — with one-line reasoning each: name, type (`repo` / `article` / `paper`), whether it is already referenced but not yet analyzed standalone, why it is authoritative, and what gap in the current coverage it fills. Mark one as the recommendation. Typical strong defaults: Anthropic/OpenAI/Google engineering articles already in `Official Links`, foundational arXiv papers (ReAct, Reflexion, Toolformer, agent surveys), or a major version bump of an already-analyzed repo.
 3. **Pre-fill the rest of the inputs** for each candidate so the user only has to pick: default mode (`add-source` for new, `update-source` for a refreshed existing source, `skill-only` for pure guidance edits), predicted version bump (new authoritative source adding additive guidance → MINOR; refresh with no guidance shift → PATCH or none; breaking change to modes/deliverables → MAJOR), and whether `analysis/07-overall-agent-analysis.md` likely needs an update (default YES if the candidate changes the cross-source consensus matrix, otherwise NO).
 4. **Ask the user to confirm** the choice. Prefer `AskUserQuestion` when the host agent supports it; otherwise present the candidates inline with the pre-filled fields. If the user names a source directly in the original prompt, skip step 1–2 and proceed with that source's pre-filled defaults.
 5. **Verify network access** before committing to an article/paper. Do a single read-only `WebFetch` of the chosen URL to confirm reachability and to capture enough structure to write the analysis later. If it fails repeatedly and no offline content is available, surface this to the user before further work.
@@ -73,7 +74,7 @@ Run these steps in order. Omit ones the mode does not need. Each step is a separ
 1. **Bump skill version** (when applicable). Edit `skills/build-ai-agents/SKILL.md` frontmatter `metadata.version:` to the target X.Y.Z. Do this first so subsequent commits can reference it.
 2. **Update CHANGELOG.md**. Add a new top entry `## [X.Y.Z] - YYYY-MM-DD` with `新增 / 变更 / 文档 / 来源版本与最后更新` subsections. The per-source table must reflect the post-iteration state of any changed sources.
 3. **Acquire and snapshot the source** (skip for `update-source` when the file already exists — instead bump it):
-   - **Repository**: shallow clone into `raw/repos/<slug>/`. Record the full commit hash.
+   - **Repository**: shallow clone into `raw/repos/<slug>/`. Record the full commit hash in all three places that carry it — the gitlink, the first hash in `SOURCE_INDEX.md`'s `来源版本` cell, and the `source-map.md` Local Repositories table (C7 checks they agree). Moving a snapshot means moving the gitlink: `git add raw/repos/<slug>` after checking out the new commit, or `git update-index --cacheinfo 160000,<sha>,raw/repos/<slug>` for a pointer-only directory.
    - **Article/paper**: fetch via `WebFetch` and write a structured factual digest (paraphrase, NOT verbatim — respect copyright) to `raw/docs/<slug>.md`. The header must contain the source URL, publish date, fetch date, fetch method, and a clear note that the file is a paraphrased digest, not the original.
 4. **Write the analysis report** at `analysis/NN-<slug>.md` where NN is the next zero-padded index:
    - `# 标题` + metadata blockquote + 1–2 paragraph intro relating this source to already-analyzed ones.
@@ -85,7 +86,8 @@ Run these steps in order. Omit ones the mode does not need. Each step is a separ
    - Adjust `## 形态选择光谱` if the source introduces a new shape or distinction.
    - Bump the metadata block (`最后更新`, `覆盖来源`).
    - Append leads to `## 后续可分析方向` if the source surfaces new candidates.
-7. **Optimize `build-ai-agents`** (additive by default, to keep MINOR scope):
+7. **Optimize `build-ai-agents`** (additive in contract, not in length):
+   - Absorb new evidence by replacing or condensing existing text before appending. Each `SKILL.md` must stay under the Agent Skills spec's 500-line limit and should stay under its ~5000-token body recommendation (C8). Evidence that a rule is perishable is a reason to delete it, and a deletion is a real improvement.
    - Sharpen wording in existing references; cite the originating analysis file (e.g. `see analysis/NN-…md`).
    - Add new reference files only for genuinely new cross-cutting topics (this is contract-adjacent — verify MAJOR scope is intentional).
    - Touch `SKILL.md` content only when the new source changes a decision rule or a workflow step.
@@ -134,7 +136,7 @@ Before marking the iteration complete:
 - `docs/index.html`: new `<tr>` has exactly three `<td>`; `git diff` shows zero changes in `<style>` and `<script>` ranges; tag balance (`tr/td/table/section/tbody/thead/footer`) is preserved.
 - `README.md`: new source listed; `## 版本与变更` version reflects current `SKILL.md`.
 
-**Run `scripts/check-lab-invariants.sh` and get a clean exit before opening the PR.** It mechanically checks the analysis metadata blockquote format, version agreement across `SKILL.md` / `README.md` / `docs/index.html` / `CHANGELOG.md`, the existence of every lab-owned path referenced in backticks, the three-`<td>` rule in `docs/index.html`, and that `SOURCE_INDEX.md` 更新时间 is not older than the newest 最后更新 it records. Its `raw/repos` path check can only warn, because most entries are gitlinks with no local checkout.
+**Run `scripts/check-lab-invariants.sh` and get a clean exit before opening the PR.** It mechanically checks the analysis metadata blockquote format, version agreement across `SKILL.md` / `README.md` / `docs/index.html` / `CHANGELOG.md`, the existence of every lab-owned path referenced in backticks, the three-`<td>` rule in `docs/index.html`, that `SOURCE_INDEX.md` 更新时间 is not older than the newest 最后更新 it records, that each repo's commit agrees across gitlink / `SOURCE_INDEX.md` / `source-map.md` (C7), and that every `SKILL.md` obeys the Agent Skills spec limits (C8). Its `raw/repos` path check can only warn, and only where a local checkout exists.
 
 Fix violations rather than relaxing the check. If a check is wrong, fix the check in the same PR and say so — a gate that gets loosened to pass is worse than no gate.
 
@@ -152,6 +154,12 @@ Fix violations rather than relaxing the check. If a check is wrong, fix the chec
 - **Relying on an upstream specification without giving it a `来源版本` row.** A source with no version row is invisible to drift detection entirely.
 - **Recording un-verified drift as clean.** If a source's change cannot be judged at reasonable cost, record it as 待核验 and defer; do not assume it is non-substantive.
 - **Stale `更新时间` in `SOURCE_INDEX.md`.** This is the canonical registry; a wrong date here misleads future iterations and any tooling that reads it.
+- **Leaving an iteration uncommitted across sessions, then treating its drafts as verified.** Land or discard within the session; if you inherit drafts, re-verify them (Kickoff step 0).
+- **Recording a re-snapshot in `SOURCE_INDEX.md` without moving the gitlink.** The 2026-10 review found a source whose index row named one commit while the gitlink and `source-map.md` named another, and the cited paths existed only at the first.
+- **Checking cited paths only for sources judged "material".** Non-material sources rename files too; the 2026-10 review found paths that had been dead for four months.
+- **Judging change from prerelease notes or from version numbers.** Read stable release notes (filter out prereleases) and changelogs; versions get mis-published, and patch releases ship features.
+- **Trusting a page's modified date.** Vendor sites bulk re-save pages; compare the text against an archived copy.
+- **Absorbing new evidence only by appending.** Skills grow past the spec's limits and bury the rules that matter; replace, condense, and delete perishable guidance the evidence retires.
 
 ## Deliverables
 
