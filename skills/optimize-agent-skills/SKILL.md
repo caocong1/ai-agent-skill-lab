@@ -2,7 +2,7 @@
 name: optimize-agent-skills
 description: Improve agent skills, prompts, instructions, or operating guides using SkillOpt-inspired evidence loops. Use for trajectory-driven skill iteration, rollout and eval design, validation-gated edits, bounded add/delete/replace patches, train/validation/test splits, strong optimizer vs frozen target separation, slow or meta updates, staged adoption, and no-inference-overhead deployment artifacts.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Improve skills with validation gates
 ---
 
@@ -40,9 +40,14 @@ Split the document's rules into two lists and treat them differently:
   capable.
 
 Add "a new model generation shipped" to the triggers that start an optimization
-cycle, alongside "the eval regressed" and "a failure mode recurs". See
-`analysis/19-anthropic-harness-design-long-running-apps.md` and
-`analysis/21-lab-design-rethink-2026-08.md`.
+cycle, alongside "the eval regressed" and "a failure mode recurs". This is no
+longer hypothetical: vendors now cut most of their own production prompts and
+drop planning tools from the default set when a new generation ships, and
+report no measurable loss. Curated, focused skills measurably help; bloated and
+self-generated ones often do not — so deletion is a first-class edit. See
+`analysis/19-anthropic-harness-design-long-running-apps.md`,
+`analysis/21-lab-design-rethink-2026-08.md`, and
+`analysis/25-harness-shelf-life-research.md`.
 
 ## Evidence Loop
 
@@ -64,6 +69,22 @@ Run an explicit loop:
 Keep rejected edits as negative feedback so the optimizer does not repeat
 harmful directions.
 
+Three rules keep the loop from optimizing the wrong thing:
+
+- **The artifact must not learn the verifier.** Keep verifier internals (rule
+  expressions, rubric rationales, expected labels) in an audit channel; the
+  reflection step sees only a description of the user-visible behavior to fix.
+  Otherwise the skill learns to imitate the check.
+- **Give the proposer full traces, not just scores.** Scores alone tell it that
+  something failed, not why.
+- **Do not harvest the optimizer's own sessions** as new training material, or
+  the loop feeds on itself.
+
+Spend model capability on the agent that executes the skill rather than on the
+one that edits it; editing ability varies less across models than the benefit
+does. See `analysis/13-skillopt.md` and
+`analysis/25-harness-shelf-life-research.md`.
+
 ## Data Splits
 
 Use three disjoint sets when possible:
@@ -74,6 +95,13 @@ Use three disjoint sets when possible:
 
 Never let dream/synthetic tasks into validation or test. If data is scarce,
 still separate "used for reflection" from "used for acceptance".
+
+Over repeated cycles, splits leak by accretion rather than at the moment you cut
+them. Keep a persistent exposure record with lineage: once a task — or anything
+derived from it — has been used for reflection, it can never become validation
+or test data. If no clean validation pool remains, refuse to certify the edit.
+Check the optimizer's defaults: some default the validation set to the training
+set and only warn on overlap. Keep reference answers out of the reflection input.
 
 ## Scoring
 
@@ -86,6 +114,19 @@ Pick metrics before editing:
 
 Use multi-objective scoring only when weights are explicit. Otherwise optimize
 quality first and report cost/safety as guardrails.
+
+Before crediting the optimizer:
+
+- compare against a **same-budget baseline** — spending the optimizer's compute
+  on plain extra samples or turns. Against that baseline, and on held-out tasks,
+  much of the published gain from automated harness and prompt optimization
+  disappears;
+- compare **paired by task** with a statistic that treats tasks, not seeds, as
+  the unit (see `../test-ai-agents/SKILL.md`);
+- where a regression on any single task is unacceptable, gate on **no per-task
+  regression** rather than on the aggregate alone;
+- prove every declared budget actually stops work. A budget that is configured
+  but never enforced is worse than none, because it reads as a guardrail.
 
 ## Edit Rules
 
