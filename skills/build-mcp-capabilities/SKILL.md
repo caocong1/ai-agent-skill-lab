@@ -2,7 +2,7 @@
 name: build-mcp-capabilities
 description: Build, consume, or review Model Context Protocol capability layers for AI agents. Use for MCP servers, clients, tools, resources, prompts, the stateless 2026-07-28 baseline, server/discover, multi round-trip requests, subscriptions, cacheable results, tasks, stdio or Streamable HTTP transports, protocol error semantics, active tool allowlists, remote server security, and deciding when MCP vs A2A vs ANP is appropriate.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Design MCP tools, resources, clients
 ---
 
@@ -12,8 +12,9 @@ Use MCP as a capability protocol, not an agent runtime.
 
 ## Protocol Baseline
 
-Design against the **2026-07-28** revision. It changed the *shape* of MCP, not
-just its surface: before it, MCP was a duplex, stateful protocol with a
+Design against the **2026-07-28** revision (re-checked 2026-10-25: still the
+latest; the draft carries only editorial changes). It changed the *shape* of
+MCP, not just its surface: before it, MCP was a duplex, stateful protocol with a
 handshake and server-initiated requests; after it, MCP is stateless and
 request/response only. Code written for the old shape needs a migration plan,
 not a patch.
@@ -98,9 +99,27 @@ specification. Resource-not-found moved from `-32002` to `-32602`. See
 
 **SDK note:** the TypeScript v2 line ships as *new* scoped packages
 (`@modelcontextprotocol/core`, `/client`, `/server`, and friends) while the old
-monolithic `@modelcontextprotocol/sdk` stays on its 1.x line. Migration means
-changing import sources, not bumping a version number. Verify against the
-version actually installed in the host project.
+monolithic `@modelcontextprotocol/sdk` stays on a maintenance-only 1.x line that
+will not implement 2026-07-28. Migration means changing import sources, not
+bumping a version number. v2 serves 2025-era Streamable HTTP clients itself;
+`@modelcontextprotocol/server-legacy` is a frozen copy of v1 code, needed only for
+HTTP+SSE-only clients and the v1 OAuth server helpers, and slated for removal in
+v3 — do not build new code on it. A `server/discover` timeout is not evidence of
+an older peer.
+In stateless mode, create one server instance per request. On the JVM,
+LangChain4j has a 2026-07-28 client, while Spring AI still pinned an MCP Java SDK
+without it as of 2026-10. Verify against the versions actually installed in the
+host project.
+
+**Extensions.** Tasks, Skills and Apps live outside the core, so never assume a
+peer implements one — check `server/discover`. The Skills extension (SEP-2640,
+Final) serves skills as resources and delegates their format to the Agent Skills
+specification. Its digests are unsigned: they show a skill matches the same
+server's listing, not that it is trustworthy, so bind approval to the full digest
+set you reviewed and treat remote skills as supply chain
+(`../secure-ai-agents/SKILL.md`). Proposals worth tracking because they would change approval and
+authorization design: asynchronous approval through tasks (SEP-2848), structured
+authorization denials (SEP-2643), and tool risk metadata (SEP-2793).
 
 ## Protocol Choice
 
@@ -139,6 +158,8 @@ Error semantics:
   actionable messages.
 - Use protocol errors for invalid protocol state, schema violations, transport
   failure, or auth failure.
+- On the client, keep `isError: true` tool results visible to the model even
+  under a fail-closed error policy; only protocol errors fail the call.
 - Never expose secrets, stack traces, internal topology, or tenant data in tool
   errors.
 
@@ -174,6 +195,8 @@ Client checklist:
   `inputResponses` — treat it as a normal control-flow path, not an error.
 - Honor `ttlMs` and `cacheScope`; never let a shared cache hold a `"private"`
   result.
+- Cap pagination when following list cursors; an unbounded cursor chain makes
+  discovery unbounded.
 - Bridge protocol generations in an adapter, not at every call site. A client
   can negotiate the current protocol where available and fall back for older
   servers without the application code branching on protocol version.
@@ -214,6 +237,9 @@ Record which server/tools were exposed for each model call.
   per-user or per-tenant.
 - Treat server-minted handles as capability tokens: scope, expire, and
   authorize them on every use.
+- Check scopes per tool or resource and reject with an insufficient-scope
+  challenge *before* the handler runs; bind accepted tokens to the expected
+  issuer and resource (audience).
 
 ## Handoff
 
