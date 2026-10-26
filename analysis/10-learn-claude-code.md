@@ -1,8 +1,10 @@
 # Learn Claude Code (shareAI-lab) 分析
 
-> 分析版本：1.1 ｜ 最后更新：2026-08-23 ｜ 来源：Learn Claude Code（commit `f9e8b280`，详见 `analysis/SOURCE_INDEX.md`）
+> 分析版本：1.2 ｜ 最后更新：2026-10-25 ｜ 来源：Learn Claude Code（commit `ce8f9f18`，详见 `analysis/SOURCE_INDEX.md`）
 >
 > 1.1 变更：上游从 **20 课重构为 17 课并整体重编号**，`s10_system_prompt` / `s11_error_recovery` / `s17_autonomous_agents` / `s18_worktree_isolation` / `s19_mcp_plugin` / `s20_comprehensive` 均已不存在，其内容被并入其他课。新增 `## 17 课重构后的编目`、`## 三课新增内容` 两节。原有的核心抽象与工程启发核对后仍成立。
+>
+> 1.2 变更：s08 压缩流水线**改正顺序并补上 2026-08 的语义修订**——本仓库此前照代码注释里的层号把顺序写成"snip → 占位替换 → 落盘"，而上游的**调用顺序从最初快照起就是先落盘**；2026-08-24 上游又把旧结果替换改成"先落盘再替换"、只在超限时运行，并新增 `fit_tool_results`。见 `## s08 压缩流水线：顺序更正与 2026-08 修订`。另：本仓库 2026-08-23 记录"已 re-snapshot 到 `f9e8b280`"，但 gitlink 实际停在最初的 `1baf1aca`；本轮把三处记录统一到 `ce8f9f18`。课程结构（17 课）未再变化。
 
 这是本仓库分析的第 8 个代码项目，性质和之前 7 个有明显差异：它不是一个被实际部署的 agent SDK，而是一份 20 课渐进式教学仓库，把 Claude Code 风格 harness 的每一个机制独立成一节课、每节课配一个可单独运行的 `code.py`。前 7 个项目（Pi、OpenAI Agents JS、LangGraphJS、MCP TS SDK、Vercel AI SDK、Spring AI Examples、LangChain4j）侧重"生产级框架的设计抽象"；本仓库则相反——把所有抽象拆掉，每节课只用 200–2000 行 Python 直白复述一个 harness 机制，到 `s20_comprehensive` 才把所有机制串到一个循环里。
 
@@ -21,7 +23,7 @@
 - **Hook system（s04）**：在 loop 周围挂 `PreToolUse`/`PostToolUse` 等 hook 点而不改 loop 本身。本仓库之前用 Pi 的 `beforeToolCall/afterToolCall` 表达过同一思想，但没作为通用扩展机制单列。教学版强调"hook 是扩展形态，不是 loop 重写"。
 - **Plan-then-execute via TodoWrite（s05）**：把"列计划"做成一个工具，agent 在执行前显式写下 todo 列表，再分步执行。它是 chain-of-thought 的工程化版本：计划被持久化为 tool result，可以被人读、被压缩、被回放。
 - **Skill loading 的两层结构（s07）**：layer 1 在系统 prompt 注入 `name + 一句话描述`（廉价），layer 2 通过 `load_skill(name)` 在需要时把整份 SKILL.md 注入为 tool_result（昂贵）。这与 Pi 的 progressive disclosure 完全一致，但教学实现把"前后两次注入的 token 估计"写到了注释里，让读者能直接判断何时升级到 layer 2。
-- **Cheap-first 多层 context compaction（s08）**：四层依次执行——`snip_compact`（消息条数 > 50 时截中段）→ `micro_compact`（把老的 tool_result 换成 placeholder）→ `tool_result_budget`（把大 tool 输出落盘并用句柄引用）→ `compact_history`（一次 LLM 总结）→ `reactive_compact`（API 返回 prompt_too_long 时应急压一次）。"cheap first, expensive last" 是核心原则；这种分层管线比"满了就喊 LLM 总结"既省钱又少损信息。
+- **Cheap-first 多层 context compaction（s08）**：按信息损失与成本递增的顺序执行——`tool_result_budget`（先把本批过大的 tool 输出落盘、用路径加预览引用）→ `snip_compact`（消息条数 > 50 时先把完整历史存档再截中段）→ 超限时 `micro_compact`（替换旧结果前先落盘，保证每个占位都有恢复路径）→ 新结果仍过大时 `fit_tool_results` → 仍超限才 `compact_history`（一次 LLM 总结）→ `reactive_compact`（API 返回 prompt_too_long 时应急压一次）。"cheap first, expensive last" 是核心原则；这种分层管线比"满了就喊 LLM 总结"既省钱又少损信息。（1.2 更正：1.0/1.1 把顺序写成 snip → 占位 → 落盘，是照代码注释的层号而非调用顺序写的；详见文末 s08 一节。）
 - **Memory 三段流程（s09）**：selection（哪些会话片段值得留）→ extraction（从片段里抽出可结构化的事实）→ consolidation（把抽出的事实合并、去重、归档到 `.memory/MEMORY.md`）。本仓库之前在 `skills/design-ai-agent/SKILL.md` 的 Memory Design 只列了"用哪几种 memory"，没拆"怎么决定写什么"。
 - **System prompt 的 runtime 拼装（s10）**：按 `identity / tools / workspace / memory / …` 等 section 在每次调用前拼装，并对相同 context 缓存。这把"系统提示词"从"静态字符串"变成"按需 section 组合"，与 reference 里"keep prompts layered"是同一原则，但更具体。
 - **Error recovery 三路径 + 指数退避（s11）**：
@@ -144,7 +146,30 @@ s17 给出了本仓库长期缺失的那块拼图的最小实现：**模型不�
 
 与另外两个来源合看，这构成本轮最强的一条跨来源共识：DeepSeek Harness 的 goal domain（持久 phase + revisioned CAS + `GoalActivation` 故意不持久化）、learn-claude-code 的 s17、以及 Anthropic 的 evaluator（`analysis/19-anthropic-harness-design-long-running-apps.md`）**互不相干地得出同一个结论：完成判定必须由执行方之外的东西给出**。
 
+## s08 压缩流水线：顺序更正与 2026-08 修订
+
+（2026-10-25 核验，上游 `ce8f9f18`；修订来自 2026-08-24 合入的 #537。）
+
+**顺序更正是本仓库自己的错误，不是上游变化。** 在本仓库最初的快照 `1baf1aca` 里，`s08_context_compact/code.py` 的代码注释把三层标作 L1 snip / L2 micro / L3 budget，但调用顺序是 `tool_result_budget`（注释"persist large results first"）→ `snip_compact` → `micro_compact`。本仓库照层号写了顺序，并把这个错误顺序带进了 `skills/design-agent-tools/SKILL.md` 的 Compaction Strategy。教训很具体：**读压缩管线要读调用点，不要读层号**。
+
+**2026-08 的语义修订**（现 `README.md` 与代码）：
+
+- 每轮固定先跑 `tool_result_budget` 与 `snip_compact`；`snip_compact` 在截中段前把完整历史写进 `.transcripts/`，留下一个指向存档的标记。
+- 只有估算仍超过 `CONTEXT_CHAR_LIMIT` 时才跑 `micro_compact`：保留最近 3 条已被模型消费过的结果，把更早的长结果逐条缩短，直到接近上限的 80%；**每替换一条之前先把完整内容落盘**，占位里带上可信的恢复路径。旧版占位只写"需要时重跑"，现在不再有无恢复路径的有损替换。
+- 新增 `fit_tool_results`：模型尚未看过的一批新结果单独就超限时，落盘其中最大的、保留 1,000 字符预览加路径，**避免在模型还没看新结果之前就去总结整段历史**。
+- 只有剩余溢出才进入 `compact_history` 这一步有损的模型摘要；`active_request` 显式带入，当前用户请求不会被摘要吞掉。
+- `reactive_compact` 只重试一次；切点避开"工具调用与其结果被拆开"。
+- 恢复路径必须是 harness 签发的可信路径（位于受控目录内），而不是模型或工具给出的任意路径。
+
+**它说明什么**：压缩管线的排序原则不是"便宜的先跑"这么简单，而是**"可恢复的先跑、不可恢复的最后跑"**——落盘与存档不丢信息，替换在有恢复路径时才是可逆的，只有模型摘要是真正有损的。这与 `analysis/18-deepseek-harness.md` 的 spill（不透明 locator）是同一个约束的两种实现，也与 `analysis/26-durable-rules-production-evidence.md` 记录的"压缩会丢掉用户约束"互相印证：凡是有损的那一步，都不应承载必须保留的东西。
+
 ## 对最终 skill 的影响
+
+1.2 新增：
+
+- `skills/design-agent-tools/SKILL.md`：改正 `## Compaction Strategy` 的层序为"落盘 → 截断（先存档）→ 超限才替换旧结果（先落盘再替换）→ 新结果过大则预览加句柄 → 最后才做模型摘要 → 应急压缩只重试一次"，并写明"没有恢复路径的有损占位一律不做；恢复路径必须由 harness 签发"。
+
+1.0 / 1.1 既有：
 
 本文件推动 1.3.0 的具体改动（与 `analysis/07` 综合报告、`CHANGELOG.md` 1.3.0 一致）：
 
