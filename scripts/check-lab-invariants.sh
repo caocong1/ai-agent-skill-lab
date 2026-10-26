@@ -7,6 +7,13 @@
 # analysis/21 records that this lab taught both and enforced neither. This
 # script is the smallest thing that closes that gap.
 #
+# Checks: C1 analysis metadata blockquote; C2 suite version in four places;
+# C3 lab-owned paths exist; C4 three <td> per index.html row; C5 SOURCE_INDEX
+# date not older than its newest row; C6 raw/repos paths (warn only);
+# C7 gitlink / SOURCE_INDEX / source-map commits agree; C8 every SKILL.md obeys
+# the Agent Skills spec limits (name, description, under 500 lines; token
+# budget warns).
+#
 # Usage: scripts/check-lab-invariants.sh
 # Exit 0 = all invariants hold. Exit 1 = at least one violation.
 
@@ -14,7 +21,7 @@ set -uo pipefail
 cd "$(dirname "$0")/.."
 
 exec python3 - "$PWD" <<'PYEOF'
-import re, sys, os, pathlib
+import re, sys, os, pathlib, subprocess
 
 root = pathlib.Path(sys.argv[1])
 violations = []
@@ -112,6 +119,81 @@ for f in scan:
 if skipped:
     w('C6', f'{skipped} raw/repos reference(s) unverifiable: no local checkout '
             f'({checked} verified)')
+
+# --- C7: the three records of a repo snapshot agree: gitlink, SOURCE_INDEX, source-map ---
+# A snapshot is recorded three times: the gitlink under raw/repos/ (the actual
+# pointer), the first full hash in SOURCE_INDEX's 来源版本 cell, and the
+# source-map Local Repositories table. The 2026-10-25 review found all three
+# disagreeing for one repo and a repo missing from source-map entirely.
+ls = subprocess.run(['git', '-C', str(root), 'ls-files', '-s', 'raw/repos'],
+                    capture_output=True, text=True).stdout
+gitlinks = {}
+for line in ls.splitlines():
+    meta, path = line.split('\t', 1)
+    mode, sha = meta.split()[:2]
+    if mode == '160000':
+        gitlinks[path.split('/', 2)[2]] = sha
+
+def table_commits(text, heading, path_re):
+    m = re.search(rf'^## {re.escape(heading)}\s*$(.*?)(?=^## |\Z)', text, re.M | re.S)
+    found = {}
+    if not m:
+        return found
+    rows = [r for r in m.group(1).splitlines() if r.startswith('|') and not r.startswith('| ---')]
+    for r in rows[1:]:
+        cells = [c.strip() for c in r.strip('|').split('|')]
+        if len(cells) < 3:
+            continue
+        pm = re.search(path_re, cells[1])
+        hm = re.search(r'\b([0-9a-f]{40})\b', cells[2])
+        if pm and hm:
+            found[pm.group(1)] = hm.group(1)
+    return found
+
+si_commits = table_commits(si, 'Repositories', r'`raw/repos/([^`/]+)`')
+sm_text = (root / 'skills/build-ai-agents/references/source-map.md').read_text()
+sm_commits = table_commits(sm_text, 'Local Repositories', r'`([^`/]+)`')
+for name in sorted(set(gitlinks) | set(si_commits) | set(sm_commits)):
+    g, s, mm = gitlinks.get(name), si_commits.get(name), sm_commits.get(name)
+    if g is None:
+        v('C7', f'{name}: recorded in SOURCE_INDEX/source-map but has no gitlink under raw/repos/')
+        continue
+    if s is None:
+        v('C7', f'{name}: gitlink {g[:8]} has no row in SOURCE_INDEX.md ## Repositories')
+    elif s != g:
+        v('C7', f'{name}: SOURCE_INDEX records {s[:8]} but the gitlink is {g[:8]}')
+    if mm is None:
+        v('C7', f'{name}: gitlink {g[:8]} has no row in source-map.md ## Local Repositories')
+    elif mm != g:
+        v('C7', f'{name}: source-map records {mm[:8]} but the gitlink is {g[:8]}')
+
+# --- C8: every SKILL.md obeys the Agent Skills specification it is written to ---
+# Spec: agentskills/agentskills docs/specification.mdx (commit 69ef37e9, 2026-08-09).
+# name and description limits are hard; "keep SKILL.md under 500 lines" is
+# imperative in the spec and treated as hard here; the ~5000-token body budget is
+# a recommendation and can only be estimated, so it warns.
+for f in sorted((root / 'skills').glob('*/SKILL.md')):
+    rel = f.relative_to(root)
+    text = f.read_text()
+    m = re.match(r'^---\n(.*?)\n---\n(.*)$', text, re.S)
+    if not m:
+        v('C8', f'{rel}: missing YAML frontmatter fences')
+        continue
+    fm, body = m.group(1), m.group(2)
+    nm = re.search(r'^name:\s*(.+?)\s*$', fm, re.M)
+    ds = re.search(r'^description:\s*(.+?)\s*$', fm, re.M)
+    if not nm or not re.fullmatch(r'[a-z0-9]+(-[a-z0-9]+)*', nm.group(1)) or len(nm.group(1)) > 64:
+        v('C8', f'{rel}: name must be 1-64 chars of lowercase letters, digits and single hyphens')
+    elif nm.group(1) != f.parent.name:
+        v('C8', f'{rel}: name "{nm.group(1)}" does not match its directory')
+    if not ds or not (1 <= len(ds.group(1)) <= 1024):
+        v('C8', f'{rel}: description must be 1-1024 characters')
+    lines = text.count('\n') + (0 if text.endswith('\n') else 1)
+    if lines >= 500:
+        v('C8', f'{rel}: {lines} lines; the spec says keep SKILL.md under 500 lines')
+    est = len(body) // 4
+    if est > 5000:
+        w('C8', f'{rel}: body is ~{est} tokens (chars/4); the spec recommends under 5000')
 
 # --- report ---
 for line in warnings:
