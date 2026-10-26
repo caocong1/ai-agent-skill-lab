@@ -2,7 +2,7 @@
 name: build-ai-agents
 description: Router and backward-compatible entrypoint for designing, implementing, reviewing, securing, testing, and optimizing AI agent features. Use for agent loops, ReAct/tool-use agents, workflows, subagents, memory, approvals, MCP, tool schemas, context engineering, retrieval, TypeScript or Java agent implementation, safety review, evals, observability, and agent skill optimization.
 metadata:
-  version: 2.2.0
+  version: 2.3.0
   short-description: Route AI agent work to focused skills
 ---
 
@@ -22,6 +22,7 @@ Read only the child skill(s) needed for the current task:
 | Build or consume MCP servers/clients, resources, prompts, transports, A2A/ANP-adjacent protocol choices | `../build-mcp-capabilities/SKILL.md` |
 | Implement in TypeScript, Node, Next.js, OpenAI Agents JS, Vercel AI SDK, LangGraphJS, or Pi-inspired runtimes | `../implement-ts-agents/SKILL.md` |
 | Implement in Java, Spring AI, LangChain4j, service-layer agents, annotations, or DI-heavy projects | `../implement-java-agents/SKILL.md` |
+| Implement in Python (Google ADK, Claude Agent SDK, and similar local harness libraries) | No dedicated skill yet: `../design-ai-agent/SKILL.md`, `../design-agent-tools/SKILL.md`, `../test-ai-agents/SKILL.md`, plus the framework paths in `references/source-map.md` |
 | Audit existing agent code and produce a Chinese findings table plus remediation plan | `../review-ai-agents/SKILL.md` |
 | Threat-model or harden prompt injection, excessive agency, tenant isolation, SSRF, approvals, audit, or redaction | `../secure-ai-agents/SKILL.md` |
 | Add tests, fake model harnesses, evals, replay, traces, production guardrails, or monitoring | `../test-ai-agents/SKILL.md` |
@@ -67,6 +68,9 @@ implementation skill and one supporting skill (`design-agent-tools`,
 - Escalate complexity only when requirements force it:
   deterministic code < single model call < structured workflow < tool loop <
   durable graph/workflow < multi-agent.
+- Before writing a loop, check whether a maintained open harness can be embedded
+  locally. Embedding outsources engine correctness, not the design of your
+  interface, context, tools, and boundaries.
 - Put permission checks at the tool execution boundary. Prompt policy explains;
   code policy enforces.
 - Treat tool schemas, descriptions, outputs, and errors as an agent-facing API.
@@ -82,17 +86,25 @@ implementation skill and one supporting skill (`design-agent-tools`,
   its token and prompt-cache cost) and **who has authority** to make it happen.
   Visibility is not authority.
 - A turn ending is not a goal being met. For any task whose goal is a verifiable
-  end state, put the completion decision outside the agent doing the work.
+  end state, put the completion decision outside the agent doing the work, and
+  keep the worker's own success claim out of the judge's view.
 - Authorization is never inherited from serialized state. State can be restored;
   approvals and credentials must be re-obtained on resume, fork, or replay.
 - Side effects need all three of: knowing whether they happened, not repeating
   them on retry, and being able to undo them. Retry and approval cover two.
-- Keep the prompt prefix stable. A tool list whose order changes between runs
-  quietly discards the prompt cache.
+- Context assembly is append-only. Freeze the system prompt and tool set at
+  session start and express every change as an appended entry; rewriting
+  earlier context discards the prompt cache, and at least one provider rejects
+  replayed reasoning after such an edit.
+- Constraints, approvals, and pending user instructions never pass through a
+  lossy summary. Keep them in a separate store and re-append them.
 - Every component compensating for a model limitation is a dated assumption.
   Record why it exists, and re-run the ablation on each model generation.
   Components governing authority, evidence, side effects, and cost are not on
   that list.
+- Believe a harness or prompt change only when it clears the noise floor:
+  several runs, paired by task, against a same-budget baseline, on held-out
+  tasks.
 - Publish a non-goals list beside the capability list, with equal prominence.
 
 ## Contract Stability
