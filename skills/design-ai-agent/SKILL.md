@@ -1,8 +1,8 @@
 ---
 name: design-ai-agent
-description: Choose and specify AI agent architecture before implementation. Use for deciding whether an agent is needed, selecting deterministic code vs single model call vs structured workflow vs ReAct/tool loop vs durable graph vs subagents, and designing loop, state, memory, approval, and harness boundaries.
+description: Choose and specify AI agent architecture before implementation. Use for deciding whether an agent is needed, selecting deterministic code vs single model call vs structured workflow vs ReAct/tool loop vs durable graph vs subagents vs an embedded open harness, and designing loop, state, memory, approval, completion, durable-execution, and harness boundaries.
 metadata:
-  version: 2.2.0
+  version: 2.3.0
   short-description: Choose the right agent architecture
 ---
 
@@ -13,18 +13,9 @@ existing design is too simple, too broad, or too autonomous.
 
 ## Core Model
 
-Treat an agent as an application subsystem:
-
-- model adapter
-- instructions
-- tool registry
-- orchestration loop or graph
-- state and memory
-- approval and permission boundary
-- event/trace stream
-- tests and evals
-
-Do not let one controller, route handler, or prompt own all of these concerns.
+Treat an agent as an application subsystem, not a prompt: do not let one
+controller, route handler, or prompt own the model adapter, instructions, tools,
+loop, state and memory, approvals, traces, and evals.
 
 ## Model-Visible Surface and Authority
 
@@ -34,117 +25,100 @@ is safe and affordable:
 
 - **What does the model see?** Every capability should have a written answer for
   what the model sees, what it costs in tokens, and what it does to prompt-cache
-  reuse. State the invariant explicitly: anything model-visible is logged, and
-  anything logged is model-visible. If the two can diverge, replay and audit
-  both become fiction.
+  reuse. Make "everything the model saw is in the log" hold by construction —
+  build each request from the log — or replay and audit become fiction. The
+  converse need not hold: much of what is logged never reaches the model.
 - **Who decides what happens?** Visibility is not authority. A model that can
   see a tool must still pass an authority boundary to use it, and that boundary
   must be enforced in code, not in prompt wording.
 
-Write both answers down per capability before implementing it. See
+Write both answers down per capability before implementing it. Design a
+capability as three roles together — its **definition** (the contract), its
+**provider**, its **consumer**. A plugin that is both the definition and the only
+provider makes the contract untestable and unreplaceable. See
 `analysis/18-deepseek-harness.md`.
-
-Define a capability as three roles that are designed together, never as one:
-its **definition** (the contract), its **provider** (who implements it), and
-its **consumer** (who calls it). A seam missing any of the three is a leak: the
-common failure is a plugin that is simultaneously the definition and the only
-provider, which makes the contract untestable and unreplaceable.
 
 ## Perishable vs Durable Design
 
 Every harness component encodes a dated assumption about what the model cannot
-do on its own. Those assumptions expire as models improve. Classify each
-component before writing it:
+do on its own. Classify each component before writing it:
 
 - **Perishable** — compensates for a current model weakness: context resets,
-  sprint decomposition, anti-drift prompt patches, step-by-step scaffolding for
-  a weaker model. Record it as "we added X because the model at version M could
-  not do Y." That record is the ablation list for the next model generation.
+  sprint decomposition, planning and todo tools, anti-drift prompt patches,
+  step-by-step scaffolding. Record it as "we added X because the model at
+  version M could not do Y." That record is the ablation list for the next
+  model generation.
 - **Durable** — governs authority, evidence, side effects, or cost. These get
   *more* valuable as models improve: a more capable model can do more, so
   boundaries matter more; a more convincing self-assessor makes independent
-  judgment more necessary; model capability never makes external systems
+  judgment more necessary; capability never makes external systems
   transactional or tokens free.
 
-Treat a model upgrade as an explicit review trigger: re-run the perishable list
-and delete what the model no longer needs. Do not ablate the durable list on the
-same schedule. See `analysis/19-anthropic-harness-design-long-running-apps.md`
-and `analysis/21-lab-design-rethink-2026-08.md`.
+Treat a model upgrade as a review trigger for the perishable list only. Vendors
+now delete their own compensations on new generations, so the register is not
+hypothetical — and a component's value is often **non-monotonic** in model tier:
+it can rescue a weak model, help a mid-tier one most, and only cost a strong one.
+Ablate per tier you deploy, above the measurement noise floor. Gate perishable
+components by model and set the fallback by kind: a weak-model workaround stays
+off for an unrecognized model, while a relaxed-permission feature falls back to
+the stricter mode. See `analysis/25-harness-shelf-life-research.md` and
+`analysis/28-claude-agent-sdk.md`.
 
-Publish a **non-goals list** next to the capability list, with equal
-prominence. Readers need to decide in minutes whether the design fits, and a
-capability list alone cannot tell them what it deliberately refuses to do.
+Publish a **non-goals list** next to the capability list, with equal prominence.
 
 ## Agent vs Harness
 
-Agency is produced by model training, not by code orchestration. The engineering
-work is harness engineering: shaping the environment where a capable model
-operates.
-
-A harness has three nested engineering layers. Design only the layers the task
-needs:
+Agency is produced by model training, not by code orchestration; the engineering
+work is harness engineering. A harness has three nested layers — design only the
+layers the task needs:
 
 1. **Turn/runtime**: the loop, tools, context, observations, permissions,
    sandbox, approvals, events, and budgets for one active run.
-2. **Session continuity**: rollout/history, checkpoints, progress and decision
-   records, completion contracts, resume/fork, and clean handoff across context
-   windows or processes.
+2. **Session continuity**: history, checkpoints, progress and decision records,
+   completion contracts, resume/fork, and clean handoff across context windows
+   or processes.
 3. **Repository/organization feedback**: discoverable specifications,
    architecture maps, reproducible environments, observability, executable
-   invariants, review feedback, and recurring maintenance that improve future
-   runs.
+   invariants, review feedback, and recurring maintenance.
 
-The runtime layer has five core jobs:
-
-- **Tools**: actions the model can take. Keep them atomic, composable, and
-  clearly described.
-- **Knowledge**: domain references, style guides, SOPs, and skills loaded on
-  demand.
-- **Context management**: prompt assembly, compaction, subagent isolation,
-  memory writes, and retrieval.
-- **Observation/action interfaces**: how the model sees the world and how its
-  decisions become side effects.
-- **Permissions**: code-level enforcement independent of prompt wording.
-
-If a feature appears to require rewriting the loop, first check whether it
-belongs in tools, knowledge selection, context management, observations,
-permissions, or state.
+The runtime layer's jobs are tools, knowledge loaded on demand, context
+management, observation/action interfaces, and permissions enforced in code. If a
+feature seems to require rewriting the loop, first check whether it belongs in
+one of those.
 
 For coding agents, optimize for **agent legibility**: the agent must be able to
 discover authoritative knowledge, start the application, observe user-visible
-behavior and telemetry, and receive actionable failures from mechanical checks.
-Use a short `AGENTS.md` as a map into structured repository-local sources of
-truth instead of a monolithic manual. Keep sensitive data outside git and expose
-only the necessary scoped view. See `analysis/14-openai-harness-engineering.md`.
+behavior and telemetry, and get actionable failures from mechanical checks. Keep
+`AGENTS.md` short and spend it on what the agent would otherwise get wrong —
+commands, conventions, constraints. Repository overviews in context files have
+been measured to add cost without raising success; measure yours. See
+`analysis/14-openai-harness-engineering.md` and
+`analysis/25-harness-shelf-life-research.md`.
 
 ## Workflow vs Agent
 
-Use a workflow when the LLM and tools follow predefined code paths. Use an
-agent when the model dynamically directs its process and tool usage from
-environment feedback until a stop condition.
+Use a workflow when the LLM and tools follow predefined code paths; use an agent
+when the model directs its own process from environment feedback until a stop
+condition. Default to the least powerful shape: deterministic code < single
+model call < structured workflow < autonomous tool loop < durable graph/workflow
+< multi-agent. Choose an autonomous agent only when steps are genuinely
+unpredictable, the path cannot be hard-coded, and the tool environment is
+trustworthy.
 
-Default to the least powerful shape:
+Before writing a loop, check whether a maintained open harness can be **embedded
+locally** — an exec / SDK / app-server layering, an adapter that puts several
+local runtimes behind one stream interface, or a harness shipped as a library.
+Embedding buys production-grade approvals, sandboxing, recovery, and streaming;
+it does not remove your duties for the interface, the context and tools, and the
+operational boundaries. Confirm each layer's default approval semantics — some
+default to model-reviewed approval rather than asking a person. See
+`analysis/24-openai-codex-as-a-platform.md` and `analysis/28-claude-agent-sdk.md`.
 
-1. deterministic code
-2. single model call
-3. structured workflow
-4. autonomous tool loop
-5. durable graph/workflow
-6. multi-agent or subagents
-
-Choose an autonomous agent only when steps are genuinely unpredictable, the path
-cannot be hard-coded, and the tool environment is trustworthy.
-
-Before adding planners, memory, specialist tools, or multiple agents, establish
-a minimal harness baseline: one loop, the smallest action surface, linear
-trajectory, explicit limits, and a replaceable execution environment. Add each
-mechanism only when a realistic eval shows improvement. On model upgrades,
-ablate old prompt rules and scaffold one at a time; remove what is no longer
-load-bearing. See `analysis/17-mini-swe-agent.md`.
-
-Workflow-driven platforms such as Coze, Dify, and n8n treat the LLM as a
-component inside engineer-authored flow. AI-native agents put model judgment at
-the center and arrange tools/context around it. Name the method honestly.
+Establish a minimal harness baseline before adding planners, memory, specialist
+tools, or multiple agents: one loop, the smallest action surface, linear
+trajectory, explicit limits, a replaceable execution environment. Add each
+mechanism only when a realistic eval shows improvement. See
+`analysis/17-mini-swe-agent.md`.
 
 ## Decision Table
 
@@ -159,95 +133,78 @@ the center and arrange tools/context around it. Name the method honestly.
 | Model decides which action to take | ReAct/tool loop | Hard-coded chain |
 | Open-ended task with trusted tools | Tool loop with stop conditions | Over-built graph |
 | Approval, long-running work, resume | Durable graph/workflow | In-memory array only |
-| Streaming UI/tool state | Streaming loop with UI/model split | Final text only |
 | Separate expertise or tool access | Subagent or agent-as-tool | One agent with all tools |
 | Shared external capability | MCP server | Duplicated project tools |
 | Multi-tenant data | Scoped tool context + isolation tests | Global context |
 | Reversible side effects required | Idempotent tools + compensation | Fire-and-forget mutation |
 | Context exceeds window | Retrieval/compaction before call | Unbounded messages |
+| Production-grade loop needed, not a differentiator | Embed a maintained local open harness | Rebuilding loop, approvals, and recovery |
+| A crash must not lose the session | Session log + stateless loop + sandbox called as a tool | One process holding session, loop state, and sandbox |
 
 ## Single vs Multi-Agent
 
-Prefer one capable agent with well-shaped tools until there is evidence that
-splitting helps. Add another agent only when:
+Prefer one capable agent with progressive disclosure (skills, deferred tools)
+until evidence says splitting helps; router, planner, and per-domain subagent
+designs often lose to one loop that loads what it needs. Keep a subagent when
+context-heavy reading would flood the parent, when you need throwaway parallel
+exploration, when tool sets still confuse the model after naming and description
+fixes, or when expertise, context, or permissions must be isolated. Migrate one
+subagent at a time under task-completion evals and check which tasks flip.
+Coordination pays on decomposable work and costs on sequential work, and its
+returns fall as the single agent gets stronger. See
+`analysis/25-harness-shelf-life-research.md`.
 
-- instructions have grown into many hard-to-test conditional branches;
-- overlapping tools cause repeated selection errors after naming/description
-  improvements;
-- expertise, context, or permissions must be isolated;
-- a specialist result can be treated as a tool output without giving the
-  specialist control of the user conversation.
-
-Choose coordination deliberately:
-
-- **Manager / agent-as-tool**: parent remains in control and calls specialists
-  for bounded subtasks.
-- **Handoff**: control transfers to a specialist that should own the next part
-  of the conversation or workflow.
+Choose coordination deliberately: a **manager / agent-as-tool** keeps the parent
+in control of bounded subtasks; a **handoff** transfers ownership of the next
+part of the conversation.
 
 ## Loop Design
 
-A robust tool loop:
+A robust tool loop builds a stable turn snapshot, transforms or compacts context
+before the model call, converts internal messages to provider messages at the
+boundary, calls the model with active tools, validates tool calls against
+schemas, applies approval and permission hooks before execution, executes tools
+in deterministic result order even when parallel, returns results or finishes,
+and emits events and persists state at safe checkpoints.
 
-1. Builds a stable turn snapshot from session state.
-2. Transforms or compacts context before the model call.
-3. Converts internal messages to provider messages at the boundary.
-4. Calls the model with active tools.
-5. Validates tool calls against schemas.
-6. Applies approval and permission hooks before execution.
-7. Executes tools in deterministic result order, even when parallelized.
-8. Returns tool results to the model or finishes.
-9. Emits events and persists state after safe checkpoints.
+Name the loop levels and give each its own budget and stop reason: **turn** (one
+user-visible exchange), **step** (one model call plus its tool batch), **round**
+(one outer-driver iteration such as a retry or re-plan). Keep one budget per
+level; a hidden second budget masks the visible one. A spend cap covers the whole
+subagent tree, carries across resume, and states how far it can overshoot; the
+host owns the wall-clock limit. Give the tool layer a way to end the turn without
+another model call and to defer context into the next turn.
 
-Name the loop levels and give each its own budget and stop reason. A useful
-three-level split is **turn** (one user-visible exchange), **step** (one model
-call plus its tool batch), and **round** (one iteration of an outer driver such
-as a retry or a re-plan). Keep budgets in one place per level; a hidden second
-budget inside a subsystem will mask the visible one.
+Capture one step-consistent snapshot so the context and tool specs the model
+sees match the permissions, working directory, model settings, and registry used
+for execution, and bind approvals to the step that issued them. Persist
+provenance for every context part, so you can reconstruct what the model
+actually saw. See `analysis/16-openai-codex-harness.md`.
 
-Give the tool layer a way to end the current turn without another model call,
-and a way to defer additional context into the next one. Without those, every
-"we already know we are done" case costs a full round trip.
-
-Treat turn, sampling step, and tool call as separate lifecycles. Capture one
-step-consistent snapshot so the context and tool specs advertised to the model
-match the permissions, working directory, and registry used for execution.
-Persist enough provenance to reconstruct what the model actually saw. See
-`analysis/16-openai-codex-harness.md`.
-
-Every iteration must consume real environment/tool feedback, and every loop must
-stop on task completion, step/cost/token budget, timeout, or human checkpoint.
-
-Add extension points around the loop: pre/post tool call, pre/post turn, on stop.
-Use hooks for permissions, redaction, audit logging, cost accounting, and
-experiments without editing the loop body.
+Every iteration must consume real environment feedback, and every loop must stop
+on completion, step/cost/token budget, timeout, or human checkpoint. Add
+extension points (pre/post tool call, pre/post turn, on stop) for permissions,
+redaction, audit, cost accounting, and experiments without editing the loop.
 
 ## State, Approval, Memory
 
-Keep separate contracts for:
+Keep separate contracts for domain state, agent runtime state, memory, model
+messages, UI messages, and traces.
 
-- domain state
-- agent runtime state
-- memory
-- model messages
-- UI messages
-- traces
-
-Approval belongs at the tool execution boundary. Require explicit approval for
-file/database/ticket/payment mutations, commands, notifications, private data,
-regulated data, money, or large resource spend. Make the approval result visible
-to the model as a structured tool result.
+Approval belongs at the tool execution boundary — for mutations, commands,
+notifications, private or regulated data, money, and large spend — and its
+decision returns to the model as a structured tool result.
 
 Use memory only when the agent needs information across turns or sessions.
 Memory needs scoped permissions, provenance, tenant/user isolation, and a
 forgetting policy.
 
-Compaction and context reset are not ranked; they are chosen by model
-generation. A model prone to wrapping up early as it nears its perceived context
-limit needs a **reset** plus a structured handoff artifact, because a summary
-preserves continuity without giving a clean slate. A model without that tendency
-loses useful context to a reset for nothing. Re-check this choice on every model
-upgrade rather than freezing the answer.
+Compaction and context reset are chosen by model generation, not ranked: a model
+that wraps up early as it nears its perceived context limit needs a **reset**
+plus a structured handoff; a model without that tendency loses useful context to
+a reset for nothing. Re-check on every upgrade. Either way, constraints and
+approvals must not travel through a lossy summary — see
+`../design-agent-tools/SKILL.md`.
 
 For work spanning multiple context windows, compaction is not continuity. Keep
 an externalized default-FAIL completion contract, semantic progress/decision
@@ -261,47 +218,49 @@ and no-progress stop. See `analysis/15-anthropic-long-running-agent-harness.md`.
 
 A turn ending is not a goal being met. "The model stopped calling tools" only
 says this turn is over; for any task whose goal is a verifiable end state, add a
-separate gate that decides whether to continue.
-
-Shape it as a stop hook on the existing loop, not as a second exit path:
-
-- No active goal: the hook passes through and the loop behaves as before.
-- Goal active and not met: append the reason as a message and continue the same
-  loop.
-- Goal met, or provably impossible: return.
+separate gate that decides whether to continue. Shape it as a stop hook on the
+existing loop, not a second exit path: no active goal → pass through; goal active
+and not met → append the reason and continue the same loop; met or provably
+impossible → return.
 
 Constrain the judge deliberately:
 
-- It is a **separate model call** from the one doing the work. An agent asked to
-  grade its own output will confidently praise mediocre work.
+- It is a **separate model call** from the worker. An agent asked to grade its
+  own output will confidently praise mediocre work.
+- It does **not see the worker's own success claim or reasoning** — give it the
+  record of what was done and the evidence. A judge that reads "done" is anchored
+  by it; stripping the claim measurably raises false-success detection.
 - Give it **no tools**. It judges whether evidence appeared in the record, not
-  whether the claim is true. It is not a test framework — real verification
-  still runs in tools.
+  whether the claim is true; real verification still runs in tools.
 - Have it return a **closed** result: met / not met with a reason / impossible.
-  Without an explicit "impossible", an unreachable goal disguises itself as "not
-  yet" and loops forever.
-- Because it can only see the conversation, the working model's instructions
-  must require writing verification commands and their results into the
-  conversation. Evidence that is not written down does not exist to the judge.
-- Keep the turn budget in the main loop. Do not give the gate a private one.
+  Without "impossible", an unreachable goal disguises itself as "not yet" and
+  loops forever.
+- The worker's instructions must require writing verification commands and their
+  results into the record; evidence that is not written down does not exist to
+  the judge.
+- Keep the turn budget in the main loop, and cap automatic continuations that
+  make no progress — one local harness blocks a goal after three empty
+  continuation turns.
 
-A good completion condition names three things: the end state, how it is
-verified, and what must not be broken along the way. Persist the goal's phase
-(active / paused / blocked / complete) with a revision so concurrent updates
-compare-and-swap. Deliberately **do not** persist the goal's *armed* state: a
-resumed or forked session should require a human to re-authorize autonomous
-continuation. See `analysis/10-learn-claude-code.md` and
+A good completion condition names the end state, how it is verified, and what
+must not be broken along the way. For large deliverables, write the executable
+completion standard **before** implementation, in a role the implementer cannot
+see into or weaken; validators may add cases, never remove them. See
+`analysis/26-durable-rules-production-evidence.md`.
+
+Persist the goal's phase (active / paused / blocked / complete) with a revision so
+concurrent updates compare-and-swap; a durable phase separates "turn ended" from
+"goal met" but is not itself an independent judge. Deliberately **do not**
+persist the goal's *armed* state: a resumed or forked session should require a
+human to re-authorize autonomous continuation, and only a human may resume a goal
+a human paused. See `analysis/10-learn-claude-code.md` and
 `analysis/18-deepseek-harness.md`.
 
-For subjective quality goals, separate generation from evaluation into different
-agents, and negotiate the deliverables and success criteria between them before
-the work starts rather than handing down a spec one way. If a planning role
-exists, scope it to product context and high-level technical direction only —
-pushing implementation detail into the spec makes a single spec-level mistake
-cascade through everything downstream. Whether an evaluator
-pays for itself depends on task difficulty relative to model capability: inside
-the model's comfortable range it is pure overhead; at the edge it catches the
-last-mile gaps. Measure the generator's solo pass rate first, then decide. See
+For subjective quality goals, separate generator and evaluator agents and
+negotiate success criteria before the work starts; keep any planner at product
+level, since implementation detail in a spec makes one mistake cascade. An
+evaluator pays for itself only near the edge of model capability — measure the
+generator's solo pass rate first. See
 `analysis/19-anthropic-harness-design-long-running-apps.md`.
 
 ## Durable Execution and Side Effects
@@ -309,82 +268,83 @@ last-mile gaps. Measure the generator's solo pass rate first, then decide. See
 If the process can crash and the task touches external systems, three separate
 problems must each be solved. Solving two is a common and silent failure:
 
-1. **Know whether it happened.** Wrap uncertain effects: commit the intent with
-   pre-minted output ids, do the effect, then commit the settlement. The
-   pre-minted id is what lets recovery ask the external system "did this
-   happen?" instead of guessing.
-2. **Do not repeat it.** Any protocol where retry is first-class makes
-   idempotency a correctness requirement, not a best practice. Side effects must
-   come after all required input is gathered, or be deduplicated by a
-   server-minted key.
+1. **Know whether it happened.** Commit the intent — carrying an idempotency
+   key, or one derived from a durable task id — before the effect, then commit
+   the outcome; count it done only on a positive acknowledgement. Recovery that
+   finds an intent without an outcome must assume the effect may have happened:
+   tell the model the outcome is **unknown**, retry only read-only or idempotent
+   tools, and otherwise check external state or ask.
+2. **Do not repeat it.** Where retry is first-class, idempotency is a correctness
+   requirement. Side effects come after all required input is gathered, or are
+   deduplicated by a server-minted key.
 3. **Be able to undo it.** Register compensating actions for completed tool
-   actions so an upper-level failure can roll back rather than leave a
+   actions so an upper-level failure can roll back rather than leave
    half-finished state. Retry and approval do not cover this case.
 
-Separate the stores by role: a write-once history of what happened, mutable
-named cells for what is true now, and an append-only ledger for usage. One
-mutable message array cannot serve all three — replay and current state
-contaminate each other.
+Persist two things separately rather than one mutable message array: **what
+happened and what the model saw** (append-only, projected on read) and **where
+execution is** (a whole-task checkpoint replaced at each step, so recovery reads
+it and switches with no half-replayed state). A step that returns without
+advancing its checkpoint is a fault, not a reason to rerun. Durable execution is
+an optional runtime beside the loop, worth its cost only when the process lives
+shorter than the work; a persistent append-only session covers most local CLIs.
 
-Two workable recovery models, chosen by who pays the derivation cost:
-
-- **Event-sourced**: append events, project current state on read. Small writes,
-  recovery replays a projection.
-- **Durable program counter**: after each step, overwrite one register with the
-  *total* current state. Larger writes, but recovery reads one value and
-  switches — there is no replay semantics, so there is no half-replayed state.
-
-Declare a replay policy per tool. For a tool that must not re-run, recovery
-should synthesize an "interrupted" result rather than dropping the call, so the
-call/result pairing the model sees stays well-formed.
+Declare a replay policy per tool, defaulting to *not* safe. On resume the
+effective policy is the stricter of what was declared when the call was recorded
+and what the code declares now — a later change can veto replay, never grant it
+— and current deterministic policy checks run again first. For a tool that must
+not re-run, synthesize an "interrupted" result so the call/result pairing stays
+well-formed. Never wait inside a step (a restart repeats it; make the sleep its
+own durable boundary), cap automatic restarts so a task that keeps crashing on
+resume is parked, and remember that a timeout does not prove an attempt stopped —
+hold a lease with a single writer so it cannot keep acting beside its retry.
 
 **Authorization is never inherited from serialized state.** State can be
 restored; permission, approval, and credentials must be re-obtained. When
-recovery cannot prove which response owns a pending output, fail closed instead
-of guessing. See `analysis/01-pi-source-analysis.md` and
-`analysis/02-agent-framework-patterns.md`.
+recovery cannot prove which response owns a pending output, fail closed. See
+`analysis/01-pi-source-analysis.md` and `analysis/02-agent-framework-patterns.md`.
 
-For work that must survive a disconnect, the right abstraction is a **pollable
-task handle**, not a resumable stream. Two independent designs — a durable
-harness and a wire protocol — both list stream resumption as an explicit
-non-goal and make "reissue the request" the only path.
+Keep session, loop, and sandbox as separate failure domains, even on one machine:
+an append-only session log is the only thing that must survive a crash; the loop
+is stateless and recoverable from that log alone; the sandbox is called like a
+tool, so a dead container returns to the model as a tool error it can answer by
+re-provisioning. If a loop bug, a dropped connection, and a sandbox crash look the
+same in your logs, the separation is not real. Keep credentials structurally
+unreachable from the sandbox (`../secure-ai-agents/SKILL.md`). See
+`analysis/22-anthropic-managed-agents.md`.
+
+Treat a framework's "resumable" flag as at-least-once replay until you have read
+its recovery path. For work that must survive a disconnect, use a **pollable task
+handle**, not a resumable stream.
 
 ## Orchestration Above the Loop
 
 When the path is known before execution, a script beats letting the model
-rediscover it each turn. Add a runtime that runs a host-registered script and
-journals each call, and expose it to the model as one tool.
+rediscover it each turn. Run a host-registered script that journals each call,
+exposed to the model as one tool:
 
-- The model supplies a **name, arguments, and an optional resume id** — never
-  executable code and never the metadata. Validate registered metadata as plain
-  data before any script text is evaluated.
-- Distinguish the two concurrency primitives and name them separately: a
-  **barrier** (wait for all, because the next step needs every result) and a
-  **per-item pipeline** (each item advances through stages independently, no
-  waiting).
-- Derive the resume cache key from a **stable hash of the call's content**
-  (kind, label, prompt, schema) — never from completion order. Concurrent
-  completion order is nondeterministic, and a counter-based key silently
-  misaligns the cache on the second run.
-- Validate subagent output against a schema, retry once, then fail. Untrusted
-  input and untrusted output are the same problem seen from two sides.
-- Keep intermediate results in variables, out of the conversation. That is the
-  whole cost advantage over letting the model iterate.
+- the model supplies a **name, arguments, and an optional resume id** — never
+  code or metadata, which is validated as plain data before any script runs;
+- name the **barrier** (wait for all) and the **per-item pipeline** separately;
+- key resume caches on a **stable hash of the call's content**, never on
+  completion order;
+- validate subagent output against a schema, retry once, then fail;
+- keep intermediate results in variables, out of the conversation — that is the
+  whole cost advantage.
 
 See `analysis/10-learn-claude-code.md` and `analysis/18-deepseek-harness.md`.
 
 ## Contract Deprecation
 
 If other people or systems consume your agent's contract — mode names, tool
-names, result shapes, skill entry points — SemVer alone is not enough. SemVer
-says whether *this* release breaks; consumers also need to know where the *next*
-one will.
-
-Adopt three states (active / deprecated / removed), a minimum deprecation
-window, and a single registry of everything currently deprecated with its
-suggested migration. A deprecation that only exists as a line in a changelog is
-not queryable, and therefore not plannable. See
-`analysis/20-mcp-2026-07-28-revision.md`.
+names, result shapes, skill entry points, persisted session formats — SemVer
+alone is not enough: it says whether *this* release breaks, not where the *next*
+one will. Adopt three states (active / deprecated / removed), a minimum
+deprecation window, and a single registry of everything deprecated with its
+migration. Ship each breaking change with a short migration note, and once data
+has been published, migrate stored formats one version at a time rather than
+rejecting them. See `analysis/20-mcp-2026-07-28-revision.md` and
+`analysis/18-deepseek-harness.md`.
 
 ## Handoff
 
