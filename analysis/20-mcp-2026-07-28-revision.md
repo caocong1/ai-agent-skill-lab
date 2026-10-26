@@ -1,6 +1,8 @@
 # MCP 规范 2026-07-28 修订分析
 
-> 分析版本：1.0 ｜ 最后更新：2026-08-23 ｜ 来源：Model Context Protocol Specification 2026-07-28（发布 2026-07-28，抓取 2026-08-23，上一版 2025-11-25）｜ 快照：`raw/docs/mcp-2026-07-28-specification.md`
+> 分析版本：1.1 ｜ 最后更新：2026-10-25 ｜ 来源：Model Context Protocol Specification 2026-07-28（发布 2026-07-28，抓取 2026-08-23，2026-10-25 复核，上一版 2025-11-25）｜ 快照：`raw/docs/mcp-2026-07-28-specification.md`
+>
+> 1.1 变更（2026-10-25）：复核确认 2026-07-28 仍是最新修订、无候选版；新增 `## 2026-10-25 复核` 记录此后定稿的扩展与值得跟踪的提案；更正一处对 Pi effect sandwich 的误读。
 
 本仓库此前对 MCP 的分析来自 `analysis/02-agent-framework-patterns.md` 里的 TypeScript SDK 部分，视角是"如何写一个 MCP server"。这一版规范修订的量级不同：它**改变了 MCP 是什么形状的协议**。2025-11-25 之前的 MCP 是有会话、有握手、服务端可以反向发起请求的**双工有状态协议**；2026-07-28 之后它是**无状态、单向请求-响应**的协议。任何按旧形状写的 server 与 client 都要重新审视，而不是打个补丁。
 
@@ -26,7 +28,7 @@ MRTR 的优点很清楚：不需要双工通道，请求可以被任意路由、
 - 需要输入的 tool，**必须在产生任何副作用之前**返回 `input_required`；
 - 或者副作用必须幂等，用服务端铸造的句柄做去重键。
 
-这正好是 `analysis/01-pi-source-analysis.md` 里 effect sandwich（先提交意图与预铸 id，再做不确定的副作用，最后提交结算）要解决的同一个问题。协议把重试变成一等公民，就把幂等性从"最佳实践"提升成了"正确性前提"。
+这正好是 `analysis/01-pi-source-analysis.md` 里 effect sandwich（先提交意图——其中带上幂等键——再做不确定的副作用，最后提交结果）要解决的同一个问题。（1.1 更正：1.0 写作"预铸 id"并把它理解为可向外部系统查询的去重键；Pi 旧版预铸的其实是它自己的响应与用量记录槽位，幂等键要由任务作者写进 intent，见 `analysis/01` 2.0。）协议把重试变成一等公民，就把幂等性从"最佳实践"提升成了"正确性前提"。
 
 ### "流可恢复性"被两套独立系统同时划为非目标
 
@@ -102,7 +104,24 @@ MRTR 的优点很清楚：不需要双工通道，请求可以被任意路由、
 - MRTR 下"一次逻辑操作 = 多次请求"的幂等性要求是推论，规范文本未直接写出；实现时应当把它当作自己的不变量来测。
 - 移除流恢复对**已经**依赖长连接续传的实现是实质性的能力回退，需要评估是否改用 tasks 扩展。tasks 现在是扩展而非核心，意味着服务端可能根本没实现它。
 
+## 2026-10-25 复核
+
+- **仍是最新修订**：`/specification/latest` 仍指向 2026-07-28，没有候选版；草案只有编辑性修改。弃用登记表未变——Roots / Sampling / Logging / DCR 最早要到 2027-07-28 或之后的修订才能移除。
+- **Skills 扩展定稿**：SEP-2640（`io.modelcontextprotocol/skills`，Extensions Track）已为 Final：skill 作为资源经 `skills/list` / `skills/get` 提供，格式本身委托给 Agent Skills 规范；TypeScript SDK 2.4.0 已实现，读取时做摘要校验。但 SEP 原文写明摘要不签名、**不构成安全边界**——它只说明某个 skill 与同一服务端给出的清单一致，并不说明它可信。因此"skill 是供应链"仍然要由宿主自己落实：批准绑定到审过的完整摘要集合、忽略远程 skill 自带的工具预授权、缓存的远程 skill 不获得本地 skill 的信任（见 `analysis/02-agent-framework-patterns.md`）。
+- **MCP Apps**（SEP-1865）已为 Final，不在本仓库重点范围内，只记录状态。
+- **值得跟踪的提案**（会改变审批与授权设计）：经 Tasks 的异步审批（SEP-2848）、结构化的授权拒绝（SEP-2643）、工具风险元数据（SEP-2793）。2026-08-22 的路线图把"agentic messaging 与 Tasks 进核心"、HTTP 原生传输、agent 身份与大型工具目录的渐进发现列为方向。
+- **下游落地情况**（详见 `analysis/02-agent-framework-patterns.md` 与 `analysis/03-java-agent-patterns.md`）：TypeScript SDK 2.x 线已到 2.4，单体包 1.x 线只维护、不会实现本修订；LangChain4j 有 2026-07-28 客户端；Spring AI 截至 2026-10 钉住的 MCP Java SDK 尚未实现本修订。
+
+以上状态来自本轮两路独立调研对规范站、SEP 仓库与 SDK 发布说明的核对；2026-10-25 当天复核 SEP 页面时网络中断，未能第三次确认，若引用 SEP 状态请以规范站为准。
+
 ## 对最终 skill 的影响
+
+1.1 本轮（suite 2.3.0）实际落地：
+
+- `skills/build-mcp-capabilities/SKILL.md`：`## Protocol Baseline` 记"2026-10-25 复核仍为最新"；新增 Extensions 一段（扩展不默认对端实现、Skills 扩展的摘要不签名且不是信任边界、值得跟踪的三个提案）；SDK note 补 TypeScript 1.x 只维护、`server-legacy` 的真实用途、无状态模式每请求一个 server、`server/discover` 超时不是旧版证据、JVM 侧现状；客户端清单补分页上限；安全清单补按工具 scope challenge 与 issuer / resource 绑定；客户端保持 `isError: true` 结果对模型可见。
+- `skills/secure-ai-agents/SKILL.md`：远程 skill 是供应链，批准绑定审过的完整摘要集合。
+
+1.0 既有：
 
 - `skills/build-mcp-capabilities/SKILL.md`：按 2026-07-28 重写协议基线——无状态核心（无 `initialize` / 无 `Mcp-Session-Id`）、必须实现 `server/discover`、MRTR 取代反向请求、必填 `resultType`、`subscriptions/listen` 取代 GET 端点与 `resources/subscribe`、tasks 转为 `io.modelcontextprotocol/tasks` 扩展并改为轮询、`CacheableResult` 的 `ttlMs` / `cacheScope`、`tools/list` 确定性排序、`Mcp-Method` / `Mcp-Name` 请求头、错误码分区与 `-32002`→`-32602`、Roots / Sampling / Logging 弃用与迁移路径。
 - `skills/design-agent-tools/SKILL.md`：新增"工具集合的排列稳定性影响 prompt cache"、"跨调用状态用显式句柄参数"、"需要输入时返回结构化缺口而非阻塞反问"、"重试语义下副作用必须后置或幂等"。
