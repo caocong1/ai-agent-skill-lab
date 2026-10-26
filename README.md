@@ -18,9 +18,9 @@
 
 ## 当前资料集
 
-当前已经拉取并记录了这些项目：
+当前已经拉取并记录了这些项目（范围只覆盖自研、本地运行的 harness，见下方非目标清单）：
 
-- `pi`: 重点学习 agent loop、tool execution、harness/session、skills、extensions、subagent。
+- `pi`: 重点学习 agent loop、tool execution、session、skills、extensions、subagent；1.0 起持久化执行移出核心，成为 loop 旁可选的实验包 `pi-durable`（intent → 效应 → 结果、只能否决的重放许可）。
 - `openai-agents-js`: 学习标准 TS agent SDK 的 Agent、tool、handoff、guardrail、approval、run state。
 - `langgraphjs`: 学习 durable graph、checkpoint、human-in-the-loop、多 agent handoff。
 - `modelcontextprotocol-typescript-sdk`: 学习 MCP server/client、tools/resources/prompts、transport、错误语义。
@@ -33,7 +33,9 @@
 - `cwc-long-running-agents`（Anthropic）：长任务 harness 的可读 hooks/evaluator 配套仓库，把 default-FAIL contract、fresh-context evaluator、evidence gate、progress + git 交接、kill switch 与 operator steering 做成最小原语；与 Anthropic 长任务文章联合分析。
 - `openai-codex`：生产级 coding-agent harness，重点研究 turn/step/tool-call 生命周期、step-consistent context/tool snapshot、层级 AGENTS.md provenance、compaction、动态工具、approval/sandbox/retry 集中编排与 rollout。
 - `mini-swe-agent` v2（SWE-agent）：bash-only action、linear trajectory、stateless command execution 与可替换 environment 组成的极简 benchmark baseline，用于验证复杂 agent scaffold 是否真的带来增益。
-- `deepseek-harness`（DeepSeek）：以 Cordis 插件树 micro-kernel 组织的编码 agent harness，按 profile/bundle 把同一套能力组装成不同产品形态。重点学习 capability seam（定义/提供/消费三角色）、事件溯源 session log 与 `deriveMessages()` 投影、turn/step/round 三级循环、单调 `ToolGuard`（返回类型里没有 allow）与闭合的 `ApprovalOutcome` 四元组、Code Mode、spill seam、compaction 锁、goal domain（持久 phase + revisioned CAS，激活态故意不持久化）、workflow engine，以及被机械 gate 强制的 **Model Experience README 契约**（What the model sees / Token effect / KV Cache effect）。
+- `deepseek-harness`（DeepSeek）：以 Cordis 插件树 micro-kernel 组织的编码 agent harness，按 profile/bundle 把同一套能力组装成不同产品形态。重点学习 capability seam（定义/提供/消费三角色）、事件溯源 session log 与 `deriveMessages()` 投影、turn/step/round 三级循环、单调 `ToolGuard`（返回类型里没有 allow）与闭合的 `ApprovalOutcome` 四元组、PTC（0.2 前称 Code Mode）、spill seam、compaction 锁、goal domain（持久 phase + revisioned CAS，激活态故意不持久化）、workflow engine，以及被机械 gate 强制的 **Model Experience README 契约**（What the model sees / Token effect / KV Cache effect）。0.2 起删掉了运行时不变量注册表、Agent Teams 的持久信箱与模型可写的自修改工具集，新增默认关闭的实验性 Auto review（模型审批层）。
+- `google-adk-python`（Google ADK，v2.13.0）：本仓库第一个 Python 生产框架，只分析本地 / 自托管部分——会话事件日志是唯一持久记录（压缩、回卷、取消、检查点都是追加事件）、resume 即至少一次重放、调用完整性校验、按未完成义务切分压缩窗口、插件链首个非 None 即短路、用户与环境模拟评测；云端会话与部署不在范围。分析见 `analysis/27-google-adk.md`。
+- `claude-agent-sdk-python`（Claude Agent SDK，v0.2.174）：把本地 Claude Code harness 进程当库驱动的宿主端 SDK——固定的权限求值序与谁都批不了的地板、resume 时重新推导授权、`SessionStore` 一致性套件、压缩后按来源的生存类别、按模型 ID 退役补偿组件；托管的 Managed Agents 不在范围。分析见 `analysis/28-claude-agent-sdk.md`，官方文档摘要见 `raw/docs/claude-agent-sdk.md`。
 
 除代码项目外，还分析了权威文章：
 
@@ -43,6 +45,9 @@
 - OpenAI, Harness Engineering：把 harness 从单次 tool loop 扩展到 repository-as-system-of-record、agent legibility、可启动/可观测环境、机械架构约束、反馈编译和持续垃圾回收。分析见 `analysis/14-openai-harness-engineering.md`，摘要快照见 `raw/docs/openai-harness-engineering.md`。
 - Anthropic, Effective Harnesses for Long-Running Agents：说明 compaction 不能替代跨 session 连续性，以 initializer/coding 阶段、default-FAIL feature contract、progress + git 与 fresh-session E2E 验证稳定推进长任务。与配套仓库的联合分析见 `analysis/15-anthropic-long-running-agent-harness.md`，摘要快照见 `raw/docs/anthropic-effective-harnesses-long-running-agents.md`。
 - Anthropic, Harness Design for Long-Running Application Development（2026-03-24，上文续作）：把视角从"一个 agent 如何跨 session 推进"换到"多角色如何分工产出高质量成果"，并正面回答完成度不能由做事的 agent 自己认定。给出 GAN 式 generator/evaluator 分离、planner/generator/evaluator 三角色、协商式 sprint contract、context reset vs compaction 按模型代际选择、可评分的主观 rubric 与 few-shot 分数校准，以及一条元规则——**harness 里每个组件都编码了一条关于模型做不到什么的假设，而假设会过期**。分析见 `analysis/19-anthropic-harness-design-long-running-apps.md`，摘要快照见 `raw/docs/anthropic-harness-design-long-running-apps.md`。
+- Anthropic, Scaling Managed Agents（2026-04-08）：托管 agent 平台的工程文章，本仓库只取对本地 harness 可迁移的部分——session / harness / sandbox 三接口、沙箱作为工具调用且崩溃即工具错误、凭据在结构上不可达、只凭 session 日志恢复的无状态循环、故障域可区分。分析见 `analysis/22-anthropic-managed-agents.md`，摘要快照见 `raw/docs/anthropic-managed-agents.md`。
+- Anthropic, How We Built Claude Code Auto Mode（2026-03-25）：机械边界之上的模型审批层——reasoning-blind 分类器及其输入消融、两层防御、三级权限流、拒绝预算熔断，以及主要漏判是同意范围误判。分析见 `analysis/23-claude-code-auto-mode.md`，摘要快照见 `raw/docs/anthropic-claude-code-auto-mode.md`。
+- OpenAI, Codex as a Platform（2026-08-19）：把成熟的开源 harness 内嵌进自己产品的三层本地接入（exec / SDK / app-server）与各层的审批语义；托管的 Agents API 不在范围。分析见 `analysis/24-openai-codex-as-a-platform.md`，摘要快照见 `raw/docs/openai-codex-as-a-platform.md`。
 
 此外还纳入了一份**协议规范修订**（新的来源类型；规范类来源必须有独立版本行才能被漂移检测覆盖）：
 
@@ -50,14 +55,17 @@
 
 这组 harness 专题把当前工程概念收敛成三层：**turn/runtime**（loop、tools、context、sandbox、approval）、**session continuity**（contract、rollout、checkpoint、handoff）与 **repository/organization feedback**（规格、架构地图、可观测性、机械约束、review 和持续维护）。任何新增 scaffold 都应先对照 mini-swe-agent 式最小 baseline，用真实 eval 或消融证明收益。
 
-此外还纳入了一篇**多来源研究综述**（区别于单一仓库 / 文章）：
+此外还纳入了三份**多来源研究综述**（区别于单一仓库 / 文章）：
 
 - 检索策略研究综述（向量 RAG vs Agentic 工具检索 vs 长上下文）：基于 2024–2026 约 55 个 web 源 + 对抗式核验，给出"按语料规模分层 + 按查询类型路由"的检索选型（小语料 agentic grep/read、必要时再 hybrid 向量+重排），并含 grep 工具层（ripgrep / ast-grep / ripgrep-all）盘点。分析见 `analysis/12-retrieval-strategy-vector-vs-agentic.md`，快照见 `raw/docs/retrieval-strategy-research.md`。
+- Harness 组件保质期研究综述（2026-10）：33 篇 arXiv 论文与 20 项厂商一手记录的分级证据汇编。结论：易腐 / 耐久这条轴方向成立，但组件价值随模型档位常不单调、会从准确率价值换成成本价值；固定模型时多数 harness 改动的通过率效应落在测量噪声内（单次运行可摆动 2.2–6.0pp），成本效应却一贯很大；同预算基线与留出集下，多数自动 harness / skill 优化的增益消失。分析见 `analysis/25-harness-shelf-life-research.md`，快照见 `raw/docs/harness-shelf-life-research.md`。
+- 耐久规则生产证据汇编（2026-10）：15 份 2026 年厂商报告、事故报告与对照研究，确认并锐化治理授权、证据、副作用的规则——完成判定剔除执行方自述、"可能已执行"是一等结果、恢复前先确认授权对象仍有效、压缩文本有损且不可信、审批请求是攻击面、先环境层后模型层。分析见 `analysis/26-durable-rules-production-evidence.md`，快照见 `raw/docs/durable-rules-production-evidence.md`。
 
 ## 这个项目不做什么
 
 能力清单需要一份同等醒目的非目标清单，否则读者要读完全部内容才发现缺了关键东西。本仓库**明确不做**：
 
+- **不覆盖云托管 agent 服务。** 本仓库聚焦自研、本地运行的 harness（2026-10-25 起明确）。托管 agent 平台（如 Anthropic Managed Agents、OpenAI Agents API）、托管 harness 接口与云端部署目标不在范围内；这些产品的设计只在**对本地自研 harness 可迁移**时才被吸收，并在分析里写明哪部分不可迁移。调用模型提供方的 API 不受此限——任何 harness 都需要模型。
 - **不承诺 skill 内容与任何框架的当前版本 API 一致。** 上游移动得比任何成文指导都快。skill 给的是形态判断与核对纪律；具体 API 请按宿主项目已安装的版本核对官方文档。已知的版本漂移记在 `skills/build-ai-agents/references/source-map.md` 开头。
 - **不做自动化来源摄取。** 判断哪些东西值得写下来、哪些是会过期的现状，是这个仓库全部的价值所在；把它自动化掉等于自毁。
 - **不发布为可安装包**（npm / pip 等）。安装方式就是软链到 skills 目录。
@@ -74,11 +82,13 @@
 
 那篇文件同时记录了本仓库违反自己规则的三处，以及五条可证伪条件——它是一份自评，处在"agent 会自信地夸奖自己产出"这条失败模式的正中央，应当被当作待复核的材料看待。
 
+2026-10 的新鲜度审查第一次检验了这五条条件（该文件第八节）：轴的方向成立，但要细化为"补偿组件的价值是模型档位的函数，不一定单调"；本仓库仍没有自己的验证集，"教了 gate、自己没有 gate"这处违反仍未消除。
+
 ## 版本与变更
 
-skill 版本记录在各 `SKILL.md` frontmatter 的 `metadata.version` 字段（`build-ai-agents` suite 当前 2.2.0），遵循语义化版本。契约（modes / deliverables / reference paths）的移除必须先经过弃用登记，见 `skills/build-ai-agents/SKILL.md` 的 `## Contract Stability`。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
+skill 版本记录在各 `SKILL.md` frontmatter 的 `metadata.version` 字段（`build-ai-agents` suite 当前 2.3.0），遵循语义化版本。契约（modes / deliverables / reference paths）的移除必须先经过弃用登记，见 `skills/build-ai-agents/SKILL.md` 的 `## Contract Stability`。每次迭代的更新内容、新增或更新的分析报告记录在 `CHANGELOG.md`；每个来源（代码项目或文章/论文）的 `来源版本 / 分析版本 / 最后更新` 维护在 `analysis/SOURCE_INDEX.md`，便于后续按来源新版本做增量更新。
 
-本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.1.0）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
+本仓库自身的迭代方式沉淀在 `skills/iterate-skill-lab/`（v1.2.0）。今后遇到新的 AI agent 论文、文章、框架或某个已分析来源的重大更新，调用该 skill 按既定流程执行（新增/更新来源 → 元数据 → 综合 → build-ai-agents 优化 → docs/README → 分步 commit → 草稿 PR），避免每次重新摸索。
 
 ## 使用方式
 
