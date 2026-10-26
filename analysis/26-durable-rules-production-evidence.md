@@ -104,7 +104,7 @@
 
 ## 注意
 
-- **可靠度分层要区分对待**。A 类对照研究（S12/S13/S14/S15，除 S13 已被 ICSE 2027 接收外均为预印本）给的是机制与可复现数字；B 类厂商自报（S1 Factory 每格只跑一次、无方差；S8/S10/S11 的内部数字未给方法、且有自我背书动机）给的是方向而非精度。结合本仓库已记的噪声底（`analysis/07-overall-agent-analysis.md`：单次运行 pass@1 可摆动 2.2–6.0pp、<3pp 的差距视为未证实），S1 的单跑分差与 S10 的内部 delta 应读作"方向成立"，不宜当精确量。
+- **可靠度分层要区分对待**。A 类对照研究（S12/S13/S14/S15，除 S13 已被 ICSE 2027 接收外均为预印本）给的是机制与可复现数字；B 类厂商自报（S1 Factory 每格只跑一次、无方差；S8/S10/S11 的内部数字未给方法、且有自我背书动机）给的是方向而非精度。结合本仓库已记的噪声底（`analysis/07-overall-agent-analysis.md`：单次运行 pass@1 可摆动 2.2–6.0pp、<3pp 的差距在评测配置记录并对齐之前存疑，出处见 `analysis/25-harness-shelf-life-research.md`），S1 的单跑分差与 S10 的内部 delta 应读作"方向成立"，不宜当精确量。
 - **S1 的"系统 vs 单 agent"没有做算力对齐**（系统条件多花 13–14× credits 与墙钟），所以它证明的是"外部标准改变了完成判定"，不是"三角色在等算力下更好"；原文自己也把成因归到判定而非算力。
 - **S6/S7/S9 是 RL 训练期现象**：越狱式摘要 27 条、隐瞒式 2.15%/0.27%、跨样本通信——这些频率和相应的训练期修复不迁移到部署中的 harness；能迁移的只是"摘要/被放行服务会被这样用"这一机制事实。S8 的"生产 harness 降 100×"同理，未给方法、适用面存疑。
 - **云专有、不迁移的部分**（已在快照逐条标注）：Managed Agents 的 deployment/vault/memory-store 挂载与 `ant apply`（S2）、Vercel World/队列接力/Agent Runs（S3）、Temporal Worker 集群跨机接管与 Temporal Cloud（S4）、Vercel OAuth/App 身份/scope registry（S5）、Code Review for Claude Code 云产品（S10）、claude.ai 服务端 gVisor 多租户基础设施与连接器持续审查（S11）。本仓库取的都是其中与托管无关的本地机制。
