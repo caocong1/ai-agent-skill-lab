@@ -2,7 +2,7 @@
 name: implement-java-agents
 description: Implement AI agent features in Java, Spring AI, LangChain4j, service-layer applications, annotation-based tools, MCP providers, DI-heavy projects, and typed workflow services. Use for ChatClient, AiServices, AgenticServices, @Tool, @McpTool, FunctionToolCallback, ToolProvider, ToolExecutor, ChatMemory, and AgenticScope patterns.
 metadata:
-  version: 2.1.0
+  version: 2.2.0
   short-description: Implement Java and Spring agents
 ---
 
@@ -52,6 +52,16 @@ For function callbacks:
 - validate permissions inside the callback;
 - return structured objects where possible.
 
+For confirmation-gated tools (Spring AI 2.1), mark a tool as requiring
+confirmation or supply a confirmation policy; the loop pauses before any call in
+the reply runs, keeps no state while paused, and resumes with a decision per
+awaiting call. Policies combine with OR, so configuration can only add
+confirmations — keep it that way in your own policies, and list the escape
+hatches (a global disable switch, a replaced tool-calling manager bean) as
+review items. The paused reply is authority-bearing state: read it back from
+server-side storage, never from the client. For batch or other non-interactive
+runs, deny calls that need confirmation instead of disabling confirmation.
+
 For MCP annotations:
 
 - expose only allowlisted methods;
@@ -84,22 +94,38 @@ Tool executor guidance:
 - parse arguments before business logic;
 - inject memory id or invocation context explicitly;
 - convert object results to JSON or structured content;
-- return model-correctable tool errors as tool results;
+- return model-correctable tool errors as tool results, and mark explicitly which
+  exception types may show their message to the model;
 - throw/log system errors through normal application error handling.
+
+For routing, gating and grading, LangChain4j's decision models return a typed
+answer with probabilities — a better fit for a classifier step than parsing JSON
+out of a chat reply. They are experimental.
 
 ## Version Reality Check
 
-Read the versions actually on the classpath before writing code. Two facts as of
-the 2026-08 source snapshot:
+Read the versions actually on the classpath, and their release notes, before
+writing code — version numbers alone mislead (one LangChain4j patch was
+mis-published with newer code than the release after it). Facts as of the
+2026-10 source snapshot:
 
-- The Spring AI example corpus this guidance was distilled from has been aligned
-  to **Spring AI 2.0**. The patterns below still hold at the shape level, but
-  annotation names, package paths, and configuration properties must be checked
-  against the 2.0 reference rather than copied from older material.
-- LangChain4j 1.19.0 ships an MCP client implementing the **2026-07-28**
-  revision. Design new MCP integrations against that baseline directly — see
-  `../build-mcp-capabilities/SKILL.md` — rather than writing the old handshake
-  and migrating later.
+- **Spring AI 2.1 (RC as of 2026-10)** deprecates the `ChatMemory` family
+  (`MessageWindowChatMemory`, `ChatMemoryRepository`, `MessageChatMemoryAdvisor`,
+  the stores) for removal in 3.0, in favor of an event-sourced session module:
+  an append-only event log, a prompt built from a view of it, windows that keep
+  turns whole, and compaction recorded as a boundary event. It also adds tool
+  call confirmation (below). `defaultToolCallbacks()` is deprecated for
+  `defaultTools()`. Re-check at GA.
+- Spring AI's pinned MCP Java SDK does **not** yet implement the 2026-07-28
+  revision; LangChain4j has had a 2026-07-28 client since 1.19.0. Design new MCP
+  integrations against that baseline — see `../build-mcp-capabilities/SKILL.md`.
+- LangChain4j 1.21+ lets an exception declare whether its message is visible to
+  the model, warns when a tool has no explicit error handler, and plans to make
+  "not visible" the default in 2.0; Spring AI's default still sends runtime
+  exception messages to the model. Decide it per error type now.
+- Changing a LangChain4j AI Service method to an asynchronous return type changes
+  its defaults: tools run concurrently and execution errors fail the call. Treat
+  the switch as a behavior change and test it.
 
 ## Compensating Side Effects
 
