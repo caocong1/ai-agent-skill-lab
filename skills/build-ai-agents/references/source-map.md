@@ -35,19 +35,20 @@ Distinguish two source kinds when citing:
 
 | Source | Local path | Commit |
 | --- | --- | --- |
-| Pi | `pi` | `a69bef789bc95abf0acee16f7b4660b70b650bb9` |
-| OpenAI Agents JS | `openai-agents-js` | `629d35af99e1ba80fc968b0d062c070caed0683d` |
-| LangGraphJS | `langgraphjs` | `bd72a897e15d0a29a06b8b8b4c589851b6c7b4a6` |
-| MCP TypeScript SDK | `modelcontextprotocol-typescript-sdk` | `22595b96855b34f00adcc6c1e7932ad68ea5139d` |
-| Vercel AI SDK | `vercel-ai` | `aa5a1e539643c2a7162a141502eee63c665a9544` |
-| Spring AI Examples | `spring-ai-examples` | `2a6088db3d18d5fa6fc208b12adf1172d22f77fd` |
-| LangChain4j | `langchain4j` | `6185599e370388b3c54489051c57469ef9094d5b` |
-| Learn Claude Code (shareAI-lab, teaching) | `learn-claude-code` | `1baf1aca5af439694cb3a1772c0b1ab44b482a01` |
+| Pi | `pi` | `d5b3de22d0e24a3e9c38a9410d3329b099717283` |
+| OpenAI Agents JS | `openai-agents-js` | `be4f1f9aa4ad4f03cc5db5fdd57d0d0136923570` |
+| LangGraphJS | `langgraphjs` | `c6675bf03f353ff32fb2ee0a82adb3541c0aee40` |
+| MCP TypeScript SDK | `modelcontextprotocol-typescript-sdk` | `951fe5603a7ec0b2dcb6a0b95d92cd86f93ad9e5` |
+| Vercel AI SDK | `vercel-ai` | `6147ecd94b16c0cd14580e9725517fabff4cbdf4` |
+| Spring AI Examples | `spring-ai-examples` | `e499007e2b4074561c015b057b31c026d1f02f14` |
+| LangChain4j | `langchain4j` | `7948fba82672cdff5ec4219b0600693221ad855d` |
+| Learn Claude Code (shareAI-lab, teaching) | `learn-claude-code` | `ce8f9f186058939da54c9d6fead78dfb5d0fd6c3` |
 | Hello-Agents (Datawhale, teaching) | `hello-agents` | `66401d9f54d989f3d35b32ae411faf0fb472164f` |
-| SkillOpt (Microsoft) | `skillopt` | `c1ac570d944ee7f83fc7c4273abfcb4bfdfea392` |
+| SkillOpt (Microsoft) | `skillopt` | `84b36cd5564e8893569e50e37f02a81d10b55e27` |
 | Anthropic cwc-long-running-agents | `cwc-long-running-agents` | `ad107a974bced5244f74dd283dbf2bfd3baee3a1` |
-| OpenAI Codex | `openai-codex` | `9873cba8ce6d14e650e12cdc0dddd159ae6613d7` |
+| OpenAI Codex | `openai-codex` | `970111f6cb62cc02fe36a82ea7d71b37a2889c97` |
 | mini-swe-agent | `mini-swe-agent` | `a83fcae82d2a08f0ee0c688f9d137b3566c097f8` |
+| DeepSeek Harness | `deepseek-harness` | `1f81c047fc48fa190a683e469daa699857e9afe8` |
 
 ## Upstream Links
 
