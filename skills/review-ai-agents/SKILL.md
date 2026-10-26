@@ -2,7 +2,7 @@
 name: review-ai-agents
 description: Review existing AI agent codebases for correctness, safety, cost, reliability, and maintainability. Use for locating agent constructs, auditing tool schemas, permissions, prompt/context assembly, memory, loop bounds, MCP exposure, tests, observability, anti-patterns, and producing a Chinese findings table plus prioritized remediation plan.
 metadata:
-  version: 2.2.0
+  version: 2.3.0
   short-description: Audit agent correctness and risk
 ---
 
@@ -27,7 +27,13 @@ TypeScript and Node:
   packages.
 - For resume and replay paths, search for deserialization of approvals,
   credentials, mount authority, or an "armed"/"enabled" flag on a long-running
-  goal.
+  goal — and for run state accepted from the client (for example
+  `RunState.fromString` on a request body) or `approveUnsafeReplay`.
+- For code mode, search for per-tool caller declarations (`allowedCallers`,
+  `experimental_toolCallers`, `allowed_callers`) and check that every tool a
+  program can reach goes through the same approval as a direct call.
+- For context assembly, search for edits to the system prompt or the tools array
+  between requests, and for deletion of earlier reminder messages.
 - Locate route handlers or server actions converting UI messages to model
   messages.
 - Locate prompt builders, context loaders, memory stores, approval handlers, and
@@ -37,7 +43,12 @@ Java and Spring:
 
 - Search for `ChatClient`, `AiServices`, `AgenticServices`, `@Tool`, `@McpTool`,
   `FunctionToolCallback`, `ToolProvider`, `ToolExecutor`, `ChatMemory`,
-  `MessageWindowChatMemory`, `AgenticScope`.
+  `MessageWindowChatMemory`, `AgenticScope`, `requiresConfirmation`,
+  `ToolCallConfirmationPolicy`, `ToolErrorVisibleToLlm`. Spring AI 2.1 deprecates
+  its `ChatMemory` family in favor of session events; LangChain4j's same-named
+  class is unaffected. Flag risky settings: `sendExceptionMessageToLlm`, a
+  disabled tool-confirmation switch, a custom `ToolCallingManager` bean, enabled
+  name-based tool resolution fallback, and the mis-published LangChain4j 1.19.1.
 - Locate service interfaces, tool beans, MCP providers, workflow services, and
   controller boundaries.
 - Check whether tools are registered globally or scoped per user/request.
@@ -66,7 +77,9 @@ Raw SDK or other languages:
    user-visible and telemetry observations, executable architecture rules,
    feedback capture and recurring cleanup.
 9. Tests and observability: fake model tests, eval snapshots, traces, metrics,
-   fresh-session recovery and harness ablation.
+   fresh-session recovery and harness ablation — and whether any claimed
+   improvement clears the noise floor (several runs, paired by task, a
+   same-budget baseline).
 10. Completion ownership: who decides the work is done, and on what evidence.
 11. Component justification: does each harness component still have a live
     reason to exist, or is it compensating for a model limitation that no longer
@@ -112,12 +125,48 @@ Raw SDK or other languages:
   changes between runs and invalidates the prompt cache.
 - Large tool results inlined into context with no spill-to-locator path.
 - Resume cache keys derived from completion order rather than call content.
-- Code mode and native tool calling both enabled in the same turn.
+- A tool exposed both directly and to model-written programs with no per-tool
+  caller policy, a caller policy declared but not enforced at execution, or a
+  program path whose side effects skip review.
+- A policy engine or approval hook whose "no rule matched" outcome allows.
+- A must-run check placed in a last-step approval callback that earlier
+  auto-approval skips, or a plugin whose approval can override a deny rule.
+- A constraint the user stated in conversation treated as a hard guarantee.
+- Escalated permission mode or grants restored on resume.
+- A reviewer failure or timeout treated as allow; an approval cached across a
+  retry that asks for more than was reviewed.
+- An automatic continuation loop with no no-progress counter.
+- A completion judge that sees the worker's own success claim.
+- Resume enabled on a framework that replays at-least-once, with tools that are
+  not idempotent; node or step retry with no exception filter on a side-effecting
+  step.
+- Resume or cache keys derived from UUIDs, timestamps, or model output.
+- A policy or integrity plugin registered after plugins that can answer a call
+  themselves, hiding it from later checks.
+- An opt-in safety mechanism assumed to be on, or an egress allowlist treated as
+  a destination filter rather than a capability grant.
+- A guard that can be left out of a profile, conversation, or child agent.
+- Replay of a tool honored from a recorded "safe" flag without checking the
+  current declaration or re-running current policy checks.
 - A sandbox "isolation" label or a per-task worktree presented as a security
   boundary.
 - A harness component with no recorded reason for existing, so nobody can tell
   whether a model upgrade made it obsolete.
 - An outward-facing contract with SemVer but no deprecation window or registry.
+- An approval surface whose approval rate is close to 100%: nobody is reading it.
+- An autonomy mode switch that keeps blanket allow-rules, so the reviewer never
+  sees the dangerous commands.
+- A side-effect path (program mode, plugin, hook) that bypasses the model or
+  human review the direct path goes through.
+- User constraints and approvals that survive only inside a compaction summary;
+  a placeholder that replaced a tool result with no recovery path.
+- Compaction summaries or handoff notes fed back as trusted instructions.
+- The system prompt or tools array rewritten mid-session.
+- An agent's approval counted as a human's, or one approval reused across
+  artifact versions.
+- A harness or prompt change credited on a single run, without a same-budget
+  baseline or held-out tasks.
+- A context file spent on repository overview rather than instructions.
 
 ## Severity Rubric
 
