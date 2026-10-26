@@ -655,7 +655,7 @@
       <section id="sources">
         <h2>3. 这个项目分析了哪些项目</h2>
         <p class="section-note">
-          这个 skill suite 不是从单一框架抽象出来的，而是把典型 agent 项目、权威文章、专题研究综述与 SkillOpt 式 skill 优化方法压缩成可按任务加载的通用说明。
+          这个 skill suite 不是从单一框架抽象出来的，而是把典型 agent 项目、权威文章、专题研究综述与 SkillOpt 式 skill 优化方法压缩成可按任务加载的通用说明。范围只覆盖自研、本地运行的 agent harness；云托管 agent 服务不在范围，云产品只取能迁移到本地 harness 的设计。
         </p>
 
         <table aria-label="项目分析来源">
@@ -719,7 +719,7 @@
             </tr>
             <tr>
               <td>Learn Claude Code（shareAI-lab）</td>
-              <td>20 课渐进式教学仓库，把 Claude Code 风格的 harness 机制各自拆成最小可运行的 Python 实现，强调 agency 来自模型训练、harness 来自工程的本体论区分。</td>
+              <td>17 课渐进式教学仓库（2026 年由 20 课重构），把 Claude Code 风格的 harness 机制各自拆成最小可运行的 Python 实现，强调 agency 来自模型训练、harness 来自工程的本体论区分。</td>
               <td>agent vs harness 心智模型、cheap-first 多层 context compaction、memory selection/extraction/consolidation 三段、模型层错误恢复三路径、worktree 隔离的多 agent 协作。</td>
             </tr>
             <tr>
@@ -755,7 +755,7 @@
             <tr>
               <td>DeepSeek Harness</td>
               <td>DeepSeek 开源的编码 agent harness，用插件树 micro-kernel 把能力按 profile 组装成不同产品形态。</td>
-              <td>capability seam 三角色、事件溯源 session log 与投影、turn/step/round 三级循环、单调 ToolGuard 与闭合审批结果、Code Mode、spill seam、goal domain 与 revisioned CAS、workflow engine、被机械 gate 的 Model Experience README 契约。</td>
+              <td>capability seam 三角色、事件溯源 session log 与投影、turn/step/round 三级循环、单调 ToolGuard 与闭合审批结果、PTC（原 Code Mode）、spill seam、goal domain 与 revisioned CAS、workflow engine、被机械 gate 的 Model Experience README 契约。</td>
             </tr>
             <tr>
               <td>Anthropic：长任务应用开发 Harness 设计</td>
@@ -771,6 +771,41 @@
               <td>检索策略研究综述（向量 vs Agentic）</td>
               <td>2024–2026 多来源 web 研究综合（约 55 源 + 对抗式核验），回答 agent 文档检索该用向量 RAG、agentic 工具检索还是长上下文。</td>
               <td>按语料规模分层 + 查询类型路由、检索失败的静默性、查询扩展 + 精确匹配兜底、混合+重排为生产标准、grep 工具层（ripgrep/ast-grep/rga）盘点。</td>
+            </tr>
+            <tr>
+              <td>Anthropic：Scaling Managed Agents</td>
+              <td>Anthropic 托管 agent 平台的工程文章；本仓库只取能迁移到自研本地 harness 的设计，托管与舰队规模的部分不在范围。</td>
+              <td>session / harness / sandbox 三接口、沙箱作为工具调用且崩溃即工具错误、凭据对 harness 与沙箱都在结构上不可达、只凭 session 日志恢复的无状态循环、故障域可区分。</td>
+            </tr>
+            <tr>
+              <td>Anthropic：Claude Code Auto Mode</td>
+              <td>Claude Code 用模型分类器替代多数人工审批的工程记录，附输入消融与漏判数据。</td>
+              <td>机械边界之上的模型审批层、reasoning-blind 判定上下文、注入探针与 transcript 分类器两层防御、拒绝预算熔断、进入高自治模式时收回 blanket 规则、主要漏判是同意范围误判。</td>
+            </tr>
+            <tr>
+              <td>OpenAI：Codex as a Platform</td>
+              <td>OpenAI 把 Codex harness 定位为可内嵌的开源组件，给出 exec / SDK / app-server 三层本地接入。</td>
+              <td>"内嵌开源 harness"这一形态、各层的会话与审批语义（默认审批模式不一定最保守）、宿主保留的设计控制点；托管的 Agents API 不在范围。</td>
+            </tr>
+            <tr>
+              <td>Harness 组件保质期研究综述（多来源）</td>
+              <td>33 篇 arXiv 论文与 20 项厂商一手记录的分级证据汇编，回答 harness 组件随模型变强怎样贬值、固定模型时 harness 效应多大、怎样测才不被噪声骗。</td>
+              <td>固定模型时多数改动的通过率效应在噪声内而成本效应很大、组件价值随模型档位不单调、厂商在新代际删除补偿组件、skill 与上下文文件的真实效果、自动优化在同预算基线与留出集下的表现、最小测量协议。</td>
+            </tr>
+            <tr>
+              <td>耐久规则生产证据汇编（多来源）</td>
+              <td>15 份 2026 年厂商报告、事故报告与对照研究，检验治理授权、证据、副作用的"耐久规则"在真实系统里是否成立。</td>
+              <td>完成判定剔除执行方自述、完成标准先于实现、"可能已执行"是一等结果、恢复前先确认授权对象仍有效、压缩文本有损且不可信、审批请求是攻击面、先环境层后模型层。</td>
+            </tr>
+            <tr>
+              <td>Google ADK（Python，本地 runtime）</td>
+              <td>Google 的开源 agent 开发框架；本仓库只分析本地与自托管部分，云端会话与部署不在范围。</td>
+              <td>事件日志是唯一持久记录、resume 即至少一次重放、调用完整性校验、按未完成义务切分压缩窗口、插件链短路、用户与环境模拟评测。</td>
+            </tr>
+            <tr>
+              <td>Claude Agent SDK（本地自托管）</td>
+              <td>把 Claude Code 的 harness 进程当库在本地驱动的 SDK；托管的 Managed Agents 不在范围。</td>
+              <td>固定的权限求值序与谁都批不了的地板、resume 时重新推导授权、会话存储一致性套件、压缩后按来源的生存类别、按模型 ID 退役补偿组件、覆盖子 agent 树的预算。</td>
             </tr>
           </tbody>
         </table>
@@ -831,7 +866,7 @@ secure-ai-agents、test-ai-agents、optimize-agent-skills
     </main>
 
     <footer>
-      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.2.0 ｜
+      AI Agent Skill Lab / docs/index.html ｜ build-ai-agents skill suite v2.3.0 ｜
       <a
         href="https://github.com/caocong1/ai-agent-skill-lab/blob/main/CHANGELOG.md"
         target="_blank"
